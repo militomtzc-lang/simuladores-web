@@ -478,6 +478,26 @@
       await loadBoard(EMBEDDED_INDEX[0].date);
     }
 
+    /*isac-play-gate*/
+    function showPlayGate() {
+      const old = document.getElementById('play-gate');
+      if (old) old.remove();
+      if (Object.keys(answered).length >= 12) return;   // partida terminada: sin botón
+      const grid = document.getElementById('board-grid');
+      const host = grid.parentElement;
+      host.style.position = 'relative';
+      const gate = document.createElement('div');
+      gate.id = 'play-gate';
+      gate.style.cssText = 'position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(8,13,23,.82);backdrop-filter:blur(6px);border-radius:12px;text-align:center;padding:16px;';
+      const started = Object.keys(answered).length > 0;
+      gate.innerHTML = '<div style="font-size:.95rem;opacity:.85;color:#e6edf7;">' +
+        (started ? 'Tienes una partida en curso. El cronómetro se reanuda al presionar.' : 'El cronómetro empieza cuando presiones Jugar.') +
+        '</div><button id="play-btn" style="font-size:1.2rem;font-weight:800;padding:14px 38px;border:0;border-radius:12px;cursor:pointer;background:#f5c542;color:#1a1200;">' +
+        (started ? '▶ Continuar' : '▶ Jugar') + '</button>';
+      host.appendChild(gate);
+      document.getElementById('play-btn').onclick = () => { gate.remove(); startTimer(); };
+    }
+
     async function loadBoard(dateStr) {
       stopTimer();
       board = EMBEDDED_BOARDS[dateStr];
@@ -498,7 +518,7 @@
 
       await fetchLeaderboard(board.date);
       renderBoard();
-      if (Object.keys(answered).length < 12) startTimer();
+      showPlayGate();
     }
 
     function renderBoard() {
