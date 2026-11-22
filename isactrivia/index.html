@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ISAC Labs · Jeopardy Diario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800&family=Sora:wght@400;600;700&display=swap" />
+  <style>
+    :root {
+      --green-dark: #00593f;
+      --green-main: #007554;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-subtle: #e2e8f0;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-page);
+      color: var(--text-main);
+      font-family: 'Sora', sans-serif;
+    }
+
+    .jeopardy-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .game-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border-subtle);
+      padding-bottom: 1.25rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: var(--green-dark);
+      background: var(--green-light);
+      border: 1px solid var(--green-border);
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-family: 'Darker Grotesque', sans-serif;
+      font-size: 3.1rem;
+      font-weight: 800;
+      line-height: 1;
+      margin: 0.35rem 0 0.2rem;
+      color: var(--green-dark);
+    }
+
+    .theme-subtitle {
+      color: var(--text-muted);
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .hud {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .hud-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.5rem 0.95rem;
+      display: flex;
+      flex-direction: column;
+      min-width: 95px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .hud-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .hud-value {
+      font-family: 'Darker Grotesque', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--green-dark);
+      line-height: 1.1;
+    }
+
+    select {
+      background: transparent;
+      color: var(--text-main);
+      border: none;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 0.2rem;
+      cursor: pointer;
+    }
+
+    .archive-banner {
+      background: #fefce8;
+      border: 1px solid #fde047;
+      color: #854d0e;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+      font-size: 0.85rem;
+    }
+
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+    }
+
+    .category-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .category-header {
+      background: var(--green-dark);
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 1rem 0.6rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      box-shadow: 0 2px 4px rgba(0, 89, 63, 0.15);
+    }
+
+    .clue-cell {
+      background: var(--bg-card);
+      border: 2px solid var(--green-main);
+      border-radius: 10px;
+      padding: 1.35rem 0.5rem;
+      font-family: 'Darker Grotesque', sans-serif;
+      font-size: 2.15rem;
+      font-weight: 800;
+      color: var(--green-dark);
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+
+    .clue-cell:hover:not(:disabled) {
+      background: var(--green-light);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 89, 63, 0.12);
+    }
+
+    .clue-cell:disabled {
+      cursor: default;
+      border-color: var(--border-subtle);
+      background: #f1f5f9;
+      color: #94a3b8;
+      box-shadow: none;
+    }
+
+    .clue-cell.correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+      color: #15803d;
+    }
+
+    .clue-cell.wrong {
+      background: #fee2e2;
+      border-color: #f87171;
+      color: #b91c1c;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 50;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-top: 5px solid var(--green-dark);
+      border-radius: 14px;
+      max-width: 600px;
+      width: 100%;
+      padding: 1.75rem;
+      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.2);
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .modal-points {
+      font-weight: 700;
+      color: var(--green-dark);
+      font-size: 1rem;
+    }
+
+    .dd-badge {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #b45309;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+    }
+
+    .clue-text {
+      font-size: 1.15rem;
+      line-height: 1.55;
+      margin-bottom: 1.5rem;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .option-btn {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      color: var(--text-main);
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      text-align: left;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--green-main);
+      background: var(--green-light);
+    }
+
+    .option-btn.opt-correct {
+      background: #dcfce7;
+      border-color: #16a34a;
+      color: #14532d;
+      font-weight: 600;
+    }
+
+    .option-btn.opt-wrong {
+      background: #fee2e2;
+      border-color: #dc2626;
+      color: #7f1d1d;
+    }
+
+    .explanation-box {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .btn-primary {
+      margin-top: 0.75rem;
+      background: var(--green-dark);
+      color: #ffffff;
+      border: none;
+      padding: 0.75rem 1.3rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      transition: background 0.15s ease;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--green-main);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .summary-card {
+      margin-top: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-top: 4px solid var(--green-dark);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05);
+    }
+
+    .summary-card h2 {
+      margin-top: 0;
+      color: var(--green-dark);
+    }
+
+    input {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      color: var(--text-main);
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-family: 'Sora', sans-serif;
+      margin-right: 0.5rem;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--green-main);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    th, td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+      text-align: left;
+    }
+
+    tr.me {
+      background: var(--green-light);
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+
+    .err-msg {
+      color: #dc2626;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <section class="jeopardy-wrapper">
+    <header class="game-header">
+      <div>
+        <span class="badge">ISAC LABS · SPORTS ANALYTICS</span>
+        <h1>JEOPARDY DIARIO</h1>
+        <p id="theme-subtitle" class="theme-subtitle"></p>
+      </div>
+      <div class="hud">
+        <div class="hud-box"><span class="hud-label">PUNTAJE</span><span id="hud-score" class="hud-value">0</span></div>
+        <div class="hud-box"><span class="hud-label">TIEMPO</span><span id="hud-time" class="hud-value">00:00</span></div>
+        <div class="hud-box">
+          <span class="hud-label">ARCHIVO</span>
+          <select id="date-select"></select>
+        </div>
+      </div>
+    </header>
+
+    <div id="archive-banner" class="archive-banner hidden"></div>
+    <div id="board-grid" class="board-grid"></div>
+    <div id="summary-card" class="summary-card hidden"></div>
+  </section>
+
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-top">
+        <span id="modal-points" class="modal-points"></span>
+        <span id="dd-badge" class="dd-badge hidden">★ DAILY DOUBLE (×2)</span>
+      </div>
+      <p id="clue-text" class="clue-text"></p>
+      <div id="options-grid" class="options-grid"></div>
+      <div id="explanation-box" class="explanation-box hidden">
+        <p id="explanation-text"></p>
+        <button id="continue-btn" class="btn-primary">Siguiente casilla →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://jssdaxtpmonhilbyugsw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_jqW3J8NzJH7rEGRht4L49Q_V9oTDcRo";
+    const SB_HEADERS = {
+      apikey: SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      ...(SUPABASE_KEY.startsWith('eyJ') ? { Authorization: `Bearer ${SUPABASE_KEY}` } : {})
+    };
+
+    const EMBEDDED_INDEX = [{"date": "2026-11-29"}, {"date": "2026-11-28"}, {"date": "2026-11-27"}, {"date": "2026-11-26"}, {"date": "2026-11-25"}, {"date": "2026-11-24"}, {"date": "2026-11-23"}, {"date": "2026-11-22"}, {"date": "2026-11-21"}, {"date": "2026-11-20"}, {"date": "2026-11-19", "theme": "Popurrí Multideporte ISAC"}, {"date": "2026-11-18", "theme": "Jueves de Sabermetría y Diamante"}, {"date": "2026-11-17", "theme": "Especial NFL & Métricas de Campo"}];
+    const EMBEDDED_BOARDS = {"2026-11-19": {"date": "2026-11-19", "day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "categories": [{"name": "Líderes NBA", "questions": [{"id": "c1_200", "points": 200, "clue": "Este jugador lideró la NBA en puntos por partido en la campaña 2024-25.", "options": ["¿Quién es Shai Gilgeous-Alexander?", "¿Quién es Luka Dončić?", "¿Quién es Giannis Antetokounmpo?", "¿Quién es Nikola Jokić?"], "answer_index": 0, "explanation": "Shai Gilgeous-Alexander promedió 32.7 puntos por partido en 2024-25.", "daily_double": false}, {"id": "c1_400", "points": 400, "clue": "Este jugador lideró la NBA en rebotes por partido en la campaña 2024-25.", "options": ["¿Quién es Domantas Sabonis?", "¿Quién es Ivica Zubac?", "¿Quién es Karl-Anthony Towns?", "¿Quién es Nikola Jokić?"], "answer_index": 0, "explanation": "Domantas Sabonis promedió 13.9 rebotes por partido en 2024-25.", "daily_double": false}, {"id": "c1_600", "points": 600, "clue": "Este jugador lideró la NBA en asistencias por partido en la campaña 2024-25.", "options": ["¿Quién es Trae Young?", "¿Quién es Cade Cunningham?", "¿Quién es Tyrese Haliburton?", "¿Quién es Nikola Jokić?"], "answer_index": 0, "explanation": "Trae Young promedió 11.6 asistencias por partido en 2024-25.", "daily_double": false}, {"id": "c1_800", "points": 800, "clue": "Este jugador lideró la NBA en puntos por partido en la campaña 2023-24.", "options": ["¿Quién es Shai Gilgeous-Alexander?", "¿Quién es Luka Dončić?", "¿Quién es Giannis Antetokounmpo?", "¿Quién es Jalen Brunson?"], "answer_index": 1, "explanation": "Luka Dončić promedió 33.9 puntos por partido en 2023-24.", "daily_double": false}]}, {"name": "Fórmula 1", "questions": [{"id": "c2_200", "points": 200, "clue": "Esta escudería ganó el Campeonato de Constructores de Fórmula 1 en 2023.", "options": ["¿Cuál es Ferrari?", "¿Cuál es Mercedes?", "¿Cuál es McLaren?", "¿Cuál es Red Bull?"], "answer_index": 3, "explanation": "Red Bull ganó el título en 2023 acumulando 860 puntos.", "daily_double": false}, {"id": "c2_400", "points": 400, "clue": "Esta escudería ganó el Campeonato de Constructores de Fórmula 1 en 2024.", "options": ["¿Cuál es McLaren?", "¿Cuál es Red Bull?", "¿Cuál es Ferrari?", "¿Cuál es Mercedes?"], "answer_index": 0, "explanation": "McLaren ganó el título en 2024 acumulando 666 puntos.", "daily_double": false}, {"id": "c2_600", "points": 600, "clue": "Esta escudería ganó el Campeonato de Constructores de Fórmula 1 en 2021.", "options": ["¿Cuál es McLaren?", "¿Cuál es Ferrari?", "¿Cuál es Red Bull?", "¿Cuál es Mercedes?"], "answer_index": 3, "explanation": "Mercedes ganó el título en 2021 acumulando 613.5 puntos.", "daily_double": false}, {"id": "c2_800", "points": 800, "clue": "Esta escudería ganó el Campeonato de Constructores de Fórmula 1 en 2019.", "options": ["¿Cuál es Ferrari?", "¿Cuál es Mercedes?", "¿Cuál es McLaren?", "¿Cuál es Red Bull?"], "answer_index": 1, "explanation": "Mercedes ganó el título en 2019 acumulando 739 puntos.", "daily_double": false}]}, {"name": "Métricas NBA", "questions": [{"id": "c3_200", "points": 200, "clue": "Estadística que mide el porcentaje de posesiones del equipo que finaliza un jugador mientras está en cancha.", "options": ["¿Qué es Usage Rate?", "¿Qué es True Shooting?", "¿Qué es PER?", "¿Qué es BPM?"], "answer_index": 0, "explanation": "El Usage Rate estima qué proporción de jugadas terminan en tiro, tiro libre o pérdida del jugador.", "daily_double": false}, {"id": "c3_400", "points": 400, "clue": "Métrica de eficiencia de tiro que pondera tiros de campo, triples y tiros libres en un solo porcentaje.", "options": ["¿Qué es FG%?", "¿Qué es eFG%?", "¿Qué es True Shooting (TS%)?", "¿Qué es Offensive Rating?"], "answer_index": 2, "explanation": "TS% incorpora el valor adicional de los triples y los tiros libres.", "daily_double": true}, {"id": "c3_600", "points": 600, "clue": "Siglas de la métrica global creada por John Hollinger que resume las contribuciones por minuto de un jugador.", "options": ["¿Qué es PER?", "¿Qué es VORP?", "¿Qué es RAPTOR?", "¿Qué es EPM?"], "answer_index": 0, "explanation": "PER (Player Efficiency Rating) estandariza el rendimiento por minuto con media de liga en 15.0.", "daily_double": false}, {"id": "c3_800", "points": 800, "clue": "Métrica que estima los puntos por cada 100 posesiones que un jugador aporta por encima de un jugador de reemplazo.", "options": ["¿Qué es VORP?", "¿Qué es Box Plus/Minus (BPM)?", "¿Qué es Win Shares?", "¿Qué es Net Rating?"], "answer_index": 1, "explanation": "BPM mide el impacto por cada 100 posesiones respecto al promedio de la liga (0.0).", "daily_double": false}]}]}, "2026-11-18": {"date": "2026-11-18", "day_theme": "Jueves de Sabermetría y Diamante", "max_points": 6800, "categories": [{"name": "Bateo de Poder", "questions": [{"id": "c1_200", "points": 200, "clue": "Este pelotero lideró MLB en cuadrangulares durante la temporada regular 2024.", "options": ["¿Quién es Juan Soto?", "¿Quién es Anthony Santander?", "¿Quién es Shohei Ohtani?", "¿Quién es Aaron Judge?"], "answer_index": 3, "explanation": "Aaron Judge fue líder de Grandes Ligas en 2024 con 58 en cuadrangulares.", "daily_double": false}, {"id": "c1_400", "points": 400, "clue": "Este pelotero lideró MLB en carreras impulsadas durante la temporada regular 2024.", "options": ["¿Quién es Willy Adames?", "¿Quién es José Ramírez?", "¿Quién es Brent Rooker?", "¿Quién es Aaron Judge?", "¿Quién es Shohei Ohtani?"], "answer_index": 3, "explanation": "Aaron Judge fue líder de Grandes Ligas en 2024 con 144 en carreras impulsadas.", "daily_double": false}, {"id": "c1_600", "points": 600, "clue": "Este pelotero lideró MLB en cuadrangulares durante la temporada regular 2023.", "options": ["¿Quién es Matt Olson?", "¿Quién es Pete Alonso?", "¿Quién es Kyle Schwarber?", "¿Quién es Shohei Ohtani?"], "answer_index": 0, "explanation": "Matt Olson fue líder de Grandes Ligas en 2023 con 54 en cuadrangulares.", "daily_double": false}, {"id": "c1_800", "points": 800, "clue": "Este pelotero lideró MLB en porcentaje de slugging durante la temporada regular 2024.", "options": ["¿Quién es Aaron Judge?", "¿Quién es Juan Soto?", "¿Quién es Bobby Witt Jr.?", "¿Quién es Shohei Ohtani?"], "answer_index": 0, "explanation": "Aaron Judge fue líder de Grandes Ligas en 2024 con .701 en porcentaje de slugging.", "daily_double": false}]}, {"name": "Pitcheo y Velocidad", "questions": [{"id": "c2_200", "points": 200, "clue": "Este pelotero lideró MLB en bases robadas durante la temporada regular 2024.", "options": ["¿Quién es Brice Turang?", "¿Quién es José Caballero?", "¿Quién es Elly De La Cruz?", "¿Quién es Shohei Ohtani?"], "answer_index": 2, "explanation": "Elly De La Cruz fue líder de Grandes Ligas en 2024 con 67 en bases robadas.", "daily_double": false}, {"id": "c2_400", "points": 400, "clue": "Este pelotero lideró MLB en ponches propinados durante la temporada regular 2024.", "options": ["¿Quién es Dylan Cease?", "¿Quién es Chris Sale?", "¿Quién es Zack Wheeler?", "¿Quién es Tarik Skubal?"], "answer_index": 3, "explanation": "Tarik Skubal fue líder de Grandes Ligas en 2024 con 228 en ponches propinados.", "daily_double": false}, {"id": "c2_600", "points": 600, "clue": "Este pelotero lideró MLB en juegos salvados durante la temporada regular 2024.", "options": ["¿Quién es Emmanuel Clase?", "¿Quién es Ryan Helsley?", "¿Quién es Robert Suarez?", "¿Quién es Kyle Finnegan?"], "answer_index": 1, "explanation": "Ryan Helsley fue líder de Grandes Ligas en 2024 con 49 en juegos salvados.", "daily_double": false}, {"id": "c2_800", "points": 800, "clue": "Este pelotero lideró MLB en ponches propinados durante la temporada regular 2023.", "options": ["¿Quién es Kevin Gausman?", "¿Quién es Spencer Strider?", "¿Quién es Pablo López?", "¿Quién es Blake Snell?"], "answer_index": 1, "explanation": "Spencer Strider fue líder de Grandes Ligas en 2023 con 281 en ponches propinados.", "daily_double": true}]}, {"name": "Conceptos Statcast", "questions": [{"id": "c3_200", "points": 200, "clue": "Métrica de Statcast que mide a qué velocidad sale la pelota del bate en millas por hora.", "options": ["¿Qué es Exit Velocity?", "¿Qué es Spin Rate?", "¿Qué es Bat Speed?", "¿Qué es Extension?"], "answer_index": 0, "explanation": "La Exit Velocity mide la velocidad inicial de la bola justo tras el impacto.", "daily_double": false}, {"id": "c3_400", "points": 400, "clue": "Velocidad mínima de salida requerida para que un batazo pueda considerarse un 'Barrel'.", "options": ["¿Qué es 95 mph?", "¿Qué es 98 mph?", "¿Qué es 100 mph?", "¿Qué es 103 mph?"], "answer_index": 1, "explanation": "Un Barrel exige al menos 98 mph combinado con un ángulo de lanzamiento ideal.", "daily_double": false}, {"id": "c3_600", "points": 600, "clue": "Métrica de pitcheo independiente de la defensa que evalúa solo jonrones, bases por bolas, golpeados y ponches.", "options": ["¿Qué es WHIP?", "¿Qué es FIP?", "¿Qué es BABIP?", "¿Qué es ERA+?"], "answer_index": 1, "explanation": "FIP (Fielding Independent Pitching) aísla lo que el pitcher controla directamente.", "daily_double": false}, {"id": "c3_800", "points": 800, "clue": "Versión esperada de wOBA calculada a partir de la velocidad de salida y ángulo de lanzamiento de cada contacto.", "options": ["¿Qué es xwOBA?", "¿Qué es OPS+?", "¿Qué es wRC+?", "¿Qué es ISO?"], "answer_index": 0, "explanation": "xwOBA elimina el efecto de la defensa y los estadios para medir la calidad real del contacto.", "daily_double": false}]}]}, "2026-11-17": {"date": "2026-11-17", "day_theme": "Especial NFL & Métricas de Campo", "max_points": 6600, "categories": [{"name": "Pasadores NFL", "questions": [{"id": "c1_200", "points": 200, "clue": "Este jugador lideró la NFL en yardas por pase durante la temporada regular 2024.", "options": ["¿Quién es Jared Goff?", "¿Quién es Baker Mayfield?", "¿Quién es Joe Burrow?", "¿Quién es Geno Smith?"], "answer_index": 2, "explanation": "Joe Burrow lideró la NFL en 2024 con 4918.0 en yardas por pase.", "daily_double": false}, {"id": "c1_400", "points": 400, "clue": "Este jugador lideró la NFL en pases de touchdown durante la temporada regular 2024.", "options": ["¿Quién es Baker Mayfield?", "¿Quién es Jared Goff?", "¿Quién es Lamar Jackson?", "¿Quién es Joe Burrow?"], "answer_index": 3, "explanation": "Joe Burrow lideró la NFL en 2024 con 43 en pases de touchdown.", "daily_double": false}, {"id": "c1_600", "points": 600, "clue": "Este jugador lideró la NFL en yardas por pase durante la temporada regular 2023.", "options": ["¿Quién es Josh Allen?", "¿Quién es Dak Prescott?", "¿Quién es Jared Goff?", "¿Quién es Tua Tagovailoa?"], "answer_index": 3, "explanation": "Tua Tagovailoa lideró la NFL en 2023 con 4624.0 en yardas por pase.", "daily_double": true}, {"id": "c1_800", "points": 800, "clue": "Este jugador lideró la NFL en EPA total por pase durante la temporada regular 2024.", "options": ["¿Quién es Lamar Jackson?", "¿Quién es Jared Goff?", "¿Quién es Joe Burrow?", "¿Quién es Josh Allen?"], "answer_index": 0, "explanation": "Lamar Jackson lideró la NFL en 2024 con 174.2 en EPA total por pase.", "daily_double": false}]}, {"name": "Juego Terrestre", "questions": [{"id": "c2_200", "points": 200, "clue": "Este jugador lideró la NFL en yardas por tierra durante la temporada regular 2024.", "options": ["¿Quién es Jonathan Taylor?", "¿Quién es Bijan Robinson?", "¿Quién es Saquon Barkley?", "¿Quién es Derrick Henry?"], "answer_index": 2, "explanation": "Saquon Barkley lideró la NFL en 2024 con 2005.0 en yardas por tierra.", "daily_double": false}, {"id": "c2_400", "points": 400, "clue": "Este jugador lideró la NFL en touchdowns por tierra durante la temporada regular 2024.", "options": ["¿Quién es James Cook?", "¿Quién es Josh Jacobs?", "¿Quién es Jahmyr Gibbs?", "¿Quién es Derrick Henry?"], "answer_index": 3, "explanation": "Derrick Henry lideró la NFL en 2024 con 16 en touchdowns por tierra.", "daily_double": false}, {"id": "c2_600", "points": 600, "clue": "Este jugador lideró la NFL en yardas por tierra durante la temporada regular 2023.", "options": ["¿Quién es James Cook?", "¿Quién es Christian McCaffrey?", "¿Quién es Kyren Williams?", "¿Quién es Derrick Henry?"], "answer_index": 1, "explanation": "Christian McCaffrey lideró la NFL en 2023 con 1459.0 en yardas por tierra.", "daily_double": false}, {"id": "c2_800", "points": 800, "clue": "Este jugador lideró la NFL en EPA total por acarreo durante la temporada regular 2024.", "options": ["¿Quién es Derrick Henry?", "¿Quién es Jalen Hurts?", "¿Quién es Jayden Daniels?", "¿Quién es Josh Allen?"], "answer_index": 2, "explanation": "Jayden Daniels lideró la NFL en 2024 con 57.5 en EPA total por acarreo.", "daily_double": false}]}, {"name": "Analítica de Fútbol", "questions": [{"id": "c3_200", "points": 200, "clue": "Métrica que mide la probabilidad de que un remate termine en gol según su ángulo, distancia y contexto.", "options": ["¿Qué es xG?", "¿Qué es xT?", "¿Qué es PPDA?", "¿Qué es VAEP?"], "answer_index": 0, "explanation": "xG (Expected Goals) evalúa la calidad de cada ocasión de gol entre 0 y 1.", "daily_double": false}, {"id": "c3_400", "points": 400, "clue": "Métrica defensiva que mide cuántos pases permite un equipo al rival antes de intentar una acción defensiva.", "options": ["¿Qué es xGA?", "¿Qué es PPDA?", "¿Qué es OBV?", "¿Qué es Packing?"], "answer_index": 1, "explanation": "PPDA (Passes Per Defensive Action) cuantifica la intensidad de la presión alta.", "daily_double": false}, {"id": "c3_600", "points": 600, "clue": "Modelo creado por Karun Singh que divide la cancha en zonas para valorar cuánto aumenta la probabilidad de gol al mover el balón.", "options": ["¿Qué es Expected Threat (xT)?", "¿Qué es PSxG?", "¿Qué es xA?", "¿Qué es Field Tilt?"], "answer_index": 0, "explanation": "Expected Threat (xT) valora pases y conducciones peligrosas aunque no terminen en disparo.", "daily_double": false}, {"id": "c3_800", "points": 800, "clue": "Métrica de porteros que compara los goles esperados tras el tiro (Post-Shot xG) contra los goles realmente recibidos.", "options": ["¿Qué es PSxG +/-?", "¿Qué es Save %?", "¿Qué es xGChain?", "¿Qué es Sweeper Actions?"], "answer_index": 0, "explanation": "PSxG - GA mide cuántos goles evitó un arquero respecto a un portero promedio.", "daily_double": false}]}]}, "2026-11-20": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-20", "categories": [{"name": "F1 · Campeones", "questions": [{"points": 200, "clue": "Pilotos empatados con el récord histórico de 7 Campeonatos Mundiales de F1.", "answer_index": 0, "id": "2026-11-20-c0-q0", "options": ["Schumacher y Hamilton", "Fangio y Vettel", "Verstappen y Alonso", "Senna y Prost"]}, {"points": 400, "clue": "Piloto argentino que ganó 5 títulos mundiales en la década de 1950.", "answer_index": 1, "id": "2026-11-20-c0-q1", "options": ["Carlos Reutemann", "Juan Manuel Fangio", "José Froilán González", "Alberto Ascari"]}, {"points": 600, "clue": "Escudería con la que Max Verstappen conquistó sus primeros cuatro títulos mundiales.", "answer_index": 2, "id": "2026-11-20-c0-q2", "options": ["Mercedes", "Ferrari", "Red Bull Racing", "McLaren"]}, {"points": 800, "clue": "Piloto brasileño tricampeón mundial conocido como el 'Rey de Mónaco'.", "answer_index": 3, "id": "2026-11-20-c0-q3", "options": ["Rubens Barrichello", "Nelson Piquet", "Emerson Fittipaldi", "Ayrton Senna"]}]}, {"name": "Fútbol · Estadios", "questions": [{"points": 200, "clue": "Estadio de Río de Janeiro sede de las finales mundialistas de 1950 y 2014.", "answer_index": 1, "id": "2026-11-20-c1-q0", "options": ["Beira-Rio", "Maracaná", "Morumbí", "Mineirão"]}, {"points": 400, "clue": "Recinto del Boca Juniors conocido mundialmente por su forma y acústica.", "answer_index": 2, "id": "2026-11-20-c1-q1", "options": ["El Nuevo Gasómetro", "El Monumental", "La Bombonera", "El Cilindro"]}, {"points": 600, "clue": "Estadio del Borussia Dortmund famoso por su tribuna 'Muro Amarillo'.", "answer_index": 1, "id": "2026-11-20-c1-q2", "options": ["Veltins-Arena", "Signal Iduna Park", "Red Bull Arena", "Allianz Arena"]}, {"points": 800, "clue": "Casa histórica del Liverpool FC donde suena 'You'll Never Walk Alone'.", "answer_index": 1, "id": "2026-11-20-c1-q3", "options": ["St James' Park", "Anfield", "Old Trafford", "Goodison Park"]}]}, {"name": "F1 · Circuitos", "questions": [{"points": 200, "clue": "Circuito urbano más famoso del calendario, disputado en las calles de Montecarlo.", "answer_index": 3, "id": "2026-11-20-c2-q0", "options": ["Singapur", "Bakú", "Yeda", "Mónaco"]}, {"points": 400, "clue": "Templo de la velocidad en Italia donde Ferrari corre como local.", "answer_index": 0, "id": "2026-11-20-c2-q1", "options": ["Monza", "Fiorano", "Imola", "Mugello"]}, {"points": 600, "clue": "Curva más icónica del circuito belga de Spa-Francorchamps.", "answer_index": 3, "id": "2026-11-20-c2-q2", "options": ["130R", "Parabolica", "Copse", "Eau Rouge"]}, {"points": 800, "clue": "Circuito japonés en forma de ocho propiedad de Honda.", "answer_index": 1, "id": "2026-11-20-c2-q3", "options": ["Fuji", "Suzuka", "Motegi", "Okayama"]}]}]}, "2026-11-21": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-21", "categories": [{"name": "Ciclismo · Grandes", "questions": [{"points": 200, "clue": "Prenda que distingue al líder de la clasificación general del Tour de Francia.", "answer_index": 3, "id": "2026-11-21-c0-q0", "options": ["Maillot arcoíris", "Maillot rojo", "Maglia rosa", "Maillot amarillo"]}, {"points": 400, "clue": "Ciclista belga apodado 'El Caníbal' ganador de 5 Tours, 5 Giros y 1 Vuelta.", "answer_index": 1, "id": "2026-11-21-c0-q1", "options": ["Miguel Induráin", "Eddy Merckx", "Jacques Anquetil", "Bernard Hinault"]}, {"points": 600, "clue": "Ciclista esloveno ganador del doblete Giro-Tour en 2024.", "answer_index": 0, "id": "2026-11-21-c0-q2", "options": ["Tadej Pogačar", "Remco Evenepoel", "Jonas Vingegaard", "Primož Roglič"]}, {"points": 800, "clue": "Único ciclista español en ganar cinco Tours de Francia de forma consecutiva.", "answer_index": 1, "id": "2026-11-21-c0-q3", "options": ["Alberto Contador", "Miguel Induráin", "Carlos Sastre", "Pedro Delgado"]}]}, {"name": "NFL · Super Bowl", "questions": [{"points": 200, "clue": "Trofeo que se entrega cada año al equipo campeón de la NFL.", "answer_index": 2, "id": "2026-11-21-c1-q0", "options": ["Lamar Hunt", "Pete Rozelle", "Vince Lombardi", "George Halas"]}, {"points": 400, "clue": "Mariscal de campo con más anillos de Super Bowl ganados en la historia (7).", "answer_index": 2, "id": "2026-11-21-c1-q1", "options": ["Terry Bradshaw", "Patrick Mahomes", "Tom Brady", "Joe Montana"]}, {"points": 600, "clue": "Único equipo en completar una temporada perfecta invicta en 1972.", "answer_index": 1, "id": "2026-11-21-c1-q2", "options": ["Chicago Bears", "Miami Dolphins", "New England Patriots", "San Francisco 49ers"]}, {"points": 800, "clue": "Franquicia que comparte con los Patriots el récord de 6 títulos de Super Bowl.", "answer_index": 3, "id": "2026-11-21-c1-q3", "options": ["Dallas Cowboys", "Green Bay Packers", "San Francisco 49ers", "Pittsburgh Steelers"]}]}, {"name": "NBA · Récords", "questions": [{"points": 200, "clue": "Máximo anotador histórico de puntos en temporada regular de la NBA.", "answer_index": 2, "id": "2026-11-21-c2-q0", "options": ["Kareem Abdul-Jabbar", "Karl Malone", "LeBron James", "Kobe Bryant"]}, {"points": 400, "clue": "Jugador que anotó 100 puntos en un solo partido en 1962.", "answer_index": 2, "id": "2026-11-21-c2-q1", "options": ["Kobe Bryant", "Elgin Baylor", "Wilt Chamberlain", "Michael Jordan"]}, {"points": 600, "clue": "Líder histórico de triples anotados en la NBA.", "answer_index": 3, "id": "2026-11-21-c2-q2", "options": ["Ray Allen", "James Harden", "Reggie Miller", "Stephen Curry"]}, {"points": 800, "clue": "Equipo que logró el récord de 73 victorias y 9 derrotas en la temporada 2015-16.", "answer_index": 1, "id": "2026-11-21-c2-q3", "options": ["Chicago Bulls", "Golden State Warriors", "Los Angeles Lakers", "Boston Celtics"]}]}]}, "2026-11-22": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-22", "categories": [{"name": "Béisbol · MLB", "questions": [{"points": 200, "clue": "Franquicia con más títulos de Serie Mundial en las Grandes Ligas (27).", "answer_index": 3, "id": "2026-11-22-c0-q0", "options": ["St. Louis Cardinals", "Los Angeles Dodgers", "Boston Red Sox", "New York Yankees"]}, {"points": 400, "clue": "Jugador japonés que inauguró el club 50 jonrones y 50 bases robadas en 2024.", "answer_index": 3, "id": "2026-11-22-c0-q1", "options": ["Ichiro Suzuki", "Yu Darvish", "Hideki Matsui", "Shohei Ohtani"]}, {"points": 600, "clue": "Pelotero que rompió la barrera racial en MLB debutando con Brooklyn en 1947.", "answer_index": 0, "id": "2026-11-22-c0-q2", "options": ["Jackie Robinson", "Willie Mays", "Hank Aaron", "Satchel Paige"]}, {"points": 800, "clue": "Lanzador mexicano que ganó el Cy Young y la Serie Mundial como novato en 1981.", "answer_index": 1, "id": "2026-11-22-c0-q3", "options": ["Joakim Soria", "Fernando Valenzuela", "Julio Urías", "Esteban Loaiza"]}]}, {"name": "Tenis · Grand Slam", "questions": [{"points": 200, "clue": "Único torneo de Grand Slam que se juega sobre césped.", "answer_index": 3, "id": "2026-11-22-c1-q0", "options": ["Roland Garros", "Australian Open", "US Open", "Wimbledon"]}, {"points": 400, "clue": "Tenista español apodado 'El Rey de la Tierra Batida' por sus 14 títulos en París.", "answer_index": 2, "id": "2026-11-22-c1-q1", "options": ["Carlos Alcaraz", "David Ferrer", "Rafael Nadal", "Juan Carlos Ferrero"]}, {"points": 600, "clue": "Tenista varonil con más títulos individuales de Grand Slam en la historia (24).", "answer_index": 0, "id": "2026-11-22-c1-q2", "options": ["Novak Djokovic", "Pete Sampras", "Roger Federer", "Rafael Nadal"]}, {"points": 800, "clue": "Torneo de Grand Slam donde se entrega la Copa de los Mosqueteros.", "answer_index": 2, "id": "2026-11-22-c1-q3", "options": ["Wimbledon", "US Open", "Roland Garros", "Australian Open"]}]}, {"name": "NFL · Leyendas", "questions": [{"points": 200, "clue": "Receptor abierto líder histórico en yardas y touchdowns recibidos en la NFL.", "answer_index": 2, "id": "2026-11-22-c2-q0", "options": ["Randy Moss", "Larry Fitzgerald", "Jerry Rice", "Terrell Owens"]}, {"points": 400, "clue": "Corredor de los Lions famoso por su elusividad que se retiró en 1998 con 15,269 yardas.", "answer_index": 2, "id": "2026-11-22-c2-q1", "options": ["Jim Brown", "Emmitt Smith", "Barry Sanders", "Walter Payton"]}, {"points": 600, "clue": "Entrenador en jefe con más victorias en la historia de la NFL (347 triunfos).", "answer_index": 2, "id": "2026-11-22-c2-q2", "options": ["Andy Reid", "George Halas", "Don Shula", "Bill Belichick"]}, {"points": 800, "clue": "Linebacker de los Giants ganador del MVP de la NFL en 1986.", "answer_index": 2, "id": "2026-11-22-c2-q3", "options": ["Luke Kuechly", "Ray Lewis", "Lawrence Taylor", "Dick Butkus"]}]}]}, "2026-11-23": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-23", "categories": [{"name": "Liga MX · Historia", "questions": [{"points": 200, "clue": "Estadio de la Ciudad de México que ha albergado dos finales de Copa del Mundo.", "answer_index": 2, "id": "2026-11-23-c0-q0", "options": ["Estadio Azul", "Estadio Olímpico Universitario", "Estadio Azteca", "Estadio Jalisco"]}, {"points": 400, "clue": "Club mexicano conocido históricamente como el 'Campeonísimo' entre 1956 y 1965.", "answer_index": 0, "id": "2026-11-23-c0-q1", "options": ["Chivas", "Cruz Azul", "Toluca", "América"]}, {"points": 600, "clue": "Delantero brasileño máximo goleador histórico del Club Toluca.", "answer_index": 3, "id": "2026-11-23-c0-q2", "options": ["Cabinho", "Jared Borgetti", "Zague", "José Saturnino Cardozo"]}, {"points": 800, "clue": "Primer equipo en lograr un bicampeonato en la era de torneos cortos de la Liga MX.", "answer_index": 1, "id": "2026-11-23-c0-q3", "options": ["América", "Pumas UNAM", "León", "Atlas"]}]}, {"name": "NBA · Récords", "questions": [{"points": 200, "clue": "Máximo anotador histórico de puntos en temporada regular de la NBA.", "answer_index": 0, "id": "2026-11-23-c1-q0", "options": ["LeBron James", "Kobe Bryant", "Karl Malone", "Kareem Abdul-Jabbar"]}, {"points": 400, "clue": "Jugador que anotó 100 puntos en un solo partido en 1962.", "answer_index": 3, "id": "2026-11-23-c1-q1", "options": ["Michael Jordan", "Elgin Baylor", "Kobe Bryant", "Wilt Chamberlain"]}, {"points": 600, "clue": "Líder histórico de triples anotados en la NBA.", "answer_index": 3, "id": "2026-11-23-c1-q2", "options": ["James Harden", "Reggie Miller", "Ray Allen", "Stephen Curry"]}, {"points": 800, "clue": "Equipo que logró el récord de 73 victorias y 9 derrotas en la temporada 2015-16.", "answer_index": 3, "id": "2026-11-23-c1-q3", "options": ["Chicago Bulls", "Boston Celtics", "Los Angeles Lakers", "Golden State Warriors"]}]}, {"name": "NBA · Dinastías", "questions": [{"points": 200, "clue": "Franquicias empatadas en la cima histórica de títulos de la NBA (Celtics y Lakers).", "answer_index": 0, "id": "2026-11-23-c2-q0", "options": ["Boston y Los Ángeles", "Chicago y San Antonio", "Detroit y Philadelphia", "Golden State y Miami"]}, {"points": 400, "clue": "Entrenador que ganó 11 anillos dirigiendo a los Bulls de Jordan y los Lakers de Kobe.", "answer_index": 1, "id": "2026-11-23-c2-q1", "options": ["Red Auerbach", "Phil Jackson", "Pat Riley", "Gregg Popovich"]}, {"points": 600, "clue": "Trío histórico de los San Antonio Spurs que ganó 4 campeonatos juntos.", "answer_index": 3, "id": "2026-11-23-c2-q2", "options": ["Curry, Thompson y Green", "Bird, McHale y Parish", "LeBron, Wade y Bosh", "Duncan, Parker y Ginóbili"]}, {"points": 800, "clue": "Apodo de los Detroit Pistons campeones en 1989 y 1990 por su estilo físico.", "answer_index": 1, "id": "2026-11-23-c2-q3", "options": ["Grit and Grind", "Bad Boys", "Showtime", "Splash Brothers"]}]}]}, "2026-11-24": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-24", "categories": [{"name": "F1 · Campeones", "questions": [{"points": 200, "clue": "Pilotos empatados con el récord histórico de 7 Campeonatos Mundiales de F1.", "answer_index": 3, "id": "2026-11-24-c0-q0", "options": ["Senna y Prost", "Verstappen y Alonso", "Fangio y Vettel", "Schumacher y Hamilton"]}, {"points": 400, "clue": "Piloto argentino que ganó 5 títulos mundiales en la década de 1950.", "answer_index": 1, "id": "2026-11-24-c0-q1", "options": ["Alberto Ascari", "Juan Manuel Fangio", "José Froilán González", "Carlos Reutemann"]}, {"points": 600, "clue": "Escudería con la que Max Verstappen conquistó sus primeros cuatro títulos mundiales.", "answer_index": 0, "id": "2026-11-24-c0-q2", "options": ["Red Bull Racing", "Mercedes", "Ferrari", "McLaren"]}, {"points": 800, "clue": "Piloto brasileño tricampeón mundial conocido como el 'Rey de Mónaco'.", "answer_index": 1, "id": "2026-11-24-c0-q3", "options": ["Rubens Barrichello", "Ayrton Senna", "Emerson Fittipaldi", "Nelson Piquet"]}]}, {"name": "Champions League", "questions": [{"points": 200, "clue": "Club más laureado de la UEFA Champions League con 15 títulos.", "answer_index": 0, "id": "2026-11-24-c1-q0", "options": ["Real Madrid", "Bayern Múnich", "Liverpool", "AC Milan"]}, {"points": 400, "clue": "Máximo goleador histórico de la UEFA Champions League (140 goles).", "answer_index": 1, "id": "2026-11-24-c1-q1", "options": ["Robert Lewandowski", "Cristiano Ronaldo", "Karim Benzema", "Lionel Messi"]}, {"points": 600, "clue": "Ciudad turca donde el Liverpool remontó un 3-0 al Milan en la final de 2005.", "answer_index": 1, "id": "2026-11-24-c1-q2", "options": ["Múnich", "Estambul", "Lisboa", "Atenas"]}, {"points": 800, "clue": "Único entrenador en ganar la Champions League en cinco ocasiones.", "answer_index": 1, "id": "2026-11-24-c1-q3", "options": ["Pep Guardiola", "Carlo Ancelotti", "Zinedine Zidane", "Bob Paisley"]}]}, {"name": "Tenis · Grand Slam", "questions": [{"points": 200, "clue": "Único torneo de Grand Slam que se juega sobre césped.", "answer_index": 2, "id": "2026-11-24-c2-q0", "options": ["Roland Garros", "Australian Open", "Wimbledon", "US Open"]}, {"points": 400, "clue": "Tenista español apodado 'El Rey de la Tierra Batida' por sus 14 títulos en París.", "answer_index": 1, "id": "2026-11-24-c2-q1", "options": ["Carlos Alcaraz", "Rafael Nadal", "Juan Carlos Ferrero", "David Ferrer"]}, {"points": 600, "clue": "Tenista varonil con más títulos individuales de Grand Slam en la historia (24).", "answer_index": 0, "id": "2026-11-24-c2-q2", "options": ["Novak Djokovic", "Roger Federer", "Pete Sampras", "Rafael Nadal"]}, {"points": 800, "clue": "Torneo de Grand Slam donde se entrega la Copa de los Mosqueteros.", "answer_index": 0, "id": "2026-11-24-c2-q3", "options": ["Roland Garros", "US Open", "Australian Open", "Wimbledon"]}]}]}, "2026-11-25": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-25", "categories": [{"name": "Juegos Olímpicos", "questions": [{"points": 200, "clue": "Deportista más condecorado en la historia olímpica con 28 medallas.", "answer_index": 1, "id": "2026-11-25-c0-q0", "options": ["Usain Bolt", "Michael Phelps", "Larisa Latynina", "Simone Biles"]}, {"points": 400, "clue": "Velocista jamaicano dueño del récord mundial de 100 metros planos (9.58s).", "answer_index": 2, "id": "2026-11-25-c0-q1", "options": ["Tyson Gay", "Carl Lewis", "Usain Bolt", "Yohan Blake"]}, {"points": 600, "clue": "Ciudad que se convirtió en la primera en albergar tres Juegos Olímpicos de Verano en 2012.", "answer_index": 2, "id": "2026-11-25-c0-q2", "options": ["Los Ángeles", "París", "Londres", "Tokio"]}, {"points": 800, "clue": "Clavadista mexicano con más medallas olímpicas en la historia del país (4 preseas).", "answer_index": 2, "id": "2026-11-25-c0-q3", "options": ["Germán Sánchez", "Paola Espinosa", "Joaquín Capilla", "Osmar Olvera"]}]}, {"name": "Boxeo · Campeones", "questions": [{"points": 200, "clue": "Boxeador mexicano que se convirtió en el primer campeón indiscutido supermediano.", "answer_index": 1, "id": "2026-11-25-c1-q0", "options": ["Marco Antonio Barrera", "Saúl 'Canelo' Álvarez", "Julio César Chávez", "Juan Manuel Márquez"]}, {"points": 400, "clue": "Leyenda del peso pesado conocida como 'The Greatest' y campeón olímpico en 1960.", "answer_index": 1, "id": "2026-11-25-c1-q1", "options": ["Joe Frazier", "Muhammad Ali", "Mike Tyson", "George Foreman"]}, {"points": 600, "clue": "Racha invicta de peleas con la que Julio César Chávez llegó antes de su primera derrota.", "answer_index": 3, "id": "2026-11-25-c1-q2", "options": ["72-0", "50-0", "64-0", "89-0-1"]}, {"points": 800, "clue": "Único boxeador en ganar títulos mundiales en ocho divisiones de peso distintas.", "answer_index": 1, "id": "2026-11-25-c1-q3", "options": ["Floyd Mayweather", "Manny Pacquiao", "Óscar de la Hoya", "Thomas Hearns"]}]}, {"name": "F1 · Circuitos", "questions": [{"points": 200, "clue": "Circuito urbano más famoso del calendario, disputado en las calles de Montecarlo.", "answer_index": 2, "id": "2026-11-25-c2-q0", "options": ["Singapur", "Bakú", "Mónaco", "Yeda"]}, {"points": 400, "clue": "Templo de la velocidad en Italia donde Ferrari corre como local.", "answer_index": 3, "id": "2026-11-25-c2-q1", "options": ["Imola", "Mugello", "Fiorano", "Monza"]}, {"points": 600, "clue": "Curva más icónica del circuito belga de Spa-Francorchamps.", "answer_index": 3, "id": "2026-11-25-c2-q2", "options": ["130R", "Parabolica", "Copse", "Eau Rouge"]}, {"points": 800, "clue": "Circuito japonés en forma de ocho propiedad de Honda.", "answer_index": 2, "id": "2026-11-25-c2-q3", "options": ["Fuji", "Motegi", "Suzuka", "Okayama"]}]}]}, "2026-11-26": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-26", "categories": [{"name": "Béisbol · MLB", "questions": [{"points": 200, "clue": "Franquicia con más títulos de Serie Mundial en las Grandes Ligas (27).", "answer_index": 2, "id": "2026-11-26-c0-q0", "options": ["Los Angeles Dodgers", "Boston Red Sox", "New York Yankees", "St. Louis Cardinals"]}, {"points": 400, "clue": "Jugador japonés que inauguró el club 50 jonrones y 50 bases robadas en 2024.", "answer_index": 0, "id": "2026-11-26-c0-q1", "options": ["Shohei Ohtani", "Hideki Matsui", "Yu Darvish", "Ichiro Suzuki"]}, {"points": 600, "clue": "Pelotero que rompió la barrera racial en MLB debutando con Brooklyn en 1947.", "answer_index": 0, "id": "2026-11-26-c0-q2", "options": ["Jackie Robinson", "Hank Aaron", "Satchel Paige", "Willie Mays"]}, {"points": 800, "clue": "Lanzador mexicano que ganó el Cy Young y la Serie Mundial como novato en 1981.", "answer_index": 3, "id": "2026-11-26-c0-q3", "options": ["Joakim Soria", "Julio Urías", "Esteban Loaiza", "Fernando Valenzuela"]}]}, {"name": "Fútbol · Mundiales", "questions": [{"points": 200, "clue": "Selección con más Copas del Mundo ganadas (5 títulos).", "answer_index": 0, "id": "2026-11-26-c1-q0", "options": ["Brasil", "Italia", "Alemania", "Argentina"]}, {"points": 400, "clue": "País anfitrión y campeón del primer Mundial de la historia en 1930.", "answer_index": 2, "id": "2026-11-26-c1-q1", "options": ["Italia", "Francia", "Uruguay", "Brasil"]}, {"points": 600, "clue": "Máximo goleador histórico en fases finales de la Copa del Mundo (16 goles).", "answer_index": 3, "id": "2026-11-26-c1-q2", "options": ["Gerd Müller", "Just Fontaine", "Ronaldo Nazário", "Miroslav Klose"]}, {"points": 800, "clue": "Jugador que anotó 13 goles en una sola edición del Mundial (Suecia 1958).", "answer_index": 0, "id": "2026-11-26-c1-q3", "options": ["Just Fontaine", "Sandor Kocsis", "Pelé", "Eusébio"]}]}, {"name": "Ciclismo · Grandes", "questions": [{"points": 200, "clue": "Prenda que distingue al líder de la clasificación general del Tour de Francia.", "answer_index": 1, "id": "2026-11-26-c2-q0", "options": ["Maglia rosa", "Maillot amarillo", "Maillot arcoíris", "Maillot rojo"]}, {"points": 400, "clue": "Ciclista belga apodado 'El Caníbal' ganador de 5 Tours, 5 Giros y 1 Vuelta.", "answer_index": 1, "id": "2026-11-26-c2-q1", "options": ["Miguel Induráin", "Eddy Merckx", "Bernard Hinault", "Jacques Anquetil"]}, {"points": 600, "clue": "Ciclista esloveno ganador del doblete Giro-Tour en 2024.", "answer_index": 0, "id": "2026-11-26-c2-q2", "options": ["Tadej Pogačar", "Jonas Vingegaard", "Remco Evenepoel", "Primož Roglič"]}, {"points": 800, "clue": "Único ciclista español en ganar cinco Tours de Francia de forma consecutiva.", "answer_index": 3, "id": "2026-11-26-c2-q3", "options": ["Carlos Sastre", "Pedro Delgado", "Alberto Contador", "Miguel Induráin"]}]}]}, "2026-11-27": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-27", "categories": [{"name": "NFL · Leyendas", "questions": [{"points": 200, "clue": "Receptor abierto líder histórico en yardas y touchdowns recibidos en la NFL.", "answer_index": 1, "id": "2026-11-27-c0-q0", "options": ["Terrell Owens", "Jerry Rice", "Randy Moss", "Larry Fitzgerald"]}, {"points": 400, "clue": "Corredor de los Lions famoso por su elusividad que se retiró en 1998 con 15,269 yardas.", "answer_index": 0, "id": "2026-11-27-c0-q1", "options": ["Barry Sanders", "Emmitt Smith", "Walter Payton", "Jim Brown"]}, {"points": 600, "clue": "Entrenador en jefe con más victorias en la historia de la NFL (347 triunfos).", "answer_index": 0, "id": "2026-11-27-c0-q2", "options": ["Don Shula", "Bill Belichick", "George Halas", "Andy Reid"]}, {"points": 800, "clue": "Linebacker de los Giants ganador del MVP de la NFL en 1986.", "answer_index": 1, "id": "2026-11-27-c0-q3", "options": ["Dick Butkus", "Lawrence Taylor", "Luke Kuechly", "Ray Lewis"]}]}, {"name": "Fútbol · Estadios", "questions": [{"points": 200, "clue": "Estadio de Río de Janeiro sede de las finales mundialistas de 1950 y 2014.", "answer_index": 3, "id": "2026-11-27-c1-q0", "options": ["Morumbí", "Beira-Rio", "Mineirão", "Maracaná"]}, {"points": 400, "clue": "Recinto del Boca Juniors conocido mundialmente por su forma y acústica.", "answer_index": 3, "id": "2026-11-27-c1-q1", "options": ["El Nuevo Gasómetro", "El Monumental", "El Cilindro", "La Bombonera"]}, {"points": 600, "clue": "Estadio del Borussia Dortmund famoso por su tribuna 'Muro Amarillo'.", "answer_index": 0, "id": "2026-11-27-c1-q2", "options": ["Signal Iduna Park", "Red Bull Arena", "Allianz Arena", "Veltins-Arena"]}, {"points": 800, "clue": "Casa histórica del Liverpool FC donde suena 'You'll Never Walk Alone'.", "answer_index": 0, "id": "2026-11-27-c1-q3", "options": ["Anfield", "Old Trafford", "St James' Park", "Goodison Park"]}]}, {"name": "NFL · Super Bowl", "questions": [{"points": 200, "clue": "Trofeo que se entrega cada año al equipo campeón de la NFL.", "answer_index": 0, "id": "2026-11-27-c2-q0", "options": ["Vince Lombardi", "George Halas", "Lamar Hunt", "Pete Rozelle"]}, {"points": 400, "clue": "Mariscal de campo con más anillos de Super Bowl ganados en la historia (7).", "answer_index": 2, "id": "2026-11-27-c2-q1", "options": ["Patrick Mahomes", "Joe Montana", "Tom Brady", "Terry Bradshaw"]}, {"points": 600, "clue": "Único equipo en completar una temporada perfecta invicta en 1972.", "answer_index": 2, "id": "2026-11-27-c2-q2", "options": ["New England Patriots", "San Francisco 49ers", "Miami Dolphins", "Chicago Bears"]}, {"points": 800, "clue": "Franquicia que comparte con los Patriots el récord de 6 títulos de Super Bowl.", "answer_index": 3, "id": "2026-11-27-c2-q3", "options": ["San Francisco 49ers", "Dallas Cowboys", "Green Bay Packers", "Pittsburgh Steelers"]}]}]}, "2026-11-28": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-28", "categories": [{"name": "F1 · Circuitos", "questions": [{"points": 200, "clue": "Circuito urbano más famoso del calendario, disputado en las calles de Montecarlo.", "answer_index": 3, "id": "2026-11-28-c0-q0", "options": ["Singapur", "Bakú", "Yeda", "Mónaco"]}, {"points": 400, "clue": "Templo de la velocidad en Italia donde Ferrari corre como local.", "answer_index": 3, "id": "2026-11-28-c0-q1", "options": ["Fiorano", "Imola", "Mugello", "Monza"]}, {"points": 600, "clue": "Curva más icónica del circuito belga de Spa-Francorchamps.", "answer_index": 1, "id": "2026-11-28-c0-q2", "options": ["130R", "Eau Rouge", "Copse", "Parabolica"]}, {"points": 800, "clue": "Circuito japonés en forma de ocho propiedad de Honda.", "answer_index": 1, "id": "2026-11-28-c0-q3", "options": ["Motegi", "Suzuka", "Fuji", "Okayama"]}]}, {"name": "NBA · Dinastías", "questions": [{"points": 200, "clue": "Franquicias empatadas en la cima histórica de títulos de la NBA (Celtics y Lakers).", "answer_index": 2, "id": "2026-11-28-c1-q0", "options": ["Chicago y San Antonio", "Golden State y Miami", "Boston y Los Ángeles", "Detroit y Philadelphia"]}, {"points": 400, "clue": "Entrenador que ganó 11 anillos dirigiendo a los Bulls de Jordan y los Lakers de Kobe.", "answer_index": 0, "id": "2026-11-28-c1-q1", "options": ["Phil Jackson", "Gregg Popovich", "Red Auerbach", "Pat Riley"]}, {"points": 600, "clue": "Trío histórico de los San Antonio Spurs que ganó 4 campeonatos juntos.", "answer_index": 1, "id": "2026-11-28-c1-q2", "options": ["LeBron, Wade y Bosh", "Duncan, Parker y Ginóbili", "Curry, Thompson y Green", "Bird, McHale y Parish"]}, {"points": 800, "clue": "Apodo de los Detroit Pistons campeones en 1989 y 1990 por su estilo físico.", "answer_index": 3, "id": "2026-11-28-c1-q3", "options": ["Splash Brothers", "Showtime", "Grit and Grind", "Bad Boys"]}]}, {"name": "Ciclismo · Grandes", "questions": [{"points": 200, "clue": "Prenda que distingue al líder de la clasificación general del Tour de Francia.", "answer_index": 3, "id": "2026-11-28-c2-q0", "options": ["Maillot rojo", "Maglia rosa", "Maillot arcoíris", "Maillot amarillo"]}, {"points": 400, "clue": "Ciclista belga apodado 'El Caníbal' ganador de 5 Tours, 5 Giros y 1 Vuelta.", "answer_index": 3, "id": "2026-11-28-c2-q1", "options": ["Jacques Anquetil", "Bernard Hinault", "Miguel Induráin", "Eddy Merckx"]}, {"points": 600, "clue": "Ciclista esloveno ganador del doblete Giro-Tour en 2024.", "answer_index": 3, "id": "2026-11-28-c2-q2", "options": ["Primož Roglič", "Jonas Vingegaard", "Remco Evenepoel", "Tadej Pogačar"]}, {"points": 800, "clue": "Único ciclista español en ganar cinco Tours de Francia de forma consecutiva.", "answer_index": 3, "id": "2026-11-28-c2-q3", "options": ["Alberto Contador", "Pedro Delgado", "Carlos Sastre", "Miguel Induráin"]}]}]}, "2026-11-29": {"day_theme": "Popurrí Multideporte ISAC", "max_points": 6400, "date": "2026-11-29", "categories": [{"name": "F1 · Circuitos", "questions": [{"points": 200, "clue": "Circuito urbano más famoso del calendario, disputado en las calles de Montecarlo.", "answer_index": 0, "id": "2026-11-29-c0-q0", "options": ["Mónaco", "Singapur", "Yeda", "Bakú"]}, {"points": 400, "clue": "Templo de la velocidad en Italia donde Ferrari corre como local.", "answer_index": 0, "id": "2026-11-29-c0-q1", "options": ["Monza", "Imola", "Mugello", "Fiorano"]}, {"points": 600, "clue": "Curva más icónica del circuito belga de Spa-Francorchamps.", "answer_index": 3, "id": "2026-11-29-c0-q2", "options": ["130R", "Copse", "Parabolica", "Eau Rouge"]}, {"points": 800, "clue": "Circuito japonés en forma de ocho propiedad de Honda.", "answer_index": 2, "id": "2026-11-29-c0-q3", "options": ["Motegi", "Fuji", "Suzuka", "Okayama"]}]}, {"name": "NFL · Leyendas", "questions": [{"points": 200, "clue": "Receptor abierto líder histórico en yardas y touchdowns recibidos en la NFL.", "answer_index": 1, "id": "2026-11-29-c1-q0", "options": ["Randy Moss", "Jerry Rice", "Terrell Owens", "Larry Fitzgerald"]}, {"points": 400, "clue": "Corredor de los Lions famoso por su elusividad que se retiró en 1998 con 15,269 yardas.", "answer_index": 3, "id": "2026-11-29-c1-q1", "options": ["Emmitt Smith", "Jim Brown", "Walter Payton", "Barry Sanders"]}, {"points": 600, "clue": "Entrenador en jefe con más victorias en la historia de la NFL (347 triunfos).", "answer_index": 3, "id": "2026-11-29-c1-q2", "options": ["Bill Belichick", "George Halas", "Andy Reid", "Don Shula"]}, {"points": 800, "clue": "Linebacker de los Giants ganador del MVP de la NFL en 1986.", "answer_index": 0, "id": "2026-11-29-c1-q3", "options": ["Lawrence Taylor", "Dick Butkus", "Luke Kuechly", "Ray Lewis"]}]}, {"name": "NBA · Dinastías", "questions": [{"points": 200, "clue": "Franquicias empatadas en la cima histórica de títulos de la NBA (Celtics y Lakers).", "answer_index": 2, "id": "2026-11-29-c2-q0", "options": ["Golden State y Miami", "Chicago y San Antonio", "Boston y Los Ángeles", "Detroit y Philadelphia"]}, {"points": 400, "clue": "Entrenador que ganó 11 anillos dirigiendo a los Bulls de Jordan y los Lakers de Kobe.", "answer_index": 1, "id": "2026-11-29-c2-q1", "options": ["Pat Riley", "Phil Jackson", "Gregg Popovich", "Red Auerbach"]}, {"points": 600, "clue": "Trío histórico de los San Antonio Spurs que ganó 4 campeonatos juntos.", "answer_index": 2, "id": "2026-11-29-c2-q2", "options": ["LeBron, Wade y Bosh", "Bird, McHale y Parish", "Duncan, Parker y Ginóbili", "Curry, Thompson y Green"]}, {"points": 800, "clue": "Apodo de los Detroit Pistons campeones en 1989 y 1990 por su estilo físico.", "answer_index": 2, "id": "2026-11-29-c2-q3", "options": ["Grit and Grind", "Splash Brothers", "Bad Boys", "Showtime"]}]}]}};
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
+    let board = null, answered = {}, elapsed = 0, timer = null, activeQ = null, scoreSubmitted = false, leaderboard = [];
+
+    function getDeviceId() {
+      let id = localStorage.getItem('isac_device_id');
+      if (!id) {
+        id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+              const r = Math.random() * 16 | 0;
+              return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        localStorage.setItem('isac_device_id', id);
+      }
+      return id;
+    }
+
+    const fmtTime = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+    const startTimer = () => { stopTimer(); timer = setInterval(() => { elapsed++; document.getElementById('hud-time').textContent = fmtTime(elapsed); }, 1000); };
+    const stopTimer = () => { if (timer) clearInterval(timer); timer = null; };
+
+    async function fetchLeaderboard(dateStr) {
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/game_scores?select=nickname,score,time_seconds,device_id&game_id=eq.jeopardy&puzzle_date=eq.${dateStr}&order=score.desc,time_seconds.asc&limit=10`;
+        const res = await fetch(url, { headers: SB_HEADERS, cache: 'no-store' });
+        if (res.ok) leaderboard = await res.json();
+      } catch (e) {
+        console.warn('No se pudo cargar el ranking remoto:', e);
+      }
+    }
+
+    async function init() {
+      const sel = document.getElementById('date-select');
+      EMBEDDED_INDEX.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.date;
+        opt.textContent = `${item.date} ${item.date === todayStr ? '(Hoy)' : ''}`;
+        sel.appendChild(opt);
+      });
+      sel.onchange = () => loadBoard(sel.value);
+      await loadBoard(EMBEDDED_INDEX[0].date);
+    }
+
+    async function loadBoard(dateStr) {
+      stopTimer();
+      board = EMBEDDED_BOARDS[dateStr];
+      const saved = JSON.parse(localStorage.getItem(`isac_prev_${board.date}`) || 'null');
+      answered = saved ? saved.answered : {};
+      elapsed = saved ? saved.elapsed : 0;
+      scoreSubmitted = saved ? saved.scoreSubmitted : false;
+
+      document.getElementById('theme-subtitle').textContent = board.day_theme;
+      document.getElementById('hud-time').textContent = fmtTime(elapsed);
+      const banner = document.getElementById('archive-banner');
+      if (board.date !== todayStr) {
+        banner.innerHTML = `Estás jugando en <strong>Modo Archivo (${board.date})</strong>. Esta partida no suma al ranking diario.`;
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      await fetchLeaderboard(board.date);
+      renderBoard();
+      if (Object.keys(answered).length < 12) startTimer();
+    }
+
+    function renderBoard() {
+      const score = Object.values(answered).reduce((a, b) => a + b.earned, 0);
+      document.getElementById('hud-score').textContent = score;
+      const grid = document.getElementById('board-grid');
+      grid.innerHTML = '';
+
+      board.categories.forEach(cat => {
+        const col = document.createElement('div');
+        col.className = 'category-col';
+        col.innerHTML = `<div class="category-header">${cat.name}</div>`;
+        cat.questions.forEach(q => {
+          const btn = document.createElement('button');
+          btn.className = 'clue-cell';
+          const res = answered[q.id];
+          if (res) {
+            btn.disabled = true;
+            btn.classList.add(res.correct ? 'correct' : 'wrong');
+            btn.textContent = res.correct ? `+${res.earned}` : '0';
+          } else {
+            btn.textContent = `$${q.points}`;
+            btn.onclick = () => openModal(q);
+          }
+          col.appendChild(btn);
+        });
+        grid.appendChild(col);
+      });
+
+      const sumCard = document.getElementById('summary-card');
+      if (Object.keys(answered).length === 12) {
+        stopTimer();
+        const isArchive = board.date !== todayStr;
+        const myId = getDeviceId();
+        const savedNick = localStorage.getItem('isac_player_nickname') || '';
+
+        sumCard.classList.remove('hidden');
+        sumCard.innerHTML = `
+          <h2>¡Tablero completado!</h2>
+          <p>Obtuviste <strong>${score} de ${board.max_points} pts</strong> en <strong>${fmtTime(elapsed)}</strong>.</p>
+          ${!isArchive && !scoreSubmitted ? `
+            <div style="margin:1rem 0;">
+              <input id="nick-input" value="${savedNick}" placeholder="Tu nickname..." maxlength="18" />
+              <button id="submit-btn" class="btn-primary" onclick="saveScore(${score})">Guardar en Scoreboard</button>
+              <div id="submit-err" class="err-msg"></div>
+            </div>` : ''}
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;"><h3 style="margin:0;">Ranking Global (${board.date})</h3><button id="btn-refresh-jeop" type="button" onclick="refreshJeopBoard()" style="background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1;padding:0.4rem 0.85rem;border-radius:8px;font-family:'Sora',sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;">Actualizar ranking</button></div>
+          ${leaderboard.length ? `
+            <table>
+              <thead><tr><th>#</th><th>Jugador</th><th>Puntos</th><th>Tiempo</th></tr></thead>
+              <tbody>
+                ${leaderboard.map((r,i)=>`
+                  <tr class="${r.device_id === myId ? 'me' : ''}">
+                    <td>${i+1}</td>
+                    <td>${r.nickname} ${r.device_id === myId ? '(Tú)' : ''}</td>
+                    <td><strong>${r.score}</strong></td>
+                    <td>${fmtTime(r.time_seconds)}</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>` : '<p style="color:#475569;font-size:0.9rem;">Aún no hay puntajes registrados hoy. ¡Sé el primero!</p>'}
+        `;
+      } else {
+        sumCard.classList.add('hidden');
+      }
+    }
+
+    function openModal(q) {
+      activeQ = q;
+      document.getElementById('modal-points').textContent = `$${q.daily_double ? q.points*2 : q.points} PTS`;
+      document.getElementById('dd-badge').classList.toggle('hidden', !q.daily_double);
+      document.getElementById('clue-text').textContent = `"${q.clue}"`;
+      document.getElementById('explanation-box').classList.add('hidden');
+      const optGrid = document.getElementById('options-grid');
+      optGrid.innerHTML = '';
+      q.options.forEach((opt, idx) => {
+        const b = document.createElement('button');
+        b.className = 'option-btn';
+        b.textContent = opt;
+        b.onclick = () => pickOption(idx, b);
+        optGrid.appendChild(b);
+      });
+      document.getElementById('modal-backdrop').classList.remove('hidden');
+      startTimer();
+    }
+
+    function pickOption(idx, btnEl) {
+      stopTimer();
+      const buttons = document.querySelectorAll('.option-btn');
+      buttons.forEach((b, i) => {
+        b.disabled = true;
+        if (i === activeQ.answer_index) b.classList.add('opt-correct');
+      });
+      const correct = idx === activeQ.answer_index;
+      if (!correct) btnEl.classList.add('opt-wrong');
+
+      const earned = correct ? activeQ.points * (activeQ.daily_double ? 2 : 1) : 0;
+      answered[activeQ.id] = { correct, earned };
+      localStorage.setItem(`isac_prev_${board.date}`, JSON.stringify({ answered, elapsed, scoreSubmitted }));
+
+      document.getElementById('explanation-text').textContent = activeQ.explanation;
+      document.getElementById('explanation-box').classList.remove('hidden');
+      renderBoard();
+    }
+
+    document.getElementById('continue-btn').onclick = () => {
+      document.getElementById('modal-backdrop').classList.add('hidden');
+      if (Object.keys(answered).length < 12) startTimer();
+    };
+
+    window.saveScore = async (score) => {
+      const nickInput = document.getElementById('nick-input');
+      const errEl = document.getElementById('submit-err');
+      const btn = document.getElementById('submit-btn');
+      const nick = nickInput.value.trim();
+      if (nick.length < 2) {
+        errEl.textContent = 'Escribe un nickname de al menos 2 caracteres.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+      errEl.textContent = '';
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/game_scores`, {
+          method: 'POST',
+          headers: { ...SB_HEADERS, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            game_id: 'jeopardy',
+            puzzle_date: board.date,
+            nickname: nick,
+            device_id: getDeviceId(),
+            score: score,
+            time_seconds: Math.max(1, elapsed)
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          if (errData.code === '23505') throw new Error('Ya registraste un puntaje hoy desde este dispositivo.');
+          if (errData.code === '42501') throw new Error(errData.message || 'Fecha fuera de rango permitido.');
+          throw new Error(errData.message || 'Error al guardar puntaje.');
+        }
+
+        localStorage.setItem('isac_player_nickname', nick);
+        scoreSubmitted = true;
+        localStorage.setItem(`isac_prev_${board.date}`, JSON.stringify({ answered, elapsed, scoreSubmitted }));
+        await fetchLeaderboard(board.date);
+        renderBoard();
+      } catch (e) {
+        errEl.textContent = e.message;
+        btn.disabled = false;
+        btn.textContent = 'Guardar en Scoreboard';
+      }
+    };
+
+    init();
+  
+    window.refreshJeopBoard = async () => {
+      const btn = document.getElementById('btn-refresh-jeop');
+      if (btn) { btn.disabled = true; btn.textContent = 'Actualizando...'; }
+      try {
+        const activeDate = (typeof puzzle !== 'undefined' && puzzle && puzzle.date)
+          ? puzzle.date
+          : (document.getElementById('date-select') ? document.getElementById('date-select').value : todayStr);
+        if (typeof fetchLeaderboard === 'function') {
+          await fetchLeaderboard(activeDate);
+        }
+        if (typeof getDeviceId === 'function' && Array.isArray(leaderboard)) {
+          const myId = getDeviceId();
+          if (leaderboard.some(r => r.device_id === myId) && typeof scoreSubmitted !== 'undefined') {
+            scoreSubmitted = true;
+          }
+        }
+        if (typeof renderSummary === 'function') renderSummary();
+        else if (typeof renderAll === 'function') renderAll();
+        else if (typeof renderBoard === 'function') renderBoard();
+      } finally {
+        const btnAfter = document.getElementById('btn-refresh-jeop');
+        if (btnAfter) { btnAfter.disabled = false; btnAfter.textContent = 'Actualizar ranking'; }
+      }
+    };
+
+  </script>
+</body>
+</html>
