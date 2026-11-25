@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ISAC Labs · Connections</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800&family=Sora:wght@400;600;700;800&display=swap" />
+  <style>
+    :root {
+      --green-dark: #00593f;
+      --green-main: #007554;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-subtle: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg-page); color: var(--text-main); font-family: 'Sora', sans-serif; }
+    .wrapper { max-width: 900px; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
+
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .back-link { font-size: 0.8rem; font-weight: 700; color: var(--green-dark); text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--green-light); border: 1px solid var(--green-border); }
+    .back-link:hover { background: #d1fae5; }
+
+    .game-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-subtle); padding-bottom: 1.25rem; }
+    .title-row { display: flex; align-items: center; gap: 0.9rem; }
+    .isacbot-wrap { position: relative; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+    .isacbot-img { width: 74px; height: 74px; object-fit: contain; transition: transform 0.2s ease; }
+    .isacbot-img.bounce { animation: botBounce 0.45s ease; }
+    @keyframes botBounce { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.12) rotate(-3deg); } }
+
+    .badge { display: inline-block; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--green-dark); background: var(--green-light); border: 1px solid var(--green-border); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 700; }
+    h1 { font-family: 'Darker Grotesque', sans-serif; font-size: 3rem; font-weight: 800; line-height: 1; margin: 0.3rem 0 0.15rem; color: var(--green-dark); }
+    .subtitle { color: var(--text-muted); margin: 0; font-size: 0.88rem; }
+    .theme-pill { display: inline-block; margin-top: 0.45rem; font-size: 0.78rem; font-weight: 700; color: var(--green-dark); background: var(--green-light); border: 1px solid var(--green-border); padding: 0.22rem 0.65rem; border-radius: 8px; }
+
+    .hud { display: flex; gap: 0.65rem; flex-wrap: wrap; align-items: stretch; }
+    .hud-box { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.5rem 0.9rem; display: flex; flex-direction: column; justify-content: center; min-width: 88px; }
+    .hud-label { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.08em; font-weight: 600; }
+    .hud-value { font-family: 'Darker Grotesque', sans-serif; font-size: 1.55rem; font-weight: 800; color: var(--green-dark); line-height: 1.1; }
+    select { background: transparent; color: var(--text-main); border: none; font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 600; margin-top: 0.2rem; cursor: pointer; }
+    .btn-today { background: var(--green-light); color: var(--green-dark); border: 1px solid var(--green-border); border-radius: 10px; padding: 0.5rem 0.95rem; font-family: 'Sora', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+    .btn-today:hover { background: #d1fae5; }
+
+    .archive-banner { background: #fefce8; border: 1px solid #fde047; color: #854d0e; padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1.25rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+
+    .toast-bar { min-height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; }
+    .toast-msg { background: #0f172a; color: #ffffff; padding: 0.45rem 1rem; border-radius: 999px; font-size: 0.84rem; font-weight: 600; animation: popIn 0.2s ease; }
+    .toast-msg.warn { background: #b45309; }
+    .toast-msg.ok { background: var(--green-dark); }
+
+    .solved-stack { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.6rem; }
+    .group-banner { border-radius: 12px; padding: 0.9rem 1rem; text-align: center; animation: popIn 0.25s ease; border: 1.5px solid transparent; }
+    .group-banner.lvl-1 { background: #fef08a; border-color: #eab308; color: #713f12; }
+    .group-banner.lvl-2 { background: #bbf7d0; border-color: #22c55e; color: #14532d; }
+    .group-banner.lvl-3 { background: #bae6fd; border-color: #0284c7; color: #0c4a6e; }
+    .group-banner.lvl-4 { background: #e9d5ff; border-color: #9333ea; color: #4c1d95; }
+    .group-title { font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.2rem; }
+    .group-items { font-weight: 600; font-size: 0.9rem; }
+    .group-exp { font-size: 0.78rem; opacity: 0.85; margin-top: 0.25rem; }
+
+    .board-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.65rem; margin-bottom: 1.25rem; }
+    @media (max-width: 560px) {
+      .board-grid { gap: 0.45rem; }
+      .tile { font-size: 0.78rem !important; min-height: 68px !important; padding: 0.45rem 0.3rem !important; }
+      .isacbot-img { width: 58px; height: 58px; }
+    }
+
+    .tile {
+      background: var(--bg-card);
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      min-height: 78px;
+      padding: 0.65rem 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      line-height: 1.2;
+      color: var(--text-main);
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    }
+    .tile:hover:not(:disabled) { border-color: var(--green-main); transform: translateY(-2px); }
+    .tile.selected { background: var(--green-dark); border-color: var(--green-dark); color: #ffffff; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0, 89, 63, 0.22); }
+    .tile.shake { animation: shake 0.38s ease; }
+
+    @keyframes popIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .mistakes-bar { display: flex; align-items: center; justify-content: center; gap: 0.6rem; margin-bottom: 1.15rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+    .life-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--green-main); transition: background 0.2s, transform 0.2s; display: inline-block; }
+    .life-dot.lost { background: #cbd5e1; transform: scale(0.8); }
+
+    .controls-row { display: flex; justify-content: center; gap: 0.7rem; flex-wrap: wrap; }
+    .btn-sec { background: #ffffff; color: var(--text-main); border: 1.5px solid #cbd5e1; padding: 0.7rem 1.2rem; border-radius: 999px; font-family: 'Sora', sans-serif; font-size: 0.86rem; font-weight: 700; cursor: pointer; }
+    .btn-sec:hover:not(:disabled) { background: #f1f5f9; border-color: #94a3b8; }
+    .btn-sec:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--green-dark); color: #ffffff; border: none; padding: 0.75rem 1.45rem; border-radius: 999px; font-weight: 700; font-size: 0.88rem; cursor: pointer; font-family: 'Sora', sans-serif; }
+    .btn-primary:hover:not(:disabled) { background: var(--green-main); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .summary-card { margin-top: 2rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-top: 4px solid var(--green-dark); border-radius: 12px; padding: 1.5rem; }
+    .summary-card h2 { margin: 0 0 0.35rem; color: var(--green-dark); }
+    .emoji-recap { font-size: 1.35rem; letter-spacing: 0.12em; line-height: 1.35; margin: 0.75rem 0; }
+    .board-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+    .nick-input { background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--text-main); padding: 0.7rem 1rem; border-radius: 8px; font-family: 'Sora', sans-serif; margin-right: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.9rem; }
+    th { background: #f1f5f9; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; }
+    th, td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border-subtle); text-align: left; }
+    tr.me { background: var(--green-light); }
+    .err-msg { color: #dc2626; font-size: 0.85rem; margin-top: 0.5rem; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <section class="wrapper">
+    <div class="top-nav">
+      <a class="back-link" href="../">← Hub ISAC Games</a>
+    </div>
+    <header class="game-header">
+      <div class="title-row">
+        <div class="isacbot-wrap">
+          <img id="isacbot-img" class="isacbot-img" alt="ISACBOT" hidden />
+        </div>
+        <div>
+          <span class="badge">ISAC LABS · SPORTS ANALYTICS</span>
+          <h1>ISAC CONNECTIONS</h1>
+          <p class="subtitle">Agrupa los 16 conceptos en 4 categorías ocultas de 4 elementos.</p>
+          <span id="theme-pill" class="theme-pill"></span>
+        </div>
+      </div>
+      <div class="hud">
+        <div class="hud-box"><span class="hud-label">PUNTAJE</span><span id="hud-score" class="hud-value">1000</span></div>
+        <div class="hud-box"><span class="hud-label">ERRORES</span><span id="hud-mistakes" class="hud-value">0 / 4</span></div>
+        <div class="hud-box"><span class="hud-label">TIEMPO</span><span id="hud-time" class="hud-value">00:00</span></div>
+        <div class="hud-box">
+          <span class="hud-label">ARCHIVO</span>
+          <select id="date-select"></select>
+        </div>
+        <button id="btn-today" class="btn-today hidden" onclick="goToday()">Ir a Hoy</button>
+      </div>
+    </header>
+
+    <div id="archive-banner" class="archive-banner hidden"></div>
+    <div id="toast-bar" class="toast-bar"></div>
+    <div id="solved-stack" class="solved-stack"></div>
+    <div id="board-grid" class="board-grid"></div>
+
+    <div id="controls-area">
+      <div class="mistakes-bar">
+        <span>Vidas restantes:</span>
+        <div id="lives-dots" style="display:flex;gap:0.4rem;"></div>
+      </div>
+      <div class="controls-row">
+        <button class="btn-sec" onclick="shuffleRemaining()">Mezclar</button>
+        <button id="btn-clear" class="btn-sec" onclick="clearSelection()">Limpiar selección</button>
+        <button id="btn-submit" class="btn-primary" onclick="submitGuess()" disabled>Enviar grupo</button>
+      </div>
+    </div>
+
+    <div id="summary-card" class="summary-card hidden"></div>
+  </section>
+
+  <script>
+    const SUPABASE_URL = "https://jssdaxtpmonhilbyugsw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_jqW3J8NzJH7rEGRht4L49Q_V9oTDcRo";
+    const SB_HEADERS = {
+      apikey: SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      ...(SUPABASE_KEY.startsWith('eyJ') ? { Authorization: `Bearer ${SUPABASE_KEY}` } : {})
+    };
+
+    const EMBEDDED_INDEX = [{"date": "2026-11-27", "theme": "Viernes de Clásicos y Modelos"}, {"date": "2026-11-26", "theme": "Jueves de NFL & Analítica"}, {"date": "2026-11-25", "theme": "Especial ISAC Multideporte"}, {"date": "2026-11-24", "theme": "Archivo · Multideporte & Analítica"}];
+
+    const EMBEDDED_PUZZLES = {"2026-11-27": {"date": "2026-11-27", "id": "viernes-clasicos-records", "theme": "Viernes de Clásicos y Modelos", "groups": [{"level": 1, "title": "Métricas de posesión y progresión en fútbol", "explanation": "Indicadores de presión alta, dominio territorial y valor de acciones.", "items": ["PPDA", "Field Tilt", "xT", "OBV"]}, {"level": 2, "title": "Peloteros en el club de los 500+ jonrones en MLB", "explanation": "Albert Pujols, Miguel Cabrera, David Ortiz y Jim Thome superaron los 500 HR.", "items": ["Pujols", "Cabrera", "Ortiz", "Thome"]}, {"level": 3, "title": "Modelos y algoritmos en Sports Analytics", "explanation": "Métodos de predicción, simulación y machine learning usados en el lab.", "items": ["Random Forest", "XGBoost", "Monte Carlo", "Elo"]}, {"level": 4, "title": "Palabras que preceden a 'BALL'", "explanation": "Moneyball, Small ball, Curveball y Pickleball.", "items": ["Money", "Small", "Curve", "Pickle"]}]}, "2026-11-26": {"date": "2026-11-26", "id": "jueves-nfl-metricas", "theme": "Jueves de NFL & Analítica", "groups": [{"level": 1, "title": "Métricas avanzadas de Quarterback", "explanation": "Estadísticas para evaluar toma de decisiones, profundidad y eficiencia del pase.", "items": ["QBR", "ANY/A", "CPOE", "ADOT"]}, {"level": 2, "title": "Franquicias NFL sin título de Super Bowl", "explanation": "Equipos históricos de la NFL que aún no levantan el Vince Lombardi.", "items": ["Bills", "Vikings", "Bengals", "Chargers"]}, {"level": 3, "title": "Conceptos tácticos de defensiva NFL", "explanation": "Esquemas de cobertura y paquetes de personal en la secundaria.", "items": ["Cover 2", "Tampa 2", "Nickel", "Dime"]}, {"level": 4, "title": "Palabras que siguen a 'RED' en el deporte", "explanation": "Red Zone (NFL), Redshirt (NCAA), Red Sox (MLB) y Red Bull (F1).", "items": ["Zone", "Shirt", "Sox", "Bull"]}]}, "2026-11-25": {"date": "2026-11-25", "id": "especial-isac-multideporte", "theme": "Especial ISAC Multideporte", "groups": [{"level": 1, "title": "Métricas de béisbol (Statcast / Sabermetría)", "explanation": "Indicadores avanzados de bateo y pitcheo en MLB.", "items": ["wOBA", "FIP", "BABIP", "ISO"]}, {"level": 2, "title": "Franquicias que comparten nombre en dos ligas mayores", "explanation": "Giants (NFL/MLB), Cardinals (NFL/MLB), Kings (NBA/NHL) y Rangers (MLB/NHL).", "items": ["Giants", "Cardinals", "Kings", "Rangers"]}, {"level": 3, "title": "Palabras que preceden a 'RATE' en analítica y deporte", "explanation": "Usage Rate, Strikeout Rate, Win Rate y Heart Rate.", "items": ["Usage", "Strikeout", "Win", "Heart"]}, {"level": 4, "title": "Términos que siguen a 'EXPECTED' en modelos deportivos", "explanation": "Expected Goals, Expected Threat, Expected Points y Expected Runs.", "items": ["Goals", "Threat", "Points", "Runs"]}]}, "2026-11-24": {"date": "2026-11-24", "id": "archivo-sabermetria-futbol", "theme": "Archivo · Multideporte & Analítica", "groups": [{"level": 1, "title": "Métricas globales de impacto en NBA", "explanation": "Estadísticas compuestas para medir eficiencia y valor sobre reemplazo.", "items": ["TS%", "VORP", "BPM", "PER"]}, {"level": 2, "title": "Ganadores del Heisman elegidos #1 global del Draft NFL", "explanation": "Joe Burrow, Cam Newton, Baker Mayfield y Kyler Murray lograron ambos hitos.", "items": ["Burrow", "Newton", "Mayfield", "Murray"]}, {"level": 3, "title": "Estadios NFL techados que han sido sede de Super Bowl", "explanation": "Caesars Superdome, Ford Field, U.S. Bank Stadium y Allegiant Stadium.", "items": ["Superdome", "Ford Field", "U.S. Bank", "Allegiant"]}, {"level": 4, "title": "Palabras que siguen a 'TRIPLE'", "explanation": "Triple-Double (NBA), Triple Crown (MLB), Triple Play (MLB) y Triple Threat (Básquet).", "items": ["Double", "Crown", "Play", "Threat"]}]}};
+
+    const MAX_MISTAKES = 4;
+    const LEVEL_EMOJI = { 1: '🟨', 2: '🟩', 3: '🟦', 4: '🟪' };
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    /*isac-lock-future*/
+    (function () {
+      try {
+        const idx = EMBEDDED_INDEX.filter(i => i.date <= todayStr);
+        if (!idx.length) return;
+        EMBEDDED_INDEX.splice(0, EMBEDDED_INDEX.length, ...idx);
+        Object.keys(EMBEDDED_PUZZLES).forEach(k => { if (k > todayStr) delete EMBEDDED_PUZZLES[k]; });
+      } catch (e) { console.warn('lock-future', e); }
+    })();
+
+    /* Recarga automática a las 00:00:02 hora CDMX para estrenar el reto diario */
+    (function scheduleMidnightRefresh() {
+      try {
+        const fmt = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        });
+        const p = {};
+        fmt.formatToParts(new Date()).forEach(x => { p[x.type] = x.value; });
+        const secNow = (parseInt(p.hour, 10) % 24) * 3600 + parseInt(p.minute, 10) * 60 + parseInt(p.second, 10);
+        const msUntilMidnight = (86400 - secNow + 2) * 1000;
+        setTimeout(() => { location.reload(); }, msUntilMidnight);
+      } catch (e) {}
+    })();
+
+    function setBotMood(mood) {
+      const img = document.getElementById('isacbot-img');
+      if (!img) return;
+      const file = `${mood}.webp`;
+      const candidates = [`../assets/ISACLOGOS/${file}`, `assets/ISACLOGOS/${file}`];
+      let idx = 0;
+      img.onload = () => {
+        img.hidden = false;
+        img.classList.remove('bounce');
+        void img.offsetWidth;
+        img.classList.add('bounce');
+      };
+      img.onerror = () => {
+        idx++;
+        if (idx < candidates.length) img.src = candidates[idx];
+        else img.hidden = true;
+      };
+      img.src = candidates[0];
+    }
+
+    let puzzle = null;
+    let remainingItems = [];
+    let selectedItems = [];
+    let solvedLevels = [];
+    let mistakes = 0;
+    let guessHistory = [];
+    let triedCombos = [];
+    let elapsed = 0;
+    let timer = null;
+    let scoreSubmitted = false;
+    let leaderboard = [];
+    let toastTimer = null;
+
+    function getDeviceId() {
+      let id = localStorage.getItem('isac_device_id');
+      if (!id) {
+        id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+              const r = Math.random() * 16 | 0;
+              return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        localStorage.setItem('isac_device_id', id);
+      }
+      return id;
+    }
+
+    const fmtTime = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    const startTimer = () => { if (!timer) timer = setInterval(() => { elapsed++; document.getElementById('hud-time').textContent = fmtTime(elapsed); }, 1000); };
+    const stopTimer = () => { if (timer) clearInterval(timer); timer = null; };
+
+    function showToast(msg, type = '') {
+      const bar = document.getElementById('toast-bar');
+      bar.innerHTML = `<div class="toast-msg ${type}">${msg}</div>`;
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { bar.innerHTML = ''; }, 2600);
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    async function fetchLeaderboard(dateStr) {
+      leaderboard = [];
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/game_scores?select=nickname,score,attempts,time_seconds,device_id&game_id=eq.connections&puzzle_date=eq.${dateStr}&order=score.desc,time_seconds.asc&limit=10`;
+        const res = await fetch(url, { headers: SB_HEADERS, cache: 'no-store' });
+        if (res.ok) leaderboard = await res.json();
+      } catch (e) {
+        console.warn('No se pudo cargar el ranking remoto:', e);
+      }
+    }
+
+    async function init() {
+      setBotMood('saluda');
+      const sel = document.getElementById('date-select');
+      EMBEDDED_INDEX.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.date;
+        opt.textContent = `${item.date} ${item.date === todayStr ? '(Hoy)' : ''}`;
+        sel.appendChild(opt);
+      });
+      const hasToday = EMBEDDED_INDEX.some(item => item.date === todayStr);
+      const initialDate = hasToday ? todayStr : EMBEDDED_INDEX[0].date;
+      sel.value = initialDate;
+      sel.onchange = () => loadDay(sel.value);
+      await loadDay(initialDate);
+    }
+
+    window.goToday = async () => {
+      const hasToday = EMBEDDED_INDEX.some(item => item.date === todayStr);
+      const targetDate = hasToday ? todayStr : EMBEDDED_INDEX[0].date;
+      document.getElementById('date-select').value = targetDate;
+      await loadDay(targetDate);
+    };
+
+    window.refreshBoard = async () => {
+      await fetchLeaderboard(puzzle.date);
+      renderAll();
+    };
+
+    async function loadDay(dateStr) {
+      stopTimer();
+      document.getElementById('date-select').value = dateStr;
+      puzzle = EMBEDDED_PUZZLES[dateStr];
+      const saved = JSON.parse(localStorage.getItem(`isac_connections_v1_${puzzle.date}`) || 'null');
+
+      solvedLevels = saved ? saved.solvedLevels : [];
+      mistakes = saved ? saved.mistakes : 0;
+      guessHistory = saved ? saved.guessHistory : [];
+      triedCombos = saved ? saved.triedCombos : [];
+      elapsed = saved ? saved.elapsed : 0;
+      scoreSubmitted = saved ? saved.scoreSubmitted : false;
+      selectedItems = [];
+
+      const solvedSet = new Set(solvedLevels);
+      const unsolved = puzzle.groups.filter(g => !solvedSet.has(g.level)).flatMap(g => g.items);
+      remainingItems = shuffleArray(unsolved);
+
+      document.getElementById('theme-pill').textContent = `Tema: ${puzzle.theme}`;
+      document.getElementById('hud-time').textContent = fmtTime(elapsed);
+
+      const banner = document.getElementById('archive-banner');
+      const btnToday = document.getElementById('btn-today');
+      if (puzzle.date !== todayStr) {
+        banner.innerHTML = `<span>Estás jugando en <strong>Modo Archivo (${puzzle.date})</strong>. Esta partida no suma al ranking diario.</span><button class="btn-today" onclick="goToday()">Volver a Hoy</button>`;
+        banner.classList.remove('hidden');
+        btnToday.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+        btnToday.classList.add('hidden');
+      }
+
+      await fetchLeaderboard(puzzle.date);
+      const myId = getDeviceId();
+      if (leaderboard.some(r => r.device_id === myId)) scoreSubmitted = true;
+
+      if (isWon()) setBotMood('celebracion');
+      else if (isLost()) setBotMood('facepalm');
+      else setBotMood('saluda');
+
+      renderAll();
+      if (!isGameOver() && (solvedLevels.length > 0 || mistakes > 0)) startTimer();
+    }
+
+    const isWon = () => solvedLevels.length === 4;
+    const isLost = () => mistakes >= MAX_MISTAKES && !isWon();
+    const isGameOver = () => isWon() || isLost();
+    const calcScore = () => (isWon() ? Math.max(250, 1000 - mistakes * 150) : 0);
+
+    function saveLocal() {
+      localStorage.setItem(`isac_connections_v1_${puzzle.date}`, JSON.stringify({
+        solvedLevels, mistakes, guessHistory, triedCombos, elapsed, scoreSubmitted
+      }));
+    }
+
+    function renderAll() {
+      const currentScore = isLost() ? 0 : Math.max(250, 1000 - mistakes * 150);
+      document.getElementById('hud-score').textContent = currentScore;
+      document.getElementById('hud-mistakes').textContent = `${mistakes} / ${MAX_MISTAKES}`;
+
+      const stack = document.getElementById('solved-stack');
+      stack.innerHTML = '';
+      const displayGroups = isLost()
+        ? [...puzzle.groups].sort((a, b) => {
+            const idxA = solvedLevels.indexOf(a.level);
+            const idxB = solvedLevels.indexOf(b.level);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return a.level - b.level;
+          })
+        : solvedLevels.map(lvl => puzzle.groups.find(g => g.level === lvl));
+
+      displayGroups.forEach(g => {
+        if (!g) return;
+        const div = document.createElement('div');
+        div.className = `group-banner lvl-${g.level}`;
+        div.innerHTML = `
+          <div class="group-title">${g.title}</div>
+          <div class="group-items">${g.items.join(' · ')}</div>
+          <div class="group-exp">${g.explanation}</div>
+        `;
+        stack.appendChild(div);
+      });
+
+      const grid = document.getElementById('board-grid');
+      grid.innerHTML = '';
+      if (!isGameOver()) {
+        remainingItems.forEach(item => {
+          const btn = document.createElement('button');
+          btn.className = 'tile' + (selectedItems.includes(item) ? ' selected' : '');
+          btn.textContent = item;
+          btn.onclick = () => toggleTile(item);
+          grid.appendChild(btn);
+        });
+      }
+
+      const dots = document.getElementById('lives-dots');
+      dots.innerHTML = '';
+      for (let i = 0; i < MAX_MISTAKES; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'life-dot' + (i < mistakes ? ' lost' : '');
+        dots.appendChild(dot);
+      }
+
+      document.getElementById('controls-area').classList.toggle('hidden', isGameOver());
+      document.getElementById('btn-clear').disabled = selectedItems.length === 0;
+      document.getElementById('btn-submit').disabled = selectedItems.length !== 4;
+
+      renderSummary();
+    }
+
+    function toggleTile(item) {
+      if (isGameOver()) return;
+      startTimer();
+      if (selectedItems.includes(item)) {
+        selectedItems = selectedItems.filter(i => i !== item);
+      } else {
+        if (selectedItems.length >= 4) return;
+        selectedItems.push(item);
+        if (selectedItems.length === 1) setBotMood('pensativo');
+      }
+      renderAll();
+    }
+
+    window.shuffleRemaining = () => {
+      remainingItems = shuffleArray(remainingItems);
+      renderAll();
+    };
+
+    window.clearSelection = () => {
+      selectedItems = [];
+      renderAll();
+    };
+
+    window.submitGuess = () => {
+      if (selectedItems.length !== 4 || isGameOver()) return;
+      startTimer();
+
+      const comboKey = [...selectedItems].sort().join('||');
+      if (triedCombos.includes(comboKey)) {
+        showToast('Ya intentaste esa combinación.', 'warn');
+        return;
+      }
+
+      const itemLevelMap = {};
+      puzzle.groups.forEach(g => g.items.forEach(it => { itemLevelMap[it] = g.level; }));
+      const guessEmojis = selectedItems.map(it => LEVEL_EMOJI[itemLevelMap[it]]).join('');
+
+      const matchedGroup = puzzle.groups.find(g =>
+        !solvedLevels.includes(g.level) &&
+        selectedItems.every(it => g.items.includes(it))
+      );
+
+      if (matchedGroup) {
+        guessHistory.push(guessEmojis);
+        solvedLevels.push(matchedGroup.level);
+        remainingItems = remainingItems.filter(it => !matchedGroup.items.includes(it));
+        selectedItems = [];
+        setBotMood('celebracion');
+        showToast(`¡Correcto! ${matchedGroup.title}`, 'ok');
+        saveLocal();
+        renderAll();
+        return;
+      }
+
+      triedCombos.push(comboKey);
+      guessHistory.push(guessEmojis);
+      mistakes++;
+      setBotMood('facepalm');
+
+      const oneAway = puzzle.groups.some(g =>
+        !solvedLevels.includes(g.level) &&
+        selectedItems.filter(it => g.items.includes(it)).length === 3
+      );
+
+      if (mistakes >= MAX_MISTAKES) {
+        remainingItems = [];
+        selectedItems = [];
+        showToast('Se terminaron los intentos. Aquí están los grupos.', 'warn');
+      } else if (oneAway) {
+        showToast('¡Casi! Estás a una de acertar...', 'warn');
+      } else {
+        showToast('No forman un grupo. Intenta otra combinación.');
+      }
+
+      saveLocal();
+      renderAll();
+
+      if (!isGameOver()) {
+        document.querySelectorAll('.tile.selected').forEach(el => {
+          el.classList.add('shake');
+          setTimeout(() => el.classList.remove('shake'), 400);
+        });
+      }
+    };
+
+    window.copyShare = () => {
+      const text = `ISAC Connections · ${puzzle.date}\n${guessHistory.join('\n')}\nPuntaje: ${calcScore()} pts · ${fmtTime(elapsed)}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => showToast('Resultado copiado al portapapeles', 'ok'));
+      }
+    };
+
+    function renderSummary() {
+      const sumCard = document.getElementById('summary-card');
+      if (!isGameOver()) {
+        sumCard.classList.add('hidden');
+        return;
+      }
+      stopTimer();
+      const won = isWon();
+      const isArchive = puzzle.date !== todayStr;
+      const myId = getDeviceId();
+      const savedNick = localStorage.getItem('isac_player_nickname') || '';
+      const finalPts = calcScore();
+
+      sumCard.classList.remove('hidden');
+      sumCard.innerHTML = `
+        <h2>${won ? '¡Conexiones completadas!' : '¡Fin del juego!'}</h2>
+        <p>${won
+          ? `Resolviste los 4 grupos con <strong>${mistakes} ${mistakes === 1 ? 'error' : 'errores'}</strong> en <strong>${fmtTime(elapsed)}</strong> (<strong>${finalPts} pts</strong>).`
+          : `Agotaste tus 4 vidas en <strong>${fmtTime(elapsed)}</strong>. ¡Mañana habrá un nuevo tablero!`}</p>
+        <div class="emoji-recap">${guessHistory.join('<br/>')}</div>
+        <div style="margin-bottom:1rem;">
+          <button class="btn-sec" onclick="copyShare()">Copiar resultado</button>
+        </div>
+        ${won && !isArchive && !scoreSubmitted ? `
+          <div style="margin:1rem 0;">
+            <input id="nick-input" class="nick-input" value="${savedNick}" placeholder="Tu nickname..." maxlength="18" />
+            <button id="submit-btn" class="btn-primary" onclick="saveScore()">Guardar en Scoreboard</button>
+            <div id="submit-err" class="err-msg"></div>
+          </div>` : ''}
+        <div class="board-header">
+          <h3 style="margin:0;">Ranking Global (${puzzle.date}) — Connections</h3>
+          <button class="btn-sec" onclick="refreshBoard()">Actualizar ranking</button>
+        </div>
+        ${leaderboard.length ? `
+          <table>
+            <thead><tr><th>#</th><th>Jugador</th><th>Errores</th><th>Tiempo</th><th>Puntos</th></tr></thead>
+            <tbody>
+              ${leaderboard.map((r, i) => `
+                <tr class="${r.device_id === myId ? 'me' : ''}">
+                  <td>${i + 1}</td>
+                  <td>${r.nickname} ${r.device_id === myId ? '(Tú)' : ''}</td>
+                  <td>${r.attempts} / 4</td>
+                  <td>${fmtTime(r.time_seconds)}</td>
+                  <td><strong>${r.score}</strong></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>` : '<p style="color:#475569;font-size:0.9rem;">Aún no hay ganadores registrados hoy. ¡Sé el primero!</p>'}
+      `;
+    }
+
+    window.saveScore = async () => {
+      const nickInput = document.getElementById('nick-input');
+      const errEl = document.getElementById('submit-err');
+      const btn = document.getElementById('submit-btn');
+      const nick = nickInput.value.trim();
+      if (nick.length < 2) {
+        errEl.textContent = 'Escribe un nickname de al menos 2 caracteres.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+      errEl.textContent = '';
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/game_scores`, {
+          method: 'POST',
+          headers: { ...SB_HEADERS, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            game_id: 'connections',
+            puzzle_date: puzzle.date,
+            nickname: nick,
+            device_id: getDeviceId(),
+            score: calcScore(),
+            attempts: mistakes,
+            time_seconds: Math.max(1, elapsed)
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          if (errData.code === '23505') throw new Error('Ya registraste tu resultado hoy desde este dispositivo.');
+          throw new Error(errData.message || 'Error al guardar puntaje.');
+        }
+
+        localStorage.setItem('isac_player_nickname', nick);
+        scoreSubmitted = true;
+        saveLocal();
+        await fetchLeaderboard(puzzle.date);
+        renderAll();
+      } catch (e) {
+        errEl.textContent = e.message;
+        btn.disabled = false;
+        btn.textContent = 'Guardar en Scoreboard';
+      }
+    };
+
+    init();
+  </script>
+</body>
+</html>
