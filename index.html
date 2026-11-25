@@ -42,7 +42,7 @@
     max-width: 1040px; margin: 0 auto;
     display: flex; align-items: center; gap: 10px;
   }
-  .brand-logo { height: 32px; width: auto; display: none; }
+  .brand-logo { height: 36px; width: auto; display: none; }
   .brand-text { font-weight: 800; letter-spacing: .04em; color: var(--green); font-size: 1rem; }
   .brand-sub { color: var(--text-muted); font-size: .72rem; margin-left: auto; text-align: right; line-height: 1.25; }
   main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 40px; }
@@ -106,8 +106,8 @@
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <!-- Cuando subas assets/logo.svg (o .png) aparece solo; mientras tanto se ve el texto -->
-    <img class="brand-logo" id="brandLogo" alt="ISAC, ITAM Sports Analytics Conference" src="assets/logo.svg">
+    <!-- El logo se busca en assets/ como logo.svg, logo.png o logo.jpg; mientras no exista se ve el texto -->
+    <img class="brand-logo" id="brandLogo" alt="ISAC, ITAM Sports Analytics Conference">
     <span class="brand-text" id="brandText">ISAC GAMES</span>
     <span class="brand-sub">ITAM Sports Analytics Conference</span>
   </div>
@@ -175,11 +175,18 @@ GAMES.forEach(g => {
   grid.appendChild(card);
 });
 
-/* Logo y mascota: si el archivo no existe, se mantiene el texto / se oculta */
+/* Logo: prueba assets/logo.svg, luego .png y luego .jpg; si ninguno existe, se queda el texto.
+   Mascota: si el archivo no existe, se oculta. */
 (function () {
   const logo = document.getElementById('brandLogo');
+  const candidatos = ['assets/logo.svg', 'assets/logo.png', 'assets/logo.jpg'];
+  let i = 0;
   logo.onload = () => { logo.style.display = 'block'; document.getElementById('brandText').style.display = 'none'; };
-  logo.onerror = () => { logo.remove(); };
+  logo.onerror = () => {
+    i += 1;
+    if (i < candidatos.length) { logo.src = candidatos[i]; } else { logo.remove(); }
+  };
+  logo.src = candidatos[0];
   const m = document.getElementById('mascot');
   m.onerror = () => { m.remove(); };
 })();
