@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ISAC Labs · Missing XI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800&family=Sora:wght@400;600;700;800&display=swap" />
+  <style>
+    :root {
+      --green-dark: #00593f;
+      --green-main: #007554;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-subtle: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg-page); color: var(--text-main); font-family: 'Sora', sans-serif; }
+    .wrapper { max-width: 960px; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
+
+    /* NAV */
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .back-link { font-size: 0.8rem; font-weight: 700; color: var(--green-dark); text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--green-light); border: 1px solid var(--green-border); }
+    .back-link:hover { background: #d1fae5; }
+
+    /* HEADER */
+    .game-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-subtle); padding-bottom: 1.25rem; }
+    .title-row { display: flex; align-items: center; gap: 0.9rem; }
+    .isacbot-wrap { position: relative; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+    .isacbot-img { width: 74px; height: 74px; object-fit: contain; transition: transform 0.2s ease; }
+    .isacbot-img.bounce { animation: botBounce 0.45s ease; }
+    @keyframes botBounce { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.12) rotate(-3deg); } }
+
+    .badge { display: inline-block; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--green-dark); background: var(--green-light); border: 1px solid var(--green-border); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 700; }
+    h1 { font-family: 'Darker Grotesque', sans-serif; font-size: 3rem; font-weight: 800; line-height: 1; margin: 0.3rem 0 0.15rem; color: var(--green-dark); }
+    .subtitle { color: var(--text-muted); margin: 0; font-size: 0.88rem; }
+    .theme-pill { display: inline-block; margin-top: 0.45rem; font-size: 0.78rem; font-weight: 700; color: var(--green-dark); background: var(--green-light); border: 1px solid var(--green-border); padding: 0.22rem 0.65rem; border-radius: 8px; }
+    .sport-emoji { font-size: 1.2rem; }
+
+    /* HUD */
+    .hud { display: flex; gap: 0.65rem; flex-wrap: wrap; align-items: stretch; }
+    .hud-box { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.5rem 0.9rem; display: flex; flex-direction: column; justify-content: center; min-width: 88px; }
+    .hud-label { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.08em; font-weight: 600; }
+    .hud-value { font-family: 'Darker Grotesque', sans-serif; font-size: 1.55rem; font-weight: 800; color: var(--green-dark); line-height: 1.1; }
+    select { background: transparent; color: var(--text-main); border: none; font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 600; margin-top: 0.2rem; cursor: pointer; }
+    .btn-today { background: var(--green-light); color: var(--green-dark); border: 1px solid var(--green-border); border-radius: 10px; padding: 0.5rem 0.95rem; font-family: 'Sora', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+    .btn-today:hover { background: #d1fae5; }
+
+    /* ARCHIVE BANNER */
+    .archive-banner { background: #fefce8; border: 1px solid #fde047; color: #854d0e; padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1.25rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+
+    /* TOAST */
+    .toast-bar { min-height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; }
+    .toast-msg { background: #0f172a; color: #fff; padding: 0.45rem 1rem; border-radius: 999px; font-size: 0.84rem; font-weight: 600; animation: popIn 0.2s ease; }
+    .toast-msg.warn { background: #b45309; }
+    .toast-msg.ok { background: var(--green-dark); }
+    .toast-msg.err { background: #dc2626; }
+
+    /* CONTEXT BOX */
+    .context-box { background: var(--bg-card); border: 1px solid var(--border-subtle); border-left: 4px solid var(--green-dark); border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+    .context-box strong { color: var(--text-main); }
+
+    /* FORMATION FIELD */
+    .field-container { position: relative; width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; min-height: 480px; }
+    .field-svg-bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .field-grid { position: relative; z-index: 2; display: grid; padding: 1.5rem 1rem; gap: 0.75rem; }
+    .field-row { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+    /* PLAYER SLOT */
+    .player-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      width: 90px;
+      cursor: pointer;
+    }
+    .slot-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .slot-circle.blank { background: rgba(255,255,255,0.08); border-style: dashed; border-color: rgba(255,255,255,0.5); }
+    .slot-circle.blank::after { content: '?'; font-size: 1.5rem; color: rgba(255,255,255,0.7); font-weight: 800; font-family: 'Darker Grotesque', sans-serif; }
+    .slot-circle.selected { border-color: #fde047; background: rgba(253,224,71,0.2); box-shadow: 0 0 0 3px rgba(253,224,71,0.4); }
+    .slot-circle.correct { background: rgba(34,197,94,0.3); border-color: #22c55e; border-style: solid; }
+    .slot-circle.wrong-anim { animation: slotShake 0.4s ease; }
+    @keyframes slotShake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+    }
+    .slot-name {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      text-align: center;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+      max-width: 90px;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+    .slot-pos {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.65);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    /* ANSWER PANEL (bottom sheet) */
+    .answer-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+    .answer-panel.visible { display: block; animation: popIn 0.2s ease; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .panel-title { font-weight: 700; font-size: 0.95rem; color: var(--text-main); }
+    .panel-pos { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+
+    .hint-row { display: flex; gap: 0.5rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+    .hint-btn { background: var(--green-light); color: var(--green-dark); border: 1px solid var(--green-border); border-radius: 8px; padding: 0.4rem 0.75rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: 'Sora', sans-serif; }
+    .hint-btn:hover { background: #d1fae5; }
+    .hint-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .hint-text { background: #fefce8; border: 1px solid #fde047; border-radius: 8px; padding: 0.65rem 0.9rem; font-size: 0.85rem; color: #854d0e; min-height: 2rem; display: none; }
+    .hint-text.visible { display: block; animation: popIn 0.15s ease; }
+
+    .search-row { display: flex; gap: 0.6rem; margin-top: 0.75rem; }
+    .search-input { flex: 1; border: 1.5px solid var(--border-subtle); border-radius: 10px; padding: 0.65rem 0.9rem; font-family: 'Sora', sans-serif; font-size: 0.9rem; color: var(--text-main); background: var(--bg-page); outline: none; transition: border-color 0.15s; }
+    .search-input:focus { border-color: var(--green-main); }
+    .btn-submit { background: var(--green-dark); color: #fff; border: none; border-radius: 10px; padding: 0.65rem 1.2rem; font-weight: 700; font-size: 0.88rem; cursor: pointer; font-family: 'Sora', sans-serif; }
+    .btn-submit:hover { background: var(--green-main); }
+
+    /* Autocomplete dropdown */
+    .autocomplete-list { position: absolute; left: 0; right: 0; top: 100%; background: var(--bg-card); border: 1.5px solid var(--border-subtle); border-top: none; border-radius: 0 0 10px 10px; max-height: 180px; overflow-y: auto; z-index: 100; display: none; }
+    .autocomplete-list.open { display: block; }
+    .autocomplete-item { padding: 0.6rem 0.9rem; font-size: 0.88rem; cursor: pointer; border-bottom: 1px solid var(--border-subtle); }
+    .autocomplete-item:hover, .autocomplete-item.active { background: var(--green-light); }
+    .search-wrap { position: relative; flex: 1; }
+
+    /* ATTEMPTS TRACKER */
+    .attempts-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.15rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; justify-content: center; }
+    .life-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--green-main); transition: background 0.2s, transform 0.2s; display: inline-block; }
+    .life-dot.lost { background: #cbd5e1; transform: scale(0.8); }
+
+    /* PROGRESS BAR */
+    .progress-wrap { margin-bottom: 1.5rem; }
+    .progress-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
+    .progress-bar { height: 6px; background: var(--border-subtle); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--green-main); border-radius: 999px; transition: width 0.4s ease; }
+
+    /* SUMMARY CARD */
+    .summary-card { margin-top: 2rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-top: 4px solid var(--green-dark); border-radius: 12px; padding: 1.5rem; }
+    .summary-title { font-family: 'Darker Grotesque', sans-serif; font-size: 1.9rem; font-weight: 800; color: var(--green-dark); margin: 0 0 1rem; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .stat-box { background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.75rem 0.9rem; text-align: center; }
+    .stat-val { font-family: 'Darker Grotesque', sans-serif; font-size: 2rem; font-weight: 800; color: var(--green-dark); line-height: 1; }
+    .stat-lbl { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-top: 0.2rem; }
+    .summary-answer-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .answer-row { display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0.75rem; border-radius: 8px; background: var(--bg-page); border: 1px solid var(--border-subtle); font-size: 0.84rem; }
+    .answer-row .pos-tag { font-weight: 700; color: var(--text-muted); font-size: 0.75rem; }
+    .answer-row .player-name { font-weight: 700; color: var(--text-main); }
+    .answer-row .status-icon { font-size: 1.1rem; }
+    .btn-share { background: var(--green-dark); color: #fff; border: none; border-radius: 999px; padding: 0.75rem 1.5rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; margin-top: 1.25rem; }
+    .btn-share:hover { background: var(--green-main); }
+
+    /* NICKNAME MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; display: none; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: var(--bg-card); border-radius: 16px; padding: 2rem; width: 90%; max-width: 380px; }
+    .modal-title { font-family: 'Darker Grotesque', sans-serif; font-size: 1.7rem; font-weight: 800; color: var(--green-dark); margin: 0 0 0.5rem; }
+    .modal-sub { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 1.25rem; }
+    .modal-input { width: 100%; border: 1.5px solid var(--border-subtle); border-radius: 10px; padding: 0.65rem 0.9rem; font-family: 'Sora', sans-serif; font-size: 1rem; outline: none; }
+    .modal-input:focus { border-color: var(--green-main); }
+    .modal-btn { width: 100%; background: var(--green-dark); color: #fff; border: none; border-radius: 10px; padding: 0.75rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; margin-top: 0.75rem; }
+
+    @keyframes popIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2.2rem; }
+      .isacbot-img { width: 58px; height: 58px; }
+      .player-slot { width: 72px; }
+      .slot-circle { width: 46px; height: 46px; }
+      .slot-name { font-size: 0.58rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <a class="back-link" href="../">← Hub ISAC</a>
+    <span style="font-size:0.78rem;color:var(--text-muted);">ISAC Labs · Daily Games</span>
+  </nav>
+
+  <!-- ARCHIVE BANNER -->
+  <div id="archiveBanner" class="archive-banner" style="display:none;">
+    📅 Estás viendo el archivo del <strong id="archiveDateLabel"></strong>.
+    <button class="btn-today" onclick="loadPuzzle(todayStr)">Ir al de hoy</button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="game-header">
+    <div class="title-row">
+      <div class="isacbot-wrap">
+        <img id="isacbot" class="isacbot-img" src="assets/ISACLOGOS/saluda.webp" alt="ISACBOT" />
+      </div>
+      <div>
+        <span class="badge">ISAC LABS · DIARIO</span>
+        <h1>Missing XI</h1>
+        <p class="subtitle">Adivina el lineup completo — un jugador a la vez.</p>
+        <span id="themePill" class="theme-pill">⚽ Cargando…</span>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="hud-box">
+        <span class="hud-label">FECHA</span>
+        <select id="dateSel" onchange="loadPuzzle(this.value)"></select>
+      </div>
+      <div class="hud-box">
+        <span class="hud-label">PUNTOS</span>
+        <span class="hud-value" id="scoreVal">0</span>
+      </div>
+      <div class="hud-box">
+        <span class="hud-label">TIEMPO</span>
+        <span class="hud-value" id="timerVal">0:00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast-bar"><span id="toastMsg" class="toast-msg" style="display:none;"></span></div>
+
+  <!-- CONTEXT -->
+  <div id="contextBox" class="context-box"></div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progressText">0 de 0 encontrados</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- ATTEMPTS -->
+  <div class="attempts-row" id="attemptsRow">
+    <span>Intentos restantes:</span>
+    <!-- dots filled by JS -->
+  </div>
+
+  <!-- FIELD -->
+  <div class="field-container" id="fieldContainer">
+    <svg class="field-svg-bg" id="fieldSvg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid slice">
+      <!-- Soccer field default -->
+      <rect width="960" height="500" fill="#2d8a4e"/>
+      <!-- Field stripes -->
+      <rect x="0" y="0" width="80" height="500" fill="#2a7f47" opacity="0.5"/>
+      <rect x="160" y="0" width="80" height="500" fill="#2a7f47" opacity="0.5"/>
+      <rect x="320" y="0" width="80" height="500" fill="#2a7f47" opacity="0.5"/>
+      <rect x="480" y="0" width="80" height="500" fill="#2a7f47" opacity="0.5"/>
+      <rect x="640" y="0" width="80" height="500" fill="#2a7f47" opacity="0.5"/>
+      <rect x="800" y="0" width="80" height="500" fill="#2a7f47" opacity="0.5"/>
+      <!-- White lines -->
+      <rect x="40" y="30" width="880" height="440" rx="2" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"/>
+      <line x1="480" y1="30" x2="480" y2="470" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <circle cx="480" cy="250" r="60" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <circle cx="480" cy="250" r="4" fill="rgba(255,255,255,0.8)"/>
+      <!-- Penalty areas -->
+      <rect x="40" y="140" width="140" height="220" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <rect x="780" y="140" width="140" height="220" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <!-- Goal areas -->
+      <rect x="40" y="195" width="60" height="110" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <rect x="860" y="195" width="60" height="110" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+    </svg>
+    <div class="field-grid" id="fieldGrid">
+      <!-- Player slots rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ANSWER PANEL -->
+  <div class="answer-panel" id="answerPanel">
+    <div class="panel-header">
+      <div>
+        <span class="panel-title" id="panelTitle">Selecciona un jugador</span>
+        <span class="panel-pos" id="panelPos"></span>
+      </div>
+      <button onclick="closePanel()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
+    </div>
+    <div class="hint-row">
+      <button class="hint-btn" id="hint1Btn" onclick="showHint(1)">Pista 1 (-5 pts)</button>
+      <button class="hint-btn" id="hint2Btn" onclick="showHint(2)">Pista 2 (-10 pts)</button>
+      <button class="hint-btn" id="hint3Btn" onclick="showHint(3)">Pista 3 (-15 pts)</button>
+    </div>
+    <div class="hint-text" id="hintText"></div>
+    <div class="search-row">
+      <div class="search-wrap">
+        <input type="text" class="search-input" id="answerInput" placeholder="Escribe el nombre del jugador…" autocomplete="off" />
+        <div class="autocomplete-list" id="autocompleteList"></div>
+      </div>
+      <button class="btn-submit" onclick="submitAnswer()">Confirmar</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARD -->
+  <div class="summary-card" id="summaryCard" style="display:none;">
+    <p class="summary-title">🏁 Resultado Final</p>
+    <div class="summary-grid">
+      <div class="stat-box"><div class="stat-val" id="finScore">0</div><div class="stat-lbl">PUNTOS</div></div>
+      <div class="stat-box"><div class="stat-val" id="finCorrect">0</div><div class="stat-lbl">CORRECTOS</div></div>
+      <div class="stat-box"><div class="stat-val" id="finAttempts">0</div><div class="stat-lbl">INTENTOS</div></div>
+      <div class="stat-box"><div class="stat-val" id="finTime">-</div><div class="stat-lbl">TIEMPO</div></div>
+    </div>
+    <div class="summary-answer-list" id="summaryAnswerList"></div>
+    <button class="btn-share" onclick="shareResult()">Compartir resultado 📋</button>
+    <p id="leaderboardMsg" style="font-size:0.8rem;color:var(--text-muted);margin-top:0.75rem;"></p>
+  </div>
+
+</div>
+
+<!-- NICKNAME MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <p class="modal-title">¿Cómo te llamas?</p>
+    <p class="modal-sub">Tu nickname aparecerá en el marcador de ISAC Labs.</p>
+    <input type="text" class="modal-input" id="nicknameInput" placeholder="Ej. StatHead_42" maxlength="20" />
+    <button class="modal-btn" onclick="saveNickname()">Jugar →</button>
+  </div>
+</div>
+
+<script>
+/* ========================================================
+   ISAC Missing XI — ISAC Labs Daily Game
+   ======================================================== */
+
+const SUPABASE_URL = "https://jssdaxtpmonhilbyugsw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_jqW3J8NzJH7rEGRht4L49Q_V9oTDcRo";
+
+/* ---- embedded data (/*isac-lock-future*/ IIFE guards future) ---- */
+const EMBEDDED_INDEX = /*isac-lock-future*/(() => {
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  return [
+    { "date": "2026-11-28", "sport": "NBA",    "theme": "Viernes del Oro: Dream Team '92" },
+    { "date": "2026-11-27", "sport": "Fútbol", "theme": "Jueves Clásico: Final Champions 2005" },
+    { "date": "2026-11-26", "sport": "NFL",    "theme": "Miércoles de Leyendas: Super Bowl XLIV" },
+    { "date": "2026-11-25", "sport": "Fútbol", "theme": "Martes de Mundiales: Argentina 2022" }
+  ].filter(e => e.date <= today);
+})();
+
+const EMBEDDED_PUZZLES = /*isac-lock-future*/(() => {
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  const all = {
+    "2026-11-25": {"date":"2026-11-25","sport":"Fútbol","theme":"Martes de Mundiales: Argentina 2022","emoji":"⚽","context":"Formación titular de Argentina en la Final del Mundial Qatar 2022 vs Francia (penaltis). ¿Puedes completar el XI?","formation":"4-3-3","positions":[{"id":"p1","position":"POR","pos_label":"Portero","row":1,"col":2,"answers":["Emiliano Martínez","Dibu Martínez","Emiliano Martinez"],"hint1":"Arquero. Fue nombrado mejor portero del torneo.","hint2":"Su apellido es el mismo que el de un famoso técnico alemán.","hint3":"Juega en Aston Villa. Sus gestos se volvieron virales."},{"id":"p2","position":"LD","pos_label":"Lateral Der.","row":2,"col":1,"answers":["Nahuel Molina","Molina"],"hint1":"Lateral derecho. Anotó el primer gol en la final.","hint2":"Su apellido es un tipo de mineral/tierra.","hint3":"Juega en el Atlético de Madrid."},{"id":"p3","position":"DC","pos_label":"Central Der.","row":2,"col":2,"answers":["Cristian Romero","Cuti Romero","Romero"],"hint1":"Central derecho. Apodado 'Cuti'.","hint2":"Tiene un estilo defensivo muy agresivo.","hint3":"Juega en el Tottenham Hotspur."},{"id":"p4","position":"DC","pos_label":"Central Izq.","row":2,"col":3,"answers":["Nicolás Otamendi","Otamendi"],"hint1":"Central izquierdo. Es el más experimentado de la zaga.","hint2":"Ya jugó el Mundial 2010 con Argentina.","hint3":"Capitán del Benfica."},{"id":"p5","position":"LI","pos_label":"Lateral Izq.","row":2,"col":4,"answers":["Marcos Acuña","Acuña","Huevo Acuña"],"hint1":"Lateral izquierdo. Apodado 'Huevo'.","hint2":"Su equipo en 2022 era el Sevilla.","hint3":"Es de origen paraguayo-argentino."},{"id":"p6","position":"MC","pos_label":"Medio Centro","row":3,"col":1,"answers":["Rodrigo De Paul","De Paul"],"hint1":"Mediocampista. Uno de los más importantes del equipo.","hint2":"Juega en el Atlético de Madrid.","hint3":"Exjugador de Udinese y Racing Club."},{"id":"p7","position":"MC","pos_label":"Medio Centro","row":3,"col":2,"answers":["Enzo Fernández","Enzo"],"hint1":"Mediocampista joven. Fue nombrado mejor jugador joven del torneo.","hint2":"Fichó por el Chelsea tras el Mundial.","hint3":"Su nombre es en honor a Enzo Francescoli."},{"id":"p8","position":"MC","pos_label":"Mediocampista","row":3,"col":3,"answers":["Alexis Mac Allister","Mac Allister"],"hint1":"Centrocampista. Su apellido es de origen escocés.","hint2":"Jugaba en Brighton en 2022; ahora en Liverpool.","hint3":"Su familia tiene raíces en el fútbol argentino."},{"id":"p9","position":"EI","pos_label":"Extremo Izq.","row":4,"col":1,"answers":["Ángel Di María","Di María","Angel Di Maria","Fideo Di María"],"hint1":"Extremo. Apodado 'El Fideo' por su delgadez.","hint2":"Anotó un golazo de zurda en la final.","hint3":"Histórico del Real Madrid. Terminó su carrera en Benfica."},{"id":"p10","position":"DC","pos_label":"Delantero Centro","row":4,"col":2,"answers":["Lionel Messi","Messi","Leo Messi"],"hint1":"El número 10 de Argentina. Se consagró campeón del mundo.","hint2":"Considerado el mejor jugador de la historia para muchos.","hint3":"Anotó dos goles en la final, incluyendo un penal."},{"id":"p11","position":"ED","pos_label":"Extremo Der.","row":4,"col":3,"answers":["Julián Álvarez","Julian Alvarez","La Araña"],"hint1":"Extremo/delantero. Apodado 'La Araña'.","hint2":"Fue el segundo goleador del torneo con 4 goles.","hint3":"Pasó del River Plate al Manchester City en 2022."}]},
+    "2026-11-26": {"date":"2026-11-26","sport":"NFL","theme":"Miércoles de Leyendas: Super Bowl XLIV","emoji":"🏈","context":"Roster titular ofensivo de los New Orleans Saints en el Super Bowl XLIV (2010) vs Indianapolis Colts. Primera Super Bowl de los Saints. ¿Puedes identificar a los 11 titulares?","formation":"Offense","positions":[{"id":"p1","position":"QB","pos_label":"Quarterback","row":1,"col":3,"answers":["Drew Brees","Brees"],"hint1":"Quarterback. Fue nombrado MVP del Super Bowl.","hint2":"Jugó toda su carrera estelar con los Saints.","hint3":"Tiene la marca de más TDs en la historia NFL (en su momento)."},{"id":"p2","position":"RB","pos_label":"Running Back","row":2,"col":3,"answers":["Pierre Thomas","Thomas"],"hint1":"Running back titular. Fue el principal corredor ese día.","hint2":"No fue seleccionado en el draft; firmó como agente libre.","hint3":"Su nombre de pila es el mismo que un famoso apóstol."},{"id":"p3","position":"WR","pos_label":"Wide Receiver","row":3,"col":1,"answers":["Marques Colston","Colston"],"hint1":"Wide Receiver #1. Era el receptor favorito de Brees.","hint2":"Fue seleccionado en la ronda 7 del draft.","hint3":"Su apellido suena a un tono de color gris."},{"id":"p4","position":"WR","pos_label":"Wide Receiver","row":3,"col":5,"answers":["Robert Meachem","Meachem"],"hint1":"Wide Receiver #2. Anotó el primer TD de los Saints en ese partido.","hint2":"Fue seleccionado en la primera ronda del draft 2007.","hint3":"Su apellido termina en '-chem'."},{"id":"p5","position":"TE","pos_label":"Tight End","row":2,"col":5,"answers":["Jeremy Shockey","Shockey"],"hint1":"Tight End. Anteriormente jugó con los Giants.","hint2":"Su apellido recuerda a algo impactante.","hint3":"Era conocido por su personalidad extrovertida."},{"id":"p6","position":"LT","pos_label":"Left Tackle","row":4,"col":1,"answers":["Jammal Brown","Brown"],"hint1":"Left Tackle. Protegía el lado ciego de Brees.","hint2":"Fue seleccionado en la primera ronda del draft 2005.","hint3":"Comparte apellido con un color oscuro."},{"id":"p7","position":"LG","pos_label":"Left Guard","row":4,"col":2,"answers":["Carl Nicks","Nicks"],"hint1":"Left Guard. Uno de los mejores de su posición en 2010.","hint2":"Fue seleccionado en la segunda ronda del draft 2008.","hint3":"Su apellido también es un apodo para cortes pequeños."},{"id":"p8","position":"C","pos_label":"Center","row":4,"col":3,"answers":["Jonathan Goodwin","Goodwin"],"hint1":"Center. Veterano de la línea ofensiva.","hint2":"Firmó con los Saints como agente libre.","hint3":"Su apellido significa 'buen amigo' en inglés."},{"id":"p9","position":"RG","pos_label":"Right Guard","row":4,"col":4,"answers":["Jahri Evans","Evans"],"hint1":"Right Guard. Fue Pro Bowl múltiples veces.","hint2":"Jugó toda su carrera con los Saints.","hint3":"Su nombre de pila es poco común y empieza con 'J'."},{"id":"p10","position":"RT","pos_label":"Right Tackle","row":4,"col":5,"answers":["Jon Stinchcomb","Stinchcomb"],"hint1":"Right Tackle. Hermano de Matt Stinchcomb.","hint2":"Jugó en la NFL de 2003 a 2010.","hint3":"Su apellido es uno de los más difíciles de pronunciar en la NFL."},{"id":"p11","position":"FB","pos_label":"Fullback","row":2,"col":2,"answers":["Heath Evans","Evans"],"hint1":"Fullback. Veterano bloqueador.","hint2":"Ahora es analista de televisión.","hint3":"Comparte apellido con el Right Guard del mismo equipo."}]},
+    "2026-11-27": {"date":"2026-11-27","sport":"Fútbol","theme":"Jueves Clásico: Final Champions 2005","emoji":"⚽","context":"XI inicial del Liverpool en la mítica Final de la UEFA Champions League 2005 vs AC Milan en Estambul. El Liverpool perdía 3-0 al descanso y remontó para ganar en penaltis. ¿Puedes completar el equipo?","formation":"4-4-2","positions":[{"id":"p1","position":"POR","pos_label":"Portero","row":1,"col":3,"answers":["Jerzy Dudek","Dudek"],"hint1":"Portero polaco. Héroe de los penaltis con sus bailes en la línea de gol.","hint2":"Su actuación en Estambul es legendaria.","hint3":"Su apellido termina en '-dek'."},{"id":"p2","position":"LD","pos_label":"Lateral Der.","row":2,"col":1,"answers":["Steve Finnan","Finnan"],"hint1":"Lateral derecho irlandés.","hint2":"Fue sustituido al descanso por Didi Hamann.","hint3":"Su apellido termina en '-nan'."},{"id":"p3","position":"DC","pos_label":"Central","row":2,"col":2,"answers":["Jamie Carragher","Carragher"],"hint1":"Central. Uno de los mejores defensas ingleses de su generación.","hint2":"Ahora es comentarista de televisión.","hint3":"Su apellido comienza con 'Carr-'."},{"id":"p4","position":"DC","pos_label":"Central","row":2,"col":4,"answers":["Sami Hyypiä","Hyypia","Sami Hyypia"],"hint1":"Central finlandés. Capitán del Liverpool en ese período.","hint2":"Su apellido lleva dos 'y' en finlandés.","hint3":"También fue entrenador después de retirarse."},{"id":"p5","position":"LI","pos_label":"Lateral Izq.","row":2,"col":5,"answers":["Djimi Traoré","Traore","Djimi Traore"],"hint1":"Lateral izquierdo de Mali.","hint2":"Su actuación en Estambul fue irregular.","hint3":"Su nombre termina en '-mi'."},{"id":"p6","position":"MCD","pos_label":"Medio Der.","row":3,"col":1,"answers":["Harry Kewell","Kewell"],"hint1":"Extremo australiano. Lesionado en la primera parte.","hint2":"Su actuación fue muy criticada antes de lesionarse.","hint3":"Su apellido suena como 'cool' con K."},{"id":"p7","position":"MC","pos_label":"Mediocampista","row":3,"col":2,"answers":["Steven Gerrard","Gerrard","Stevie G"],"hint1":"El capitán. Marcó el primer gol de la remontada.","hint2":"Es la leyenda absoluta del Liverpool.","hint3":"Su apellido también es el de un famoso entrenador de Rangers."},{"id":"p8","position":"MC","pos_label":"Mediocampista","row":3,"col":4,"answers":["Xabi Alonso","Alonso"],"hint1":"Mediocampista español. Fue parte de la remontada histórica.","hint2":"Ahora es un exitoso entrenador.","hint3":"Comparte apellido con el piloto de Fórmula 1."},{"id":"p9","position":"MCI","pos_label":"Medio Izq.","row":3,"col":5,"answers":["Vladimir Šmicer","Smicer","Vladimir Smicer"],"hint1":"Mediocampista checo. Anotó el segundo gol de la remontada.","hint2":"Esa fue su última temporada en el Liverpool.","hint3":"Su apellido comienza con 'Šm-'."},{"id":"p10","position":"DC","pos_label":"Delantero","row":4,"col":2,"answers":["Michael Owen","Owen"],"hint1":"Delantero inglés. Exjugador del Real Madrid.","hint2":"Fue Balón de Oro en 2001.","hint3":"Su apellido también es un nombre propio muy común."},{"id":"p11","position":"DC","pos_label":"Delantero","row":4,"col":4,"answers":["Milan Baroš","Baros","Milan Baros"],"hint1":"Delantero checo. Fue el máximo goleador del torneo ese año.","hint2":"Su nombre de pila es el mismo que el del rival de esa noche.","hint3":"Usaba el dorsal 10 en el Liverpool."}]},
+    "2026-11-28": {"date":"2026-11-28","sport":"NBA","theme":"Viernes del Oro: Dream Team '92","emoji":"🏀","context":"El Dream Team de los EUA en los Juegos Olímpicos de Barcelona 1992 es considerado el mejor equipo de todos los tiempos. ¿Puedes nombrar a los 12 integrantes del roster?","formation":"Basketball","positions":[{"id":"p1","position":"PG","pos_label":"Base #1","row":2,"col":1,"answers":["Magic Johnson","Magic","Earvin Johnson"],"hint1":"Base legendario. Regresó del retiro para los Juegos.","hint2":"Apodado 'Magic'. Jugó con los Lakers.","hint3":"Había anunciado que tenía VIH meses antes."},{"id":"p2","position":"PG","pos_label":"Base #2","row":2,"col":5,"answers":["John Stockton","Stockton"],"hint1":"Base de los Utah Jazz. Líder histórico en asistencias y robos en la NBA.","hint2":"Su apellido suena a 'media' en inglés.","hint3":"Fue compañero de Malone durante toda su carrera."},{"id":"p3","position":"SG","pos_label":"Escolta","row":3,"col":3,"answers":["Michael Jordan","Jordan","MJ","Air Jordan"],"hint1":"El mejor jugador del mundo en ese momento.","hint2":"Apodado 'Air'. Sus zapatillas son icónicas.","hint3":"6 anillos de campeón con los Chicago Bulls."},{"id":"p4","position":"SF","pos_label":"Alero #1","row":3,"col":1,"answers":["Scottie Pippen","Pippen"],"hint1":"Alero. Compañero de Jordan en los Chicago Bulls.","hint2":"Considerado uno de los mejores defensores de todos los tiempos.","hint3":"Su apellido suena a 'tubería' en inglés."},{"id":"p5","position":"SF","pos_label":"Alero #2","row":3,"col":5,"answers":["Larry Bird","Bird"],"hint1":"Alero de los Boston Celtics. Uno de los mejores tiradores de la historia.","hint2":"Su apellido es 'pájaro' en inglés.","hint3":"También fue entrenador y presidente de los Pacers."},{"id":"p6","position":"SF","pos_label":"Alero #3","row":4,"col":2,"answers":["Chris Mullin","Mullin"],"hint1":"Alero de los Golden State Warriors.","hint2":"Fue uno de los mejores tiradores de su época.","hint3":"Su apellido termina en '-lin'."},{"id":"p7","position":"PF","pos_label":"Ala-Pívot #1","row":4,"col":3,"answers":["Charles Barkley","Barkley","Sir Charles"],"hint1":"Ala-pívot. Apodado 'Sir Charles'.","hint2":"Fue MVP de la liga en 1993.","hint3":"Ahora es analista en TNT junto a Shaq."},{"id":"p8","position":"PF","pos_label":"Ala-Pívot #2","row":4,"col":4,"answers":["Karl Malone","Malone","The Mailman"],"hint1":"Ala-pívot de Utah Jazz. Apodado 'The Mailman'.","hint2":"Fue dos veces MVP de la temporada.","hint3":"Compañero de John Stockton durante toda su carrera."},{"id":"p9","position":"C","pos_label":"Pívot #1","row":5,"col":2,"answers":["Patrick Ewing","Ewing"],"hint1":"Pívot de los New York Knicks.","hint2":"Es de origen jamaiquino.","hint3":"Su apellido termina en '-ing'."},{"id":"p10","position":"C","pos_label":"Pívot #2","row":5,"col":4,"answers":["David Robinson","Robinson","The Admiral"],"hint1":"Pívot de los San Antonio Spurs. Apodado 'The Admiral'.","hint2":"Fue oficial de la Marina de los EUA antes de la NBA.","hint3":"Comparte apellido con un famoso deportista de tenis."},{"id":"p11","position":"F","pos_label":"Alero/Escolta","row":3,"col":2,"answers":["Clyde Drexler","Drexler","Clyde the Glide"],"hint1":"Escolta/alero de los Portland Trail Blazers.","hint2":"Su nombre de pila es Clyde.","hint3":"Su apellido empieza con 'Dre-'."},{"id":"p12","position":"F","pos_label":"Alero Extra","row":3,"col":4,"answers":["Christian Laettner","Laettner"],"hint1":"El único jugador universitario (no NBA) del equipo.","hint2":"Era de Duke University.","hint3":"Su inclusión fue muy polémica; muchos preferían a Isiah Thomas."}]}
+  };
+  const filtered = {};
+  for (const [d, p] of Object.entries(all)) { if (d <= today) filtered[d] = p; }
+  return filtered;
+})();
+
+/* ---- state ---- */
+let puzzle = null;
+let selectedSlot = null;
+let slotStates = {};   // id -> { correct: bool, answer: str, hintsUsed: int }
+let totalAttempts = 0;
+let wrongAttempts = 0;
+const MAX_WRONG = 5;
+let score = 0;
+let timerInterval = null;
+let timerSecs = 0;
+let gameOver = false;
+let hintsUsed = {};    // slotId -> count
+let isArchive = false;
+let currentDate = '';
+
+const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
+/* ---- device/nickname ---- */
+function getDeviceId() {
+  let d = localStorage.getItem('isac_device_id');
+  if (!d) { d = 'dev_' + Math.random().toString(36).slice(2, 11); localStorage.setItem('isac_device_id', d); }
+  return d;
+}
+function getNickname() { return localStorage.getItem('isac_player_nickname'); }
+function saveNickname() {
+  const n = document.getElementById('nicknameInput').value.trim();
+  if (!n) return;
+  localStorage.setItem('isac_player_nickname', n);
+  document.getElementById('modalOverlay').classList.remove('open');
+  startGame();
+}
+
+/* ---- midnight refresh ---- */
+function scheduleMidnightRefresh() {
+  const now = new Date();
+  const cdmx = new Date(now.toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  const next = new Date(cdmx);
+  next.setHours(24, 0, 5, 0);
+  const ms = next - cdmx;
+  setTimeout(() => location.reload(), ms);
+}
+
+/* ---- init ---- */
+window.addEventListener('DOMContentLoaded', () => {
+  scheduleMidnightRefresh();
+  buildDateSelector();
+  const startDate = EMBEDDED_INDEX.length ? EMBEDDED_INDEX[0].date : todayStr;
+  loadPuzzle(startDate);
+  if (!getNickname()) {
+    document.getElementById('modalOverlay').classList.add('open');
+    document.getElementById('nicknameInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveNickname(); });
+  }
+});
+
+function buildDateSelector() {
+  const sel = document.getElementById('dateSel');
+  sel.innerHTML = '';
+  EMBEDDED_INDEX.forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.date;
+    const d = new Date(e.date + 'T12:00:00');
+    opt.textContent = d.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
+    sel.appendChild(opt);
+  });
+}
+
+function loadPuzzle(dateStr) {
+  currentDate = dateStr;
+  puzzle = EMBEDDED_PUZZLES[dateStr];
+  if (!puzzle) { showToast('Sin datos para esta fecha.', 'warn'); return; }
+
+  isArchive = dateStr !== todayStr;
+  document.getElementById('archiveBanner').style.display = isArchive ? 'flex' : 'none';
+  if (isArchive) {
+    const d = new Date(dateStr + 'T12:00:00');
+    document.getElementById('archiveDateLabel').textContent = d.toLocaleDateString('es-MX', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  }
+
+  const sel = document.getElementById('dateSel');
+  sel.value = dateStr;
+
+  document.getElementById('themePill').textContent = `${puzzle.emoji} ${puzzle.sport} · ${puzzle.theme}`;
+  document.getElementById('contextBox').innerHTML = `<strong>${puzzle.theme}</strong> — ${puzzle.context}`;
+
+  /* restore saved state or fresh */
+  const saveKey = `isac_missing_xi_v1_${dateStr}`;
+  const saved = JSON.parse(localStorage.getItem(saveKey) || 'null');
+
+  if (saved && saved.finished) {
+    slotStates = saved.slotStates || {};
+    score = saved.score || 0;
+    wrongAttempts = saved.wrongAttempts || 0;
+    totalAttempts = saved.totalAttempts || 0;
+    timerSecs = saved.timerSecs || 0;
+    gameOver = true;
+    renderField();
+    updateProgress();
+    updateAttemptsRow();
+    updateScoreDisplay();
+    updateTimerDisplay();
+    showSummary(saved);
+    botMood(allCorrect() ? 'celebracion' : 'facepalm');
+    return;
+  }
+
+  /* fresh start */
+  slotStates = {};
+  puzzle.positions.forEach(p => { slotStates[p.id] = { correct: false, answer: '', hintsUsed: 0 }; });
+  score = 0; wrongAttempts = 0; totalAttempts = 0; timerSecs = 0; gameOver = false; hintsUsed = {};
+  selectedSlot = null;
+
+  document.getElementById('summaryCard').style.display = 'none';
+  document.getElementById('answerPanel').classList.remove('visible');
+  updateScoreDisplay();
+  updateProgress();
+  updateAttemptsRow();
+  updateTimerDisplay();
+  renderField();
+  renderSvgField();
+  if (timerInterval) clearInterval(timerInterval);
+  if (!isArchive) {
+    timerInterval = setInterval(() => {
+      timerSecs++;
+      updateTimerDisplay();
+    }, 1000);
+  }
+  botMood('saluda');
+}
+
+/* ---- FIELD SVG (sport-based) ---- */
+function renderSvgField() {
+  const svg = document.getElementById('fieldSvg');
+  const sport = puzzle.sport;
+  if (sport === 'NBA' || sport === 'Basketball') {
+    svg.innerHTML = `
+      <rect width="960" height="500" fill="#c8832a"/>
+      <rect x="30" y="20" width="900" height="460" rx="4" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5"/>
+      <line x1="480" y1="20" x2="480" y2="480" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+      <circle cx="480" cy="250" r="55" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+      <circle cx="480" cy="250" r="4" fill="rgba(255,255,255,0.8)"/>
+      <rect x="30" y="155" width="150" height="190" rx="2" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+      <rect x="780" y="155" width="150" height="190" rx="2" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+      <rect x="30" y="195" width="60" height="110" rx="2" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+      <rect x="870" y="195" width="60" height="110" rx="2" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+      <circle cx="30" cy="250" r="50" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2" clip-path="inset(0 0 0 50%)"/>
+      <circle cx="930" cy="250" r="50" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2" clip-path="inset(0 50% 0 0)"/>
+    `;
+  } else if (sport === 'NFL') {
+    svg.innerHTML = `
+      <rect width="960" height="500" fill="#2d6a2d"/>
+      <rect x="40" y="30" width="880" height="440" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5"/>
+      ${[1,2,3,4,5,6,7,8].map(i => `<line x1="${40+i*96}" y1="30" x2="${40+i*96}" y2="470" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>`).join('')}
+      <text x="88" y="258" fill="rgba(255,255,255,0.4)" font-size="22" text-anchor="middle" font-family="sans-serif">EZ</text>
+      <text x="872" y="258" fill="rgba(255,255,255,0.4)" font-size="22" text-anchor="middle" font-family="sans-serif">EZ</text>
+      <line x1="136" y1="30" x2="136" y2="470" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+      <line x1="824" y1="30" x2="824" y2="470" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+    `;
+  } else {
+    /* Soccer default */
+    svg.innerHTML = `
+      <rect width="960" height="500" fill="#2d8a4e"/>
+      ${[0,1,2,3,4,5].map(i=>`<rect x="${i*160}" y="0" width="80" height="500" fill="#2a7f47" opacity="0.5"/>`).join('')}
+      <rect x="40" y="30" width="880" height="440" rx="2" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"/>
+      <line x1="480" y1="30" x2="480" y2="470" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <circle cx="480" cy="250" r="60" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <circle cx="480" cy="250" r="4" fill="rgba(255,255,255,0.8)"/>
+      <rect x="40" y="140" width="140" height="220" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <rect x="780" y="140" width="140" height="220" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <rect x="40" y="195" width="60" height="110" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+      <rect x="860" y="195" width="60" height="110" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+    `;
+  }
+}
+
+/* ---- FIELD RENDER ---- */
+function renderField() {
+  renderSvgField();
+  const grid = document.getElementById('fieldGrid');
+  grid.innerHTML = '';
+
+  /* group positions by row */
+  const rows = {};
+  puzzle.positions.forEach(p => {
+    if (!rows[p.row]) rows[p.row] = [];
+    rows[p.row].push(p);
+  });
+
+  Object.keys(rows).sort((a,b) => a-b).forEach(rowNum => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'field-row';
+    rows[rowNum].sort((a,b) => a.col-b.col).forEach(pos => {
+      rowEl.appendChild(buildSlot(pos));
+    });
+    grid.appendChild(rowEl);
+  });
+}
+
+function buildSlot(pos) {
+  const state = slotStates[pos.id];
+  const wrap = document.createElement('div');
+  wrap.className = 'player-slot';
+  wrap.dataset.id = pos.id;
+  wrap.onclick = () => selectSlot(pos.id);
+
+  const circle = document.createElement('div');
+  circle.className = 'slot-circle' + (state.correct ? ' correct' : ' blank');
+  circle.id = 'circle-' + pos.id;
+
+  if (state.correct) {
+    // Show initials or small avatar
+    const initials = state.answer.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    circle.textContent = initials;
+    circle.style.fontSize = '1.1rem';
+    circle.style.fontWeight = '800';
+    circle.style.color = '#fff';
+    circle.style.fontFamily = "'Darker Grotesque', sans-serif";
+  }
+  if (!state.correct && selectedSlot === pos.id) circle.classList.add('selected');
+
+  const name = document.createElement('div');
+  name.className = 'slot-name';
+  name.id = 'name-' + pos.id;
+  name.textContent = state.correct ? state.answer : '?';
+
+  const posEl = document.createElement('div');
+  posEl.className = 'slot-pos';
+  posEl.textContent = pos.pos_label;
+
+  wrap.appendChild(circle);
+  wrap.appendChild(name);
+  wrap.appendChild(posEl);
+  return wrap;
+}
+
+/* ---- SLOT SELECTION ---- */
+function selectSlot(slotId) {
+  if (gameOver) return;
+  const state = slotStates[slotId];
+  if (state.correct) return;
+
+  selectedSlot = slotId;
+  const pos = puzzle.positions.find(p => p.id === slotId);
+
+  /* update circles */
+  document.querySelectorAll('.slot-circle').forEach(c => c.classList.remove('selected'));
+  document.getElementById('circle-' + slotId).classList.add('selected');
+
+  /* show panel */
+  document.getElementById('panelTitle').textContent = pos.pos_label;
+  document.getElementById('panelPos').textContent = `Posición: ${pos.position}`;
+  document.getElementById('hintText').classList.remove('visible');
+  document.getElementById('hintText').textContent = '';
+  document.getElementById('answerInput').value = '';
+  document.getElementById('autocompleteList').classList.remove('open');
+
+  /* hint buttons */
+  const h = slotStates[slotId].hintsUsed;
+  document.getElementById('hint1Btn').disabled = h >= 1;
+  document.getElementById('hint2Btn').disabled = h >= 2;
+  document.getElementById('hint3Btn').disabled = h >= 3;
+
+  document.getElementById('answerPanel').classList.add('visible');
+  document.getElementById('answerInput').focus();
+  botMood('pensativo');
+}
+
+function closePanel() {
+  selectedSlot = null;
+  document.getElementById('answerPanel').classList.remove('visible');
+  document.querySelectorAll('.slot-circle').forEach(c => c.classList.remove('selected'));
+  botMood('saluda');
+}
+
+/* ---- HINTS ---- */
+function showHint(num) {
+  if (!selectedSlot) return;
+  const pos = puzzle.positions.find(p => p.id === selectedSlot);
+  const state = slotStates[selectedSlot];
+  const cost = num === 1 ? 5 : num === 2 ? 10 : 15;
+
+  state.hintsUsed = Math.max(state.hintsUsed, num);
+  document.getElementById(`hint${num}Btn`).disabled = true;
+
+  const text = pos[`hint${num}`];
+  const hintEl = document.getElementById('hintText');
+  hintEl.textContent = `💡 Pista ${num}: ${text}`;
+  hintEl.classList.add('visible');
+  showToast(`Pista revelada. ¡Cuesta ${cost} pts al acertar!`, '');
+}
+
+/* ---- AUTOCOMPLETE ---- */
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('answerInput');
+  if (!inp) return;
+  inp.addEventListener('input', onSearchInput);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitAnswer();
+    if (e.key === 'Escape') closePanel();
+  });
+});
+
+function onSearchInput() {
+  const val = document.getElementById('answerInput').value.trim().toLowerCase();
+  const list = document.getElementById('autocompleteList');
+  if (!val || val.length < 2 || !selectedSlot) { list.classList.remove('open'); return; }
+
+  const pos = puzzle.positions.find(p => p.id === selectedSlot);
+  const matches = pos.answers.filter(a => a.toLowerCase().includes(val)).slice(0, 5);
+
+  if (!matches.length) { list.classList.remove('open'); return; }
+  list.innerHTML = matches.map(m => `<div class="autocomplete-item" onclick="pickAutocomplete('${m.replace(/'/g,"\\'")}')">👤 ${m}</div>`).join('');
+  list.classList.add('open');
+}
+
+function pickAutocomplete(name) {
+  document.getElementById('answerInput').value = name;
+  document.getElementById('autocompleteList').classList.remove('open');
+  submitAnswer();
+}
+
+/* ---- SUBMIT ---- */
+function submitAnswer() {
+  if (!selectedSlot || gameOver) return;
+  const inp = document.getElementById('answerInput').value.trim();
+  if (!inp) { showToast('Escribe un nombre primero.', 'warn'); return; }
+  document.getElementById('autocompleteList').classList.remove('open');
+
+  const pos = puzzle.positions.find(p => p.id === selectedSlot);
+  const state = slotStates[selectedSlot];
+  totalAttempts++;
+
+  const isCorrect = pos.answers.some(a =>
+    normalize(a) === normalize(inp)
+  );
+
+  if (isCorrect) {
+    const hintPenalty = state.hintsUsed === 1 ? 5 : state.hintsUsed === 2 ? 15 : state.hintsUsed >= 3 ? 30 : 0;
+    const pts = Math.max(10, 100 - hintPenalty);
+    score += pts;
+    state.correct = true;
+    state.answer = pos.answers[0]; // canonical
+
+    const circle = document.getElementById('circle-' + selectedSlot);
+    circle.classList.remove('blank', 'selected');
+    circle.classList.add('correct');
+    const initials = pos.answers[0].split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    circle.textContent = initials;
+    circle.style.fontSize = '1.1rem'; circle.style.fontWeight = '800'; circle.style.color = '#fff';
+    circle.style.fontFamily = "'Darker Grotesque', sans-serif";
+    document.getElementById('name-' + selectedSlot).textContent = pos.answers[0];
+
+    updateScoreDisplay();
+    updateProgress();
+    showToast(`¡Correcto! +${pts} pts`, 'ok');
+    botMood('celebracion');
+
+    setTimeout(() => {
+      closePanel();
+      botMood('pensativo');
+    }, 1200);
+
+    if (allCorrect()) { endGame(true); return; }
+  } else {
+    wrongAttempts++;
+    updateAttemptsRow();
+    document.getElementById('circle-' + selectedSlot).classList.add('wrong-anim');
+    setTimeout(() => document.getElementById('circle-' + selectedSlot).classList.remove('wrong-anim'), 500);
+    showToast(`Incorrecto. Intenta de nuevo.`, 'err');
+    botMood('facepalm');
+    setTimeout(() => botMood('pensativo'), 1000);
+
+    if (wrongAttempts >= MAX_WRONG) { endGame(false); return; }
+  }
+}
+
+function normalize(s) {
+  return s.trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9 ]/g, '').trim();
+}
+
+function allCorrect() {
+  return puzzle.positions.every(p => slotStates[p.id].correct);
+}
+
+/* ---- GAME OVER ---- */
+function endGame(won) {
+  if (timerInterval) clearInterval(timerInterval);
+  gameOver = true;
+  closePanel();
+
+  const totalPositions = puzzle.positions.length;
+  const correctCount = puzzle.positions.filter(p => slotStates[p.id].correct).length;
+
+  botMood(won ? 'celebracion' : 'facepalm');
+  showToast(won ? '¡Increíble! ¡Lineup completo! 🎉' : `Juego terminado. ${correctCount}/${totalPositions} correctos.`, won ? 'ok' : 'warn');
+
+  const saveData = {
+    finished: true, won, score, wrongAttempts, totalAttempts, timerSecs,
+    slotStates, correctCount, totalPositions
+  };
+  const saveKey = `isac_missing_xi_v1_${currentDate}`;
+  localStorage.setItem(saveKey, JSON.stringify(saveData));
+
+  setTimeout(() => {
+    showSummary(saveData);
+    if (!isArchive) submitScore();
+  }, 800);
+}
+
+function showSummary(data) {
+  document.getElementById('finScore').textContent = data.score;
+  document.getElementById('finCorrect').textContent = `${data.correctCount}/${data.totalPositions}`;
+  document.getElementById('finAttempts').textContent = data.totalAttempts;
+  document.getElementById('finTime').textContent = formatTime(data.timerSecs);
+
+  const list = document.getElementById('summaryAnswerList');
+  list.innerHTML = puzzle.positions.map(p => {
+    const s = data.slotStates[p.id];
+    return `<div class="answer-row">
+      <span class="pos-tag">${p.pos_label}</span>
+      <span class="player-name">${s.correct ? s.answer : '—'}</span>
+      <span class="status-icon">${s.correct ? '✅' : '❌'} <small style="color:var(--text-muted)">${p.answers[0]}</small></span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('summaryCard').style.display = 'block';
+  document.getElementById('summaryCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ---- SCORE SUBMIT ---- */
+async function submitScore() {
+  const nickname = getNickname() || 'Anónimo';
+  const device = getDeviceId();
+  const body = {
+    game_id: 'missing_xi',
+    puzzle_date: currentDate,
+    nickname,
+    device_id: device,
+    score,
+    attempts: totalAttempts,
+    time_seconds: timerSecs
+  };
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/game_scores`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(body)
+    });
+    if (r.ok) document.getElementById('leaderboardMsg').textContent = '✅ Puntaje guardado en el marcador de ISAC.';
+    else document.getElementById('leaderboardMsg').textContent = '⚠️ No se pudo guardar el puntaje.';
+  } catch { document.getElementById('leaderboardMsg').textContent = '⚠️ Sin conexión para guardar el puntaje.'; }
+}
+
+/* ---- SHARE ---- */
+function shareResult() {
+  const totalPositions = puzzle.positions.length;
+  const correctCount = puzzle.positions.filter(p => slotStates[p.id].correct).length;
+  const emojis = puzzle.positions.map(p => slotStates[p.id].correct ? '✅' : '❌').join('');
+  const text = `🏟️ ISAC Missing XI — ${puzzle.theme}\n${emojis}\n✅ ${correctCount}/${totalPositions} · ⭐ ${score} pts · ⏱ ${formatTime(timerSecs)}\n\nhttps://militomtzc-lang.github.io/simuladores-web/missing-xi/`;
+  navigator.clipboard.writeText(text).then(() => showToast('¡Resultado copiado al portapapeles!', 'ok'));
+}
+
+/* ---- UI HELPERS ---- */
+function updateScoreDisplay() { document.getElementById('scoreVal').textContent = score; }
+function updateTimerDisplay() { document.getElementById('timerVal').textContent = formatTime(timerSecs); }
+function formatTime(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+
+function updateProgress() {
+  const total = puzzle.positions.length;
+  const correct = puzzle.positions.filter(p => slotStates[p.id].correct).length;
+  const pct = total ? Math.round((correct/total)*100) : 0;
+  document.getElementById('progressText').textContent = `${correct} de ${total} encontrados`;
+  document.getElementById('progressPct').textContent = `${pct}%`;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+}
+
+function updateAttemptsRow() {
+  const remaining = MAX_WRONG - wrongAttempts;
+  const row = document.getElementById('attemptsRow');
+  const dots = Array.from({length: MAX_WRONG}, (_,i) =>
+    `<span class="life-dot${i >= remaining ? ' lost' : ''}"></span>`
+  ).join('');
+  row.innerHTML = `<span>Intentos fallidos restantes:</span>${dots}`;
+}
+
+function showToast(msg, type) {
+  const el = document.getElementById('toastMsg');
+  el.textContent = msg;
+  el.className = `toast-msg${type ? ' ' + type : ''}`;
+  el.style.display = 'inline-block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 3200);
+}
+
+function botMood(mood) {
+  const img = document.getElementById('isacbot');
+  img.src = `assets/ISACLOGOS/${mood}.webp`;
+  img.classList.remove('bounce');
+  void img.offsetWidth;
+  img.classList.add('bounce');
+}
+
+/* ---- start (after nickname) ---- */
+function startGame() {
+  buildDateSelector();
+  loadPuzzle(EMBEDDED_INDEX.length ? EMBEDDED_INDEX[0].date : todayStr);
+}
+</script>
+</body>
+</html>
