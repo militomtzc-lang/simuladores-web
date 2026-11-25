@@ -642,6 +642,7 @@
     };
 
     window.saveScore = async (score) => {
+      /*isac-score-guard*/ const _hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }); if (board.date !== _hoy) { console.warn('[guard] score no registrado: dia no vigente'); const _ge = document.getElementById('submit-err'); if (_ge) _ge.textContent = 'Este dia ya no esta vigente: tu puntaje no se registro.'; return; }
       const nickInput = document.getElementById('nick-input');
       const errEl = document.getElementById('submit-err');
       const btn = document.getElementById('submit-btn');
