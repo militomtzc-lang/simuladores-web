@@ -36,21 +36,21 @@
   .topbar {
     background: #ffffff;
     border-bottom: 3px solid var(--green);
-    padding: 12px 16px;
+    padding: 10px 16px;
   }
   .topbar-inner {
     max-width: 1040px; margin: 0 auto;
     display: flex; align-items: center; gap: 10px;
   }
-  .brand-logo { height: 36px; width: auto; display: none; }
+  .brand-logo { height: 40px; width: auto; display: none; }
   .brand-text { font-weight: 800; letter-spacing: .04em; color: var(--green); font-size: 1rem; }
   .brand-sub { color: var(--text-muted); font-size: .72rem; margin-left: auto; text-align: right; line-height: 1.25; }
-  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 40px; }
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 24px; }
   .hero { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
   .hero-text { flex: 1; min-width: 0; }
   h1 { margin: 0 0 6px; font-size: 1.75rem; font-weight: 800; color: var(--green); line-height: 1.15; }
   .lead { margin: 0; color: var(--text-muted); font-size: .95rem; }
-  .mascot { height: 84px; width: auto; flex-shrink: 0; }
+  .mascot { height: 96px; width: auto; flex-shrink: 0; }
   .countdown {
     display: inline-flex; align-items: center; gap: 8px;
     margin-top: 14px; padding: 8px 12px;
@@ -91,13 +91,31 @@
   .card.pronto .icon { background: #f1f5f9; filter: grayscale(1); opacity: .8; }
   .card.pronto h2 { color: var(--text-muted); }
   .soon { text-align: center; font-weight: 600; font-size: .85rem; color: #64748b; padding: 12px; background: #f1f5f9; border-radius: 12px; }
-  footer { text-align: center; color: var(--text-muted); font-size: .78rem; padding: 8px 16px 28px; }
+
+  /* Notas con stickers repartidos por la página */
+  .notes { display: grid; gap: 14px; grid-template-columns: 1fr; margin-top: 28px; }
+  .note {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius);
+    padding: 12px 16px;
+  }
+  .note.rev { flex-direction: row-reverse; }
+  .note img { height: 96px; width: auto; flex-shrink: 0; }
+  .note h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 700; color: var(--green); }
+  .note p { margin: 0; color: var(--text-muted); font-size: .88rem; }
+
+  footer { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; color: var(--text-muted); font-size: .78rem; padding: 8px 16px 28px; }
+  footer img { height: 84px; width: auto; }
+
   @media (min-width: 700px) {
     h1 { font-size: 2.25rem; }
     .grid { grid-template-columns: repeat(2, 1fr); }
-    .mascot { height: 110px; }
+    .mascot { height: 120px; }
     main { padding-top: 40px; }
     .brand-sub { font-size: .8rem; }
+    .notes { grid-template-columns: repeat(3, 1fr); margin-top: 36px; }
+    .note, .note.rev { flex-direction: column; text-align: center; padding: 18px 16px; }
+    .note img { height: 128px; }
   }
   @media (min-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
   @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
@@ -106,7 +124,7 @@
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <!-- El logo se carga por JS (ver ASSET_DIR); mientras no exista se ve el texto -->
+    <!-- El logo se carga por JS (ver LOGO_FILES); mientras no exista se ve el texto -->
     <img class="brand-logo" id="brandLogo" alt="ISAC, ITAM Sports Analytics Conference">
     <span class="brand-text" id="brandText">ISAC GAMES</span>
     <span class="brand-sub">ITAM Sports Analytics Conference</span>
@@ -120,20 +138,46 @@
       <p class="lead">Un reto nuevo cada día. Juega, compite en el ranking del día y vuelve mañana.</p>
       <div class="countdown" aria-live="off">⏱ Próximo reto en <b id="countdown">--:--:--</b></div>
     </div>
-    <!-- Mascota: se carga por JS; si el archivo no existe, se quita sola -->
-    <img class="mascot" id="mascot" alt="" hidden>
+    <img class="mascot" data-st="saluda" alt="" hidden>
   </section>
 
   <section class="grid" id="games" aria-label="Juegos disponibles"></section>
+
+  <section class="notes" aria-label="Cómo funciona">
+    <div class="note">
+      <img data-st="chill" alt="" hidden>
+      <div>
+        <h3>Un reto nuevo cada día</h3>
+        <p>Todo se reinicia a la medianoche (hora CDMX). Si te perdiste uno, el archivo te espera.</p>
+      </div>
+    </div>
+    <div class="note rev">
+      <img data-st="celebracion" alt="" hidden>
+      <div>
+        <h3>Compite en el ranking</h3>
+        <p>Cada juego tiene su marcador del día. Los días anteriores son de práctica y no suman.</p>
+      </div>
+    </div>
+    <div class="note">
+      <img data-st="demanos" alt="" hidden>
+      <div>
+        <h3>Más juegos en camino</h3>
+        <p>Estamos de cabeza preparando nuevos retos. Vuelve pronto.</p>
+      </div>
+    </div>
+  </section>
 </main>
 
-<footer>Ranking diario en cada juego · ISAC, ITAM Sports Analytics Conference</footer>
+<footer>
+  <img data-st="vibecodeando" alt="" hidden>
+  <span>Ranking diario en cada juego · ISAC, ITAM Sports Analytics Conference</span>
+</footer>
 
 <script>
-/* Carpeta donde están el logo y los stickers (respeta mayúsculas y minúsculas) */
+/* Carpeta de stickers (respeta mayúsculas y minúsculas). Cada <img data-st="nombre"> carga nombre.webp */
 const ASSET_DIR = 'assets/ISACLOGOS/';
-const LOGO_FILE = 'ISACLOGO.jpg';
-const MASCOT_FILE = 'saluda.webp';
+/* Logo de la barra superior: se usa el primero que exista; si ninguno, se queda el texto */
+const LOGO_FILES = ['assets/logo.png', 'assets/logo.svg'];
 
 /* Para agregar un juego: agrega un objeto a este arreglo.
    estado: "activo" (con enlace) o "pronto" (tarjeta gris, sin enlace). */
@@ -149,16 +193,7 @@ const GAMES = [
     url: "strands/", tag: "Diario", estado: "activo" },
   { id: "connections", nombre: "Connections", emoji: "🧩",
     desc: "Agrupa los elementos que comparten una conexión.",
-    url: "connections/", tag: "Diario", estado: "activo" },
-  { id: "missing-xi", nombre: "Missing XI", emoji: "🏟️",
-    desc: "Completa el lineup del día: fútbol, NBA, NFL y más deportes.",
-    url: "missing-xi/", tag: "Diario", estado: "activo" },
-  { id: "akinator", nombre: "Akinator Sports", emoji: "🧞",
-    desc: "Piensa en un jugador y el ISACBOT lo adivina con preguntas Sí/No.",
-    url: "", tag: "Próximamente", estado: "pronto" },
-  { id: "krillion", nombre: "Krillion", emoji: "🎯",
-    desc: "Responde lo más nicho posible y gana más puntos. Fondo de cancha interactivo.",
-    url: "", tag: "Próximamente", estado: "pronto" }
+    url: "connections/", tag: "Próximamente", estado: "pronto" }
 ];
 
 const grid = document.getElementById('games');
@@ -189,23 +224,23 @@ GAMES.forEach(g => {
   grid.appendChild(card);
 });
 
-/* Logo: prueba la ruta configurada y, si falla, assets/logo.svg|png|jpg; si ninguna existe, se queda el texto.
-   Mascota: si el archivo no existe, se quita. */
+/* Stickers: si un archivo no existe, el <img> se quita sin dejar huecos */
+document.querySelectorAll('img[data-st]').forEach(img => {
+  img.onload = () => { img.hidden = false; };
+  img.onerror = () => { img.remove(); };
+  img.src = ASSET_DIR + img.dataset.st + '.webp';
+});
+
+/* Logo: prueba cada archivo de LOGO_FILES; si ninguno existe, se queda el texto */
 (function () {
   const logo = document.getElementById('brandLogo');
-  const candidatos = [ASSET_DIR + LOGO_FILE, 'assets/logo.svg', 'assets/logo.png', 'assets/logo.jpg'];
   let i = 0;
   logo.onload = () => { logo.style.display = 'block'; document.getElementById('brandText').style.display = 'none'; };
   logo.onerror = () => {
     i += 1;
-    if (i < candidatos.length) { logo.src = candidatos[i]; } else { logo.remove(); }
+    if (i < LOGO_FILES.length) { logo.src = LOGO_FILES[i]; } else { logo.remove(); }
   };
-  logo.src = candidatos[0];
-
-  const m = document.getElementById('mascot');
-  m.onload = () => { m.hidden = false; };
-  m.onerror = () => { m.remove(); };
-  m.src = ASSET_DIR + MASCOT_FILE;
+  logo.src = LOGO_FILES[0];
 })();
 
 /* Cuenta regresiva a la medianoche de CDMX (misma lógica que el bloqueo de días futuros) */
