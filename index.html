@@ -50,7 +50,7 @@
   .hero-text { flex: 1; min-width: 0; }
   h1 { margin: 0 0 6px; font-size: 1.75rem; font-weight: 800; color: var(--green); line-height: 1.15; }
   .lead { margin: 0; color: var(--text-muted); font-size: .95rem; }
-  .mascot { display: none; height: 96px; width: auto; flex-shrink: 0; }
+  .mascot { height: 84px; width: auto; flex-shrink: 0; }
   .countdown {
     display: inline-flex; align-items: center; gap: 8px;
     margin-top: 14px; padding: 8px 12px;
@@ -95,7 +95,7 @@
   @media (min-width: 700px) {
     h1 { font-size: 2.25rem; }
     .grid { grid-template-columns: repeat(2, 1fr); }
-    .mascot { display: block; }
+    .mascot { height: 110px; }
     main { padding-top: 40px; }
     .brand-sub { font-size: .8rem; }
   }
@@ -106,7 +106,7 @@
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <!-- El logo se busca en assets/ como logo.svg, logo.png o logo.jpg; mientras no exista se ve el texto -->
+    <!-- El logo se carga por JS (ver ASSET_DIR); mientras no exista se ve el texto -->
     <img class="brand-logo" id="brandLogo" alt="ISAC, ITAM Sports Analytics Conference">
     <span class="brand-text" id="brandText">ISAC GAMES</span>
     <span class="brand-sub">ITAM Sports Analytics Conference</span>
@@ -120,8 +120,8 @@
       <p class="lead">Un reto nuevo cada día. Juega, compite en el ranking del día y vuelve mañana.</p>
       <div class="countdown" aria-live="off">⏱ Próximo reto en <b id="countdown">--:--:--</b></div>
     </div>
-    <!-- Mascota opcional: assets/isacbot-hola.webp (se oculta sola si no existe) -->
-    <img class="mascot" id="mascot" alt="" src="assets/isacbot-hola.webp">
+    <!-- Mascota: se carga por JS; si el archivo no existe, se quita sola -->
+    <img class="mascot" id="mascot" alt="" hidden>
   </section>
 
   <section class="grid" id="games" aria-label="Juegos disponibles"></section>
@@ -130,6 +130,11 @@
 <footer>Ranking diario en cada juego · ISAC, ITAM Sports Analytics Conference</footer>
 
 <script>
+/* Carpeta donde están el logo y los stickers (respeta mayúsculas y minúsculas) */
+const ASSET_DIR = 'assets/ISACLOGOS/';
+const LOGO_FILE = 'ISACLOGO.jpg';
+const MASCOT_FILE = 'saluda.webp';
+
 /* Para agregar un juego: agrega un objeto a este arreglo.
    estado: "activo" (con enlace) o "pronto" (tarjeta gris, sin enlace). */
 const GAMES = [
@@ -175,11 +180,11 @@ GAMES.forEach(g => {
   grid.appendChild(card);
 });
 
-/* Logo: prueba assets/logo.svg, luego .png y luego .jpg; si ninguno existe, se queda el texto.
-   Mascota: si el archivo no existe, se oculta. */
+/* Logo: prueba la ruta configurada y, si falla, assets/logo.svg|png|jpg; si ninguna existe, se queda el texto.
+   Mascota: si el archivo no existe, se quita. */
 (function () {
   const logo = document.getElementById('brandLogo');
-  const candidatos = ['assets/logo.svg', 'assets/logo.png', 'assets/logo.jpg'];
+  const candidatos = [ASSET_DIR + LOGO_FILE, 'assets/logo.svg', 'assets/logo.png', 'assets/logo.jpg'];
   let i = 0;
   logo.onload = () => { logo.style.display = 'block'; document.getElementById('brandText').style.display = 'none'; };
   logo.onerror = () => {
@@ -187,8 +192,11 @@ GAMES.forEach(g => {
     if (i < candidatos.length) { logo.src = candidatos[i]; } else { logo.remove(); }
   };
   logo.src = candidatos[0];
+
   const m = document.getElementById('mascot');
+  m.onload = () => { m.hidden = false; };
   m.onerror = () => { m.remove(); };
+  m.src = ASSET_DIR + MASCOT_FILE;
 })();
 
 /* Cuenta regresiva a la medianoche de CDMX (misma lógica que el bloqueo de días futuros) */
