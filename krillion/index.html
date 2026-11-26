@@ -125,6 +125,11 @@
       .prompt { font-size: 1rem; }
       .card { padding: 1rem; }
     }
+  
+    /*isac-share-css*/
+    .btn-share { background: #00593f; color: #fff; border: none; border-radius: 999px; padding: 0.75rem 1.5rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; margin-top: 1.25rem; }
+    .btn-share:hover { background: #007554; }
+    .isac-share-toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 9999; background: #00593f; color: #fff; padding: 0.45rem 1rem; border-radius: 999px; font-family: 'Sora', sans-serif; font-size: 0.84rem; font-weight: 600; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
   </style>
 </head>
 <body>
@@ -709,6 +714,35 @@
       if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('Resultado copiado al portapapeles', 'ok')).catch(() => {});
     };
 
+    /*isac-share*/
+    function _isacShareToast(msg) {
+      if (typeof showToast === 'function') { showToast(msg, 'ok'); return; }
+      const el = document.createElement('div');
+      el.className = 'isac-share-toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2200);
+    }
+    function _isacShareCopy(text) {
+      const ok = () => _isacShareToast('¡Resultado copiado al portapapeles!');
+      const fallback = () => {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); ok();
+        } catch (e) { console.warn('share', e); }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, fallback);
+      else fallback();
+    }
+    window.shareResult = () => {
+      const _s = Math.max(0, Math.floor(st.elapsed || 0));
+      const _t = `${Math.floor(_s / 60)}:${String(_s % 60).padStart(2, '0')}`;
+      const text = `🏟️ ISAC Krillion — ${puzzle.theme}\n${st.plays.map(emojiFor).join('')}\n✅ ${st.plays.filter(p => p.result === 'gain').length}/${ROUNDS} · ⭐ ${calcScore()} pts · ⏱ ${_t}\n\nhttps://militomtzc-lang.github.io/simuladores-web/krillion/`;
+      _isacShareCopy(text);
+      return text;
+    };
+
     function renderSummary() {
       const card = document.getElementById('summary-card');
       if (!isDone()) { card.classList.add('hidden'); return; }
@@ -728,7 +762,7 @@
         <ul class="recap-list">
           ${st.plays.map(p => `<li><span class="q">${p.round + 1}. ${esc(puzzle.rounds[p.round].prompt)}</span><br/>${emojiFor(p)} ${esc(playTip(p).replace(/^Jugada \d+: /, ''))}</li>`).join('')}
         </ul>
-        <div style="margin-bottom:1rem;"><button class="btn-sec" onclick="copyShare()">Copiar resultado</button></div>
+        <div style="margin-bottom:1rem;"><button class="btn-share" onclick="shareResult()">Compartir resultado 📋</button></div>
         ${won && !isArchive && !st.scoreSubmitted ? `
           <div style="margin:1rem 0;">
             <input id="nick-input" class="nick-input" value="${esc(savedNick)}" placeholder="Tu nickname..." maxlength="18" />
