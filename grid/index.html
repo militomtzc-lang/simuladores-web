@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ISAC Labs · ISAC-Grid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800&family=Sora:wght@400;600;700;800&display=swap" />
+  <style>
+    :root {
+      --green-dark: #00593f; --green-main: #007554; --green-light: #ecfdf5; --green-border: #a7f3d0;
+      --bg-page: #f8fafc; --bg-card: #ffffff; --text-main: #0f172a; --text-muted: #475569; --border-subtle: #e2e8f0;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg-page); color: var(--text-main); font-family: 'Sora', sans-serif; }
+    .wrapper { max-width: 760px; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .back-link { font-size: 0.8rem; font-weight: 700; color: var(--green-dark); text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--green-light); border: 1px solid var(--green-border); }
+    .back-link:hover { background: #d1fae5; }
+    .game-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border-subtle); padding-bottom: 1.25rem; }
+    .title-row { display: flex; align-items: center; gap: 0.9rem; }
+    .isacbot-wrap { position: relative; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+    .isacbot-img { width: 74px; height: 74px; object-fit: contain; transition: transform 0.2s ease; }
+    .isacbot-img.bounce { animation: botBounce 0.45s ease; }
+    @keyframes botBounce { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.12) rotate(-3deg); } }
+    .badge { display: inline-block; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--green-dark); background: var(--green-light); border: 1px solid var(--green-border); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 700; }
+    h1 { font-family: 'Darker Grotesque', sans-serif; font-size: 3rem; font-weight: 800; line-height: 1; margin: 0.3rem 0 0.15rem; color: var(--green-dark); }
+    .subtitle { color: var(--text-muted); margin: 0; font-size: 0.88rem; }
+    .theme-pill { display: inline-block; margin-top: 0.45rem; font-size: 0.78rem; font-weight: 700; color: var(--green-dark); background: var(--green-light); border: 1px solid var(--green-border); padding: 0.22rem 0.65rem; border-radius: 8px; }
+    .hud { display: flex; gap: 0.65rem; flex-wrap: wrap; align-items: stretch; }
+    .hud-box { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.5rem 0.9rem; display: flex; flex-direction: column; justify-content: center; min-width: 82px; }
+    .hud-label { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.08em; font-weight: 600; }
+    .hud-value { font-family: 'Darker Grotesque', sans-serif; font-size: 1.55rem; font-weight: 800; color: var(--green-dark); line-height: 1.1; }
+    select { background: transparent; color: var(--text-main); border: none; font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 600; margin-top: 0.2rem; cursor: pointer; }
+    .btn-today { background: var(--green-light); color: var(--green-dark); border: 1px solid var(--green-border); border-radius: 10px; padding: 0.5rem 0.95rem; font-family: 'Sora', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+    .archive-banner { background: #fefce8; border: 1px solid #fde047; color: #854d0e; padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .toast-bar { min-height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; }
+    .toast-msg { background: #0f172a; color: #ffffff; padding: 0.45rem 1rem; border-radius: 999px; font-size: 0.84rem; font-weight: 600; animation: popIn 0.2s ease; text-align: center; }
+    .toast-msg.warn { background: #b45309; } .toast-msg.ok { background: var(--green-dark); } .toast-msg.bad { background: #b91c1c; }
+    @keyframes popIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .grid { display: grid; grid-template-columns: minmax(70px, 1fr) repeat(3, minmax(0, 1.4fr)); gap: 0.45rem; margin-bottom: 0.8rem; }
+    .hdr { display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 0.82rem; line-height: 1.2; color: var(--green-dark); padding: 0.4rem 0.3rem; min-height: 64px; border-radius: 10px; }
+    .hdr.ach { background: #fef3c7; color: #78350f; font-size: 0.74rem; }
+    .hdr.team { background: var(--green-light); }
+    .corner { display: flex; align-items: center; justify-content: center; font-family: 'Darker Grotesque', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--green-dark); }
+    .cell { aspect-ratio: 1 / 1; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0.3rem; font-family: 'Sora', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--text-main); transition: border-color 0.15s, transform 0.12s; }
+    .cell:hover:not(:disabled) { border-color: var(--green-main); transform: translateY(-2px); }
+    .cell.active { border-color: var(--green-dark); box-shadow: 0 0 0 3px rgba(0, 117, 84, 0.2); }
+    .cell.ok { background: var(--green-dark); border-color: var(--green-dark); color: #ffffff; cursor: default; }
+    .cell.miss { background: #f1f5f9; color: #94a3b8; cursor: default; }
+    .cell .pct { font-size: 0.68rem; font-weight: 600; margin-top: 0.2rem; opacity: 0.85; }
+    .cell .plus { font-size: 1.4rem; color: #cbd5e1; }
+    .picker { background: #ffffff; border: 1px solid var(--border-subtle); border-top: 4px solid var(--green-dark); border-radius: 12px; padding: 0.9rem; margin-bottom: 1rem; animation: popIn 0.2s ease; }
+    .picker .q { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .text-input { width: 100%; background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--text-main); padding: 0.75rem 1rem; border-radius: 10px; font-family: 'Sora', sans-serif; font-size: 1rem; }
+    .text-input:focus { outline: none; border-color: var(--green-main); box-shadow: 0 0 0 3px rgba(0, 117, 84, 0.15); }
+    .sugs { list-style: none; padding: 0; margin: 0.4rem 0 0; display: flex; flex-direction: column; gap: 0.3rem; }
+    .sugs button { width: 100%; text-align: left; background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.55rem 0.7rem; font-family: 'Sora', sans-serif; font-size: 0.88rem; cursor: pointer; }
+    .sugs button:hover, .sugs button:focus { background: var(--green-light); border-color: var(--green-border); outline: none; }
+    .sugs small { color: var(--text-muted); }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+    .btn-primary { background: var(--green-dark); color: #ffffff; border: none; padding: 0.75rem 1.45rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: 'Sora', sans-serif; }
+    .btn-primary:hover:not(:disabled) { background: var(--green-main); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-sec { background: #ffffff; color: var(--text-main); border: 1.5px solid #cbd5e1; padding: 0.7rem 1.2rem; border-radius: 999px; font-family: 'Sora', sans-serif; font-size: 0.86rem; font-weight: 700; cursor: pointer; }
+    .btn-sec:hover:not(:disabled) { background: #f1f5f9; }
+    .btn-share { background: #00593f; color: #fff; border: none; border-radius: 999px; padding: 0.75rem 1.5rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; margin-top: 0.5rem; }
+    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-top: 4px solid var(--green-dark); border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1rem; animation: popIn 0.25s ease; }
+    .card h2 { margin: 0 0 0.4rem; color: var(--green-dark); font-size: 1.2rem; }
+    .card p { margin: 0.35rem 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.45; }
+    .recap { list-style: none; padding: 0; margin: 0.6rem 0 0.8rem; display: flex; flex-direction: column; gap: 0.35rem; }
+    .recap li { font-size: 0.82rem; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.5rem 0.7rem; line-height: 1.4; }
+    .recap .q { color: var(--text-muted); }
+    .note { font-size: 0.78rem; color: var(--text-muted); }
+    .board-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+    .nick-input { background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--text-main); padding: 0.7rem 1rem; border-radius: 8px; font-family: 'Sora', sans-serif; margin-right: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.9rem; }
+    th { background: #f1f5f9; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; }
+    th, td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border-subtle); text-align: left; }
+    tr.me { background: var(--green-light); }
+    .err-msg { color: #dc2626; font-size: 0.85rem; margin-top: 0.5rem; }
+    .hidden { display: none !important; }
+    @media (max-width: 560px) {
+      h1 { font-size: 2.4rem; } .isacbot-img { width: 58px; height: 58px; }
+      .grid { gap: 0.3rem; grid-template-columns: minmax(58px, 0.9fr) repeat(3, minmax(0, 1.3fr)); }
+      .hdr { font-size: 0.68rem; min-height: 54px; padding: 0.3rem 0.2rem; } .hdr.ach { font-size: 0.62rem; }
+      .cell { font-size: 0.66rem; border-radius: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <section class="wrapper">
+    <div class="top-nav">
+      <a class="back-link" href="../">← Hub ISAC Games</a>
+    </div>
+    <header class="game-header">
+      <div class="title-row">
+        <div class="isacbot-wrap">
+          <img id="isacbot-img" class="isacbot-img" alt="ISACBOT" hidden />
+        </div>
+        <div>
+          <span class="badge">ISAC LABS · SPORTS ANALYTICS</span>
+          <h1>ISAC-GRID</h1>
+          <p class="subtitle">Llena la cuadrícula: cada casilla pide un jugador que cumpla su fila y su columna. Entre menos gente lo elija, más puntos.</p>
+          <span id="theme-pill" class="theme-pill"></span>
+        </div>
+      </div>
+      <div class="hud">
+        <div class="hud-box"><span class="hud-label">ACIERTOS</span><span id="hud-hits" class="hud-value">0 / 9</span></div>
+        <div class="hud-box"><span class="hud-label">INTENTOS</span><span id="hud-tries" class="hud-value">9</span></div>
+        <div class="hud-box"><span class="hud-label">TIEMPO</span><span id="hud-time" class="hud-value">00:00</span></div>
+        <div class="hud-box">
+          <span class="hud-label">ARCHIVO</span>
+          <select id="date-select" aria-label="Elegir día"></select>
+        </div>
+        <button id="btn-today" class="btn-today hidden" onclick="goToday()">Ir a Hoy</button>
+      </div>
+    </header>
+
+    <div id="archive-banner" class="archive-banner hidden"></div>
+    <div id="toast-bar" class="toast-bar"></div>
+    <div id="grid" class="grid"></div>
+    <div id="picker" class="picker hidden"></div>
+    <div id="controls" class="row" style="margin-bottom:1rem;">
+      <span class="note">9 intentos para 9 casillas. Un jugador solo puede usarse una vez. Los equipos cuentan con toda su historia (ej. Expos = Nationals).</span>
+      <button class="btn-sec" id="btn-giveup" onclick="finishGame()">Terminar</button>
+    </div>
+    <div id="summary-card" class="card hidden"></div>
+    <p class="note">Datos: base Lahman de MLB (temporadas 1871-2025). "Campeón de Serie Mundial" = jugó en la temporada regular del equipo campeón.</p>
+  </section>
+
+  <script>
+    const SUPABASE_URL = "https://jssdaxtpmonhilbyugsw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_jqW3J8NzJH7rEGRht4L49Q_V9oTDcRo";
+    const SB_HEADERS = {
+      apikey: SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      ...(SUPABASE_KEY.startsWith('eyJ') ? { Authorization: `Bearer ${SUPABASE_KEY}` } : {})
+    };
+    const GAME_ID = 'grid';
+
+    const EMBEDDED_PLAYERS = [];
+
+    const EMBEDDED_INDEX = [{"date": "2026-11-26", "theme": "MLB"}];
+
+    const EMBEDDED_PUZZLES = {"2026-11-26": {"date": "2026-11-26", "league": "mlb", "theme": "MLB", "rows": [], "cols": [], "keys": [], "cells": []}};
+
+    const TRIES = 9, MIN_REAL = 20;
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    /*isac-lock-future*/
+    (function () {
+      try {
+        const idx = EMBEDDED_INDEX.filter(i => i.date <= todayStr);
+        if (!idx.length) return;                       // seguridad: nunca dejar el juego vacio
+        EMBEDDED_INDEX.splice(0, EMBEDDED_INDEX.length, ...idx);
+        Object.keys(EMBEDDED_PUZZLES).forEach(k => { if (k > todayStr) delete EMBEDDED_PUZZLES[k]; });
+      } catch (e) { console.warn('lock-future', e); }
+    })();
+
+    /* Recarga automatica a las 00:00:02 hora CDMX para estrenar el reto diario */
+    (function scheduleMidnightRefresh() {
+      try {
+        const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        const p = {};
+        fmt.formatToParts(new Date()).forEach(x => { p[x.type] = x.value; });
+        const secNow = (parseInt(p.hour, 10) % 24) * 3600 + parseInt(p.minute, 10) * 60 + parseInt(p.second, 10);
+        setTimeout(() => { location.reload(); }, (86400 - secNow + 2) * 1000);
+      } catch (e) {}
+    })();
+
+    function setBotMood(mood) {
+      const img = document.getElementById('isacbot-img');
+      if (!img) return;
+      const candidates = [`../assets/ISACLOGOS/${mood}.webp`, `assets/ISACLOGOS/${mood}.webp`];
+      let idx = 0;
+      img.onload = () => { img.hidden = false; img.classList.remove('bounce'); void img.offsetWidth; img.classList.add('bounce'); };
+      img.onerror = () => { idx++; if (idx < candidates.length) img.src = candidates[idx]; else img.hidden = true; };
+      img.src = candidates[0];
+    }
+
+    // ---------- utilidades ----------
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const norm = s => String(s).normalize('NFD').replace(/[^\x00-\x7f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const fmtTime = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    function getDeviceId() {
+      let id = localStorage.getItem('isac_device_id');
+      if (!id) {
+        id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID()
+          : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); });
+        localStorage.setItem('isac_device_id', id);
+      }
+      return id;
+    }
+    let toastTimer = null;
+    function showToast(msg, type = '') {
+      const bar = document.getElementById('toast-bar');
+      bar.innerHTML = `<div class="toast-msg ${type}">${msg}</div>`;
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { bar.innerHTML = ''; }, 2800);
+    }
+
+    // ---------- jugadores ----------
+    const PL = EMBEDDED_PLAYERS;            // [nombre, primer año, ultimo año, fama]
+    const KEYS = PL.map(p => norm(p[0]));
+    const pkey = i => `${PL[i][0]}|${PL[i][1]}`;   // clave estable para el conteo de rareza
+    const plabel = i => `${PL[i][0]} (${PL[i][1]}–${PL[i][2]})`;
+    function search(text) {
+      const k = norm(text);
+      if (k.length < 2) return [];
+      const starts = [], has = [];
+      for (let i = 0; i < PL.length; i++) {
+        const n = KEYS[i];
+        if (n.startsWith(k) || n.includes(k)) {
+          const last = norm(PL[i][0].split(' ').slice(-1)[0]);
+          (n.startsWith(k) || last.startsWith(k) ? starts : has).push(i);
+        }
+      }
+      const byFame = (a, b) => PL[b][3] - PL[a][3];
+      return [...starts.sort(byFame), ...has.sort(byFame)].slice(0, 8);
+    }
+
+    // ---------- estado ----------
+    let puzzle = null, st = null, timer = null, leaderboard = [], active = null, counts = null;
+    const fresh = () => ({ picks: Array(9).fill(null), tries: TRIES, wrong: [], elapsed: 0, done: false, score: 0, cellPts: Array(9).fill(0), cellPct: Array(9).fill(null), scoreSubmitted: false, sent: false });
+    const sKey = d => `isac_grid_v1_${d}`;
+    const save = () => localStorage.setItem(sKey(puzzle.date), JSON.stringify(st));
+    const hits = () => st.picks.filter(x => x != null).length;
+    const startTimer = () => { if (!timer && !st.done) timer = setInterval(() => { st.elapsed++; document.getElementById('hud-time').textContent = fmtTime(st.elapsed); if (st.elapsed % 5 === 0) save(); }, 1000); };
+    const stopTimer = () => { if (timer) clearInterval(timer); timer = null; };
+
+    async function fetchLeaderboard(dateStr) {
+      leaderboard = [];
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/game_scores?select=nickname,score,attempts,time_seconds,device_id&game_id=eq.${GAME_ID}&puzzle_date=eq.${dateStr}&order=score.desc,time_seconds.asc&limit=10`;
+        const res = await fetch(url, { headers: SB_HEADERS, cache: 'no-store' });
+        if (res.ok) leaderboard = await res.json();
+      } catch (e) { console.warn('No se pudo cargar el ranking remoto:', e); }
+    }
+    async function fetchCounts(dateStr) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/grid_pick_counts`, { method: 'POST', headers: SB_HEADERS, body: JSON.stringify({ p_date: dateStr }), cache: 'no-store' });
+        if (!res.ok) return null;
+        const rows = await res.json();
+        const out = Array.from({ length: 9 }, () => ({}));
+        (rows || []).forEach(r => { if (r.cell >= 0 && r.cell < 9) out[r.cell][r.player_key] = Number(r.n) || 0; });
+        return out;
+      } catch (e) { return null; }
+    }
+
+    // Porcentaje de jugadores que eligieron a ese jugador en esa casilla. Con pocos datos (< MIN_REAL elecciones)
+    // se estima con la fama del jugador frente a las demas respuestas validas de la casilla.
+    function shareFor(cell, i) {
+      const c = counts && counts[cell];
+      const tot = c ? Object.values(c).reduce((a, b) => a + b, 0) : 0;
+      if (tot >= MIN_REAL) return { share: (c[pkey(i)] || 0) / tot, real: true };
+      const w = j => Math.pow(PL[j][3] + 1, 1.5);
+      const sum = puzzle.cells[cell].reduce((a, j) => a + w(j), 0) || 1;
+      return { share: w(i) / sum, real: false };
+    }
+    const pointsFor = share => 10 + Math.round(90 * (1 - Math.min(1, share)));
+
+    async function init() {
+      setBotMood('saluda');
+      const sel = document.getElementById('date-select');
+      EMBEDDED_INDEX.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.date;
+        opt.textContent = `${item.date} ${item.date === todayStr ? '(Hoy)' : ''}`;
+        sel.appendChild(opt);
+      });
+      const hasToday = EMBEDDED_INDEX.some(i => i.date === todayStr);
+      const initial = hasToday ? todayStr : EMBEDDED_INDEX[0].date;
+      sel.value = initial;
+      sel.onchange = () => loadDay(sel.value);
+      await loadDay(initial);
+    }
+    window.goToday = async () => { const h = EMBEDDED_INDEX.some(i => i.date === todayStr); await loadDay(h ? todayStr : EMBEDDED_INDEX[0].date); };
+    window.refreshBoard = async () => { await fetchLeaderboard(puzzle.date); renderSummary(); };
+
+    async function loadDay(dateStr) {
+      stopTimer();
+      active = null; counts = null;
+      document.getElementById('date-select').value = dateStr;
+      puzzle = EMBEDDED_PUZZLES[dateStr];
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem(sKey(dateStr)) || 'null'); } catch (e) { saved = null; }
+      st = saved && Array.isArray(saved.picks) ? { ...fresh(), ...saved } : fresh();
+      document.getElementById('theme-pill').textContent = `Liga: ${puzzle.theme}`;
+      const banner = document.getElementById('archive-banner'), btnToday = document.getElementById('btn-today');
+      if (dateStr !== todayStr) {
+        banner.innerHTML = `<span>Estás jugando en <strong>Modo Archivo (${dateStr})</strong>. Esta partida no suma al ranking diario.</span><button class="btn-today" onclick="goToday()">Volver a Hoy</button>`;
+        banner.classList.remove('hidden'); btnToday.classList.remove('hidden');
+      } else { banner.classList.add('hidden'); btnToday.classList.add('hidden'); }
+      await fetchLeaderboard(dateStr);
+      if (leaderboard.some(r => r.device_id === getDeviceId())) st.scoreSubmitted = true;
+      if (st.done) counts = await fetchCounts(dateStr);
+      setBotMood(st.done ? (hits() >= 6 ? 'celebracion' : 'facepalm') : 'pensativo');
+      renderAll();
+    }
+
+    function renderHud() {
+      document.getElementById('hud-hits').textContent = `${hits()} / 9`;
+      document.getElementById('hud-tries').textContent = st.done ? '—' : st.tries;
+      document.getElementById('hud-time').textContent = fmtTime(st.elapsed);
+    }
+
+    function renderGrid() {
+      const g = document.getElementById('grid');
+      const kind = k => (/^[A-Z]{3}$/.test(k) ? 'team' : 'ach');
+      let h = `<div class="corner">${esc(puzzle.theme)}</div>`;
+      puzzle.cols.forEach((c, j) => { h += `<div class="hdr ${kind(puzzle.keys[3 + j])}">${esc(c)}</div>`; });
+      puzzle.rows.forEach((r, i) => {
+        h += `<div class="hdr ${kind(puzzle.keys[i])}">${esc(r)}</div>`;
+        for (let j = 0; j < 3; j++) {
+          const cell = i * 3 + j, p = st.picks[cell];
+          if (p != null) {
+            const pct = st.cellPct[cell];
+            h += `<button class="cell ok" data-cell="${cell}" disabled>${esc(PL[p][0])}${pct != null ? `<span class="pct">${pct}% · ${st.cellPts[cell]} pts</span>` : ''}</button>`;
+          } else if (st.done) {
+            h += `<button class="cell miss" data-cell="${cell}" disabled>—<span class="pct">${puzzle.cells[cell].length} posibles</span></button>`;
+          } else {
+            h += `<button class="cell${active === cell ? ' active' : ''}" data-cell="${cell}" aria-label="Casilla ${esc(r)} y ${esc(puzzle.cols[j])}"><span class="plus">+</span></button>`;
+          }
+        }
+      });
+      g.innerHTML = h;
+      g.querySelectorAll('button.cell:not([disabled])').forEach(b => b.addEventListener('click', () => openPicker(parseInt(b.dataset.cell, 10))));
+    }
+
+    function openPicker(cell) {
+      if (st.done) return;
+      active = cell;
+      renderGrid();
+      const r = Math.floor(cell / 3), c = cell % 3;
+      const pk = document.getElementById('picker');
+      pk.classList.remove('hidden');
+      pk.innerHTML = `<div class="q">Jugador que cumpla <strong>${esc(puzzle.rows[r])}</strong> y <strong>${esc(puzzle.cols[c])}</strong></div>
+        <input id="pick-input" class="text-input" autocomplete="off" placeholder="Escribe un nombre..." maxlength="40" />
+        <ul class="sugs" id="sugs"></ul>`;
+      const inp = document.getElementById('pick-input');
+      inp.addEventListener('input', () => renderSugs(inp.value));
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { const f = document.querySelector('#sugs button'); if (f) f.click(); } if (e.key === 'Escape') closePicker(); });
+      inp.focus();
+    }
+    function closePicker() { active = null; document.getElementById('picker').classList.add('hidden'); renderGrid(); }
+    function renderSugs(text) {
+      const ul = document.getElementById('sugs');
+      ul.innerHTML = search(text).map(i => `<li><button data-i="${i}">${esc(PL[i][0])} <small>(${PL[i][1]}–${PL[i][2]})</small></button></li>`).join('');
+      ul.querySelectorAll('button').forEach(b => b.addEventListener('click', () => choose(parseInt(b.dataset.i, 10))));
+    }
+
+    function choose(i) {
+      if (st.done || active == null) return;
+      if (st.picks.includes(i)) { showToast(`Ya usaste a ${esc(PL[i][0])} en otra casilla.`, 'warn'); return; }
+      startTimer();
+      const cell = active;
+      st.tries--;
+      if (puzzle.cells[cell].includes(i)) {
+        st.picks[cell] = i;
+        setBotMood('celebracion');
+        showToast(`¡Correcto! ${esc(PL[i][0])}`, 'ok');
+      } else {
+        st.wrong.push([cell, i]);
+        setBotMood('facepalm');
+        showToast(`${esc(PL[i][0])} no cumple esa casilla. Te quedan ${st.tries} ${st.tries === 1 ? 'intento' : 'intentos'}.`, 'bad');
+      }
+      save();
+      active = null;
+      document.getElementById('picker').classList.add('hidden');
+      if (st.tries <= 0 || hits() === 9) { finishGame(); return; }
+      renderAll();
+    }
+
+    window.finishGame = async () => {
+      if (st.done) return;
+      st.done = true; stopTimer(); active = null;
+      document.getElementById('picker').classList.add('hidden');
+      const isToday = puzzle.date === todayStr;
+      // 1) registrar mis elecciones (solo hoy) y 2) leer el conteo para calcular la rareza
+      if (isToday && !st.sent && hits()) {
+        const rows = st.picks.map((p, cell) => (p == null ? null : { puzzle_date: puzzle.date, cell, player_key: pkey(p), device_id: getDeviceId() })).filter(Boolean);
+        try {
+          await fetch(`${SUPABASE_URL}/rest/v1/grid_picks`, { method: 'POST', headers: { ...SB_HEADERS, Prefer: 'return=minimal' }, body: JSON.stringify(rows) });
+        } catch (e) { console.warn('No se pudieron registrar las elecciones:', e); }
+        st.sent = true;
+      }
+      counts = await fetchCounts(puzzle.date);
+      let total = 0;
+      st.picks.forEach((p, cell) => {
+        if (p == null) return;
+        const { share } = shareFor(cell, p);
+        st.cellPct[cell] = Math.max(1, Math.round(share * 100));
+        st.cellPts[cell] = pointsFor(share);
+        total += st.cellPts[cell];
+      });
+      st.score = total;
+      save();
+      setBotMood(hits() >= 6 ? 'celebracion' : 'facepalm');
+      renderAll();
+    };
+
+    function renderSummary() {
+      const card = document.getElementById('summary-card');
+      document.getElementById('controls').classList.toggle('hidden', st.done);
+      if (!st.done) { card.classList.add('hidden'); return; }
+      const isArchive = puzzle.date !== todayStr;
+      const myId = getDeviceId();
+      const savedNick = localStorage.getItem('isac_player_nickname') || '';
+      const won = hits() > 0;
+      const recap = st.picks.map((p, cell) => {
+        const r = Math.floor(cell / 3), c = cell % 3;
+        const pool = puzzle.cells[cell];
+        const rare = pool.slice().sort((a, b) => PL[a][3] - PL[b][3]).filter(j => j !== p).slice(0, 2).map(j => esc(PL[j][0]));
+        return `<li><span class="q">${esc(puzzle.rows[r])} × ${esc(puzzle.cols[c])}:</span> ${p != null ? `<strong>${esc(PL[p][0])}</strong> (${st.cellPct[cell]}% · ${st.cellPts[cell]} pts)` : '<em>vacía</em>'} · ${pool.length} respuestas posibles. Ideas raras: ${rare.join(', ')}.</li>`;
+      }).join('');
+      card.classList.remove('hidden');
+      card.innerHTML = `
+        <h2>${hits() === 9 ? '¡Cuadrícula completa!' : `Llenaste ${hits()} de 9 casillas`}</h2>
+        <p><strong>${st.score} pts</strong> de rareza en <strong>${fmtTime(st.elapsed)}</strong>. El % es cuánta gente eligió al mismo jugador en esa casilla${counts && counts.some(c => Object.values(c).reduce((a, b) => a + b, 0) >= MIN_REAL) ? '' : ' (con pocas partidas todavía, se estima por qué tan conocido es)'}; entre más bajo, más puntos.</p>
+        <ul class="recap">${recap}</ul>
+        <div><button class="btn-share" onclick="shareResult()">Compartir resultado 📋</button></div>
+        ${won && !isArchive && !st.scoreSubmitted ? `
+          <div style="margin:1rem 0;">
+            <input id="nick-input" class="nick-input" value="${esc(savedNick)}" placeholder="Tu nickname..." maxlength="18" />
+            <button id="submit-btn" class="btn-primary" onclick="saveScore()">Guardar en Scoreboard</button>
+            <div id="submit-err" class="err-msg"></div>
+          </div>` : ''}
+        <div class="board-header">
+          <h3 style="margin:0;">Ranking Global (${puzzle.date}) — ISAC-Grid</h3>
+          <button class="btn-sec" onclick="refreshBoard()">Actualizar ranking</button>
+        </div>
+        ${leaderboard.length ? `
+          <table>
+            <thead><tr><th>#</th><th>Jugador</th><th>Intentos</th><th>Tiempo</th><th>Puntos</th></tr></thead>
+            <tbody>${leaderboard.map((r, i) => `
+              <tr class="${r.device_id === myId ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.nickname)} ${r.device_id === myId ? '(Tú)' : ''}</td><td>${r.attempts}</td><td>${fmtTime(r.time_seconds)}</td><td><strong>${r.score}</strong></td></tr>`).join('')}
+            </tbody>
+          </table>` : '<p style="color:#475569;font-size:0.9rem;">Aún no hay cuadrículas registradas hoy. ¡Sé el primero!</p>'}`;
+    }
+
+    function renderAll() { renderHud(); renderGrid(); renderSummary(); }
+
+    window.shareResult = () => {
+      const s = Math.max(0, Math.floor(st.elapsed || 0));
+      const t = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      const rows = [0, 1, 2].map(r => [0, 1, 2].map(c => (st.picks[r * 3 + c] != null ? '🟩' : '⬜')).join('')).join('\n');
+      const text = `🏟️ ISAC-Grid — ${puzzle.theme} ${puzzle.date}\n${rows}\n✅ ${hits()}/9 · ⭐ ${st.score} pts · ⏱ ${t}\n\nhttps://militomtzc-lang.github.io/simuladores-web/grid/`;
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => showToast('¡Resultado copiado al portapapeles!', 'ok'), () => {});
+      return text;
+    };
+
+    window.saveScore = async () => {
+      /*isac-score-guard*/ const _hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }); if (puzzle.date !== _hoy) { console.warn('[guard] score no registrado: dia no vigente'); const _ge = document.getElementById('submit-err'); if (_ge) _ge.textContent = 'Este dia ya no esta vigente: tu puntaje no se registro.'; return; }
+      const nickInput = document.getElementById('nick-input');
+      const errEl = document.getElementById('submit-err');
+      const btn = document.getElementById('submit-btn');
+      const nick = nickInput.value.trim();
+      if (!st.done || !hits()) return;
+      if (nick.length < 2) { errEl.textContent = 'Escribe un nickname de al menos 2 caracteres.'; return; }
+      btn.disabled = true; btn.textContent = 'Guardando...'; errEl.textContent = '';
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/game_scores`, {
+          method: 'POST',
+          headers: { ...SB_HEADERS, Prefer: 'return=minimal' },
+          body: JSON.stringify({ game_id: GAME_ID, puzzle_date: puzzle.date, nickname: nick, device_id: getDeviceId(), score: st.score, attempts: TRIES - st.tries, time_seconds: Math.max(1, st.elapsed) })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          if (errData.code === '23505') throw new Error('Ya registraste tu resultado hoy desde este dispositivo.');
+          throw new Error(errData.message || 'Error al guardar puntaje.');
+        }
+        localStorage.setItem('isac_player_nickname', nick);
+        st.scoreSubmitted = true; save();
+        await fetchLeaderboard(puzzle.date);
+        renderSummary();
+      } catch (e) { errEl.textContent = e.message; btn.disabled = false; btn.textContent = 'Guardar en Scoreboard'; }
+    };
+
+    init();
+  </script>
+</body>
+</html>
