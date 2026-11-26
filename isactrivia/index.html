@@ -717,5 +717,170 @@
     };
 
   </script>
+<!--isac-stickers-->
+<style>
+  .isac-title-row { display: flex; align-items: center; gap: .9rem; }
+  .isac-bot { width: 74px; height: 74px; object-fit: contain; flex-shrink: 0; pointer-events: none; user-select: none; -webkit-user-select: none; }
+  .isac-bot.bounce { animation: isacBounce .45s ease; }
+  @keyframes isacBounce { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.12) rotate(-3deg); } }
+  .isac-st-res { float: right; height: 96px; width: auto; margin: 0 0 .5rem 1rem; pointer-events: none; user-select: none; -webkit-user-select: none; }
+  @media (max-width: 560px) { .isac-bot { width: 58px; height: 58px; } .isac-st-res { height: 72px; } }
+  @media (prefers-reduced-motion: reduce) { .isac-bot.bounce { animation: none; } }
+</style>
+<script>
+(function () {
+  var BASE = '../assets/ISACLOGOS/';
+  var MULTI = ['running', 'natacion', 'tenis', 'golf', 'volley', 'rugby', 'pingpong', 'cycling', 'boxing', 'criquet'];
+
+  function norm(s) { return String(s || '').normalize('NFD').replace(/[^\x00-\x7f]/g, '').toLowerCase(); }
+  function hash(d) { var n = 0; for (var i = 0; i < d.length; i++) n += d.charCodeAt(i); return n; }
+  function pick(list, d) { return list[hash(d) % list.length]; }
+
+  // Candidatos en orden de preferencia (nombres sin extension). Para F1 se intenta f1.webp
+  // (por si algun dia se agrega) y luego el ISACBOT base.
+  function stickerFor(text, d) {
+    var t = norm(text);
+    if (/futbol americano|\bnfl\b|emparrillado|\bepa\b/.test(t)) return [pick(['americano1', 'americano2'], d), 'isacbot'];
+    if (/hockey|\bnhl\b/.test(t)) return ['hockey', 'isacbot'];
+    if (/formula 1|\bf1\b|paddock|telemetr/.test(t)) return ['f1', 'isacbot'];
+    if (/futbol|cancha|expected goals|\bxg\b|liga|premier|bundesliga|serie a/.test(t)) return [pick(['fut1', 'fut2'], d), 'isacbot'];
+    if (/basquet|\bnba\b|duela/.test(t)) return ['basket', 'isacbot'];
+    if (/beisbol|\bmlb\b|diamante|statcast|sabermetria/.test(t)) return ['beis', 'isacbot'];
+    if (/analitica|ciencia de datos|moneyball/.test(t)) return [pick(['vibecodeando', 'lectura'], d), 'isacbot'];
+    if (/multideporte|olimpic|popurri/.test(t)) return [pick(MULTI, d), 'isacbot'];
+    return ['isacbot'];
+  }
+
+  function load(img, names, bounce) {
+    var key = names.join('|');
+    if (img.getAttribute('data-k') === key) return;
+    img.setAttribute('data-k', key);
+    var i = 0;
+    img.onerror = function () {
+      i += 1;
+      if (i < names.length) { img.src = BASE + names[i] + '.webp'; } else { img.style.display = 'none'; }
+    };
+    img.onload = function () {
+      img.style.display = '';
+      if (bounce) { img.classList.remove('bounce'); void img.offsetWidth; img.classList.add('bounce'); }
+    };
+    img.style.display = '';
+    img.src = BASE + names[0] + '.webp';
+  }
+
+  var bot = null, kind = null, lastDate = null, baseNames = null, moodTimer = null;
+  var last = { found: null, hints: null, guesses: null, answered: null };
+
+  function ensureBot() {
+    if (bot) return bot;
+    var box = document.querySelector('.game-header > div');
+    if (!box) return null;
+    var row = document.createElement('div');
+    row.className = 'isac-title-row';
+    var text = document.createElement('div');
+    while (box.firstChild) text.appendChild(box.firstChild);
+    bot = document.createElement('img');
+    bot.className = 'isac-bot'; bot.alt = ''; bot.setAttribute('aria-hidden', 'true'); bot.decoding = 'async';
+    row.appendChild(bot); row.appendChild(text);
+    box.appendChild(row);
+    return bot;
+  }
+
+  function mood(names, ms) {
+    if (!bot) return;
+    if (moodTimer) { clearTimeout(moodTimer); moodTimer = null; }
+    bot.removeAttribute('data-k');
+    load(bot, names, true);
+    if (ms) moodTimer = setTimeout(function () { moodTimer = null; bot.removeAttribute('data-k'); load(bot, baseNames, true); }, ms);
+  }
+
+  // Lee una variable global del juego (declarada con let/const en el script principal) sin romper si no existe
+  function g(name) { try { return (new Function('return typeof ' + name + " !== 'undefined' ? " + name + ' : undefined'))(); } catch (e) { return undefined; } }
+
+  function refresh() {
+    try {
+      if (typeof EMBEDDED_INDEX === 'undefined') return;
+      var sel = document.getElementById('date-select');
+      var d = sel && sel.value;
+      if (!d || !ensureBot()) return;
+      var it = null;
+      for (var i = 0; i < EMBEDDED_INDEX.length; i++) { if (EMBEDDED_INDEX[i].date === d) { it = EMBEDDED_INDEX[i]; break; } }
+      if (!it) return;
+
+      kind = document.getElementById('hud-attempts') ? 'fg' : (document.getElementById('theme-subtitle') ? 'jeop' : 'strands');
+      var card = document.getElementById('summary-card');
+      var over = !!(card && !card.classList.contains('hidden') && card.textContent.replace(/\s+/g, '').length > 0);
+      var won = over && (kind !== 'fg' || /descubierta/.test(norm(card.textContent)));
+
+      var themed = kind === 'fg' ? ['saluda', 'isacbot'] : stickerFor(kind === 'jeop' ? it.theme : it.sport, d);
+      var base = over ? [won ? 'celebracion' : 'facepalm', 'isacbot'] : themed;
+
+      // Cambio de fecha: se reinician contadores sin disparar estados de animo
+      var newDate = (lastDate !== d);
+      lastDate = d;
+      var cur = {
+        found: kind === 'strands' && g('foundWords') ? g('foundWords').length : null,
+        hints: kind === 'strands' ? g('hintsUsed') : null,
+        guesses: kind === 'fg' && g('guesses') ? g('guesses').length : null,
+        answered: kind === 'jeop' && g('answered') ? Object.keys(g('answered')).length : null
+      };
+      var event = null;
+      if (!newDate) {
+        if (cur.found !== null && last.found !== null && cur.found > last.found) event = ['celebracion', 'isacbot'];
+        else if (cur.hints !== null && last.hints !== null && cur.hints > last.hints) event = ['pensativo', 'isacbot'];
+        else if (cur.guesses !== null && last.guesses !== null && cur.guesses > last.guesses && !over) event = ['pensativo', 'isacbot'];
+        else if (cur.answered !== null && last.answered !== null && cur.answered > last.answered) {
+          var ans = g('answered'), keys = Object.keys(ans), lastKey = keys[keys.length - 1];
+          event = (ans[lastKey] && ans[lastKey].correct === false) ? ['facepalm', 'isacbot'] : ['celebracion', 'isacbot'];
+        }
+      }
+      last = cur;
+
+      var baseKey = base.join('|') + '@' + d;
+      if (newDate || baseKey !== (baseNames && baseNames._k)) {
+        baseNames = base; baseNames._k = baseKey;
+        if (over && moodTimer) { clearTimeout(moodTimer); moodTimer = null; }   // el final de la partida manda
+        if (!moodTimer) { bot.removeAttribute('data-k'); load(bot, base, true); }
+      }
+      if (event && !over) mood(event, 2400);
+
+      // Franchise Guesser: sticker del deporte en la tarjeta de resumen (solo al terminar)
+      if (kind === 'fg' && over && !card.querySelector('.isac-st-res')) {
+        var r = document.createElement('img');
+        r.className = 'isac-st-res'; r.alt = ''; r.setAttribute('aria-hidden', 'true'); r.decoding = 'async';
+        card.insertBefore(r, card.firstChild);
+        load(r, stickerFor(it.sport + ' ' + (it.league || ''), d), false);
+      }
+    } catch (e) { console.warn('[stickers]', e); }
+  }
+
+  var pending = false;
+  function schedule() {
+    if (pending) return;
+    pending = true;
+    (window.requestAnimationFrame || setTimeout)(function () { pending = false; refresh(); });
+  }
+  schedule();
+  new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
+})();
+</script>
+<!--isac-home-->
+<style>
+  .isac-top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+  .isac-home { font-family: inherit; font-size: 0.8rem; font-weight: 700; color: #00593f; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: 999px; background: #ecfdf5; border: 1px solid #a7f3d0; }
+  .isac-home:hover { background: #d1fae5; }
+</style>
+<script>
+(function () {
+  try {
+    var header = document.querySelector('.game-header');
+    if (!header || !header.parentNode || document.querySelector('.isac-top-nav')) return;
+    var nav = document.createElement('div');
+    nav.className = 'isac-top-nav';
+    nav.innerHTML = '<a class="isac-home" href="../">← Hub ISAC Games</a>';
+    header.parentNode.insertBefore(nav, header);
+  } catch (e) { console.warn('[home]', e); }
+})();
+</script>
 </body>
 </html>
