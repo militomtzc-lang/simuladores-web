@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ISAC Labs · Krillion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800&family=Sora:wght@400;600;700;800&display=swap" />
+  <style>
+    :root {
+      --green-dark: #00593f;
+      --green-main: #007554;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-subtle: #e2e8f0;
+      --t1: #fde047; --t2: #86efac; --t3: #7dd3fc; --t4: #fb923c; --t5: #e879f9;
+      --bad: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg-page); color: var(--text-main); font-family: 'Sora', sans-serif; }
+    .wrapper { max-width: 960px; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
+
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .back-link { font-size: 0.8rem; font-weight: 700; color: var(--green-dark); text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--green-light); border: 1px solid var(--green-border); }
+    .back-link:hover { background: #d1fae5; }
+
+    .game-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-subtle); padding-bottom: 1.25rem; }
+    .title-row { display: flex; align-items: center; gap: 0.9rem; }
+    .isacbot-wrap { position: relative; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+    .isacbot-img { width: 74px; height: 74px; object-fit: contain; transition: transform 0.2s ease; }
+    .isacbot-img.bounce { animation: botBounce 0.45s ease; }
+    @keyframes botBounce { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.12) rotate(-3deg); } }
+    .badge { display: inline-block; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--green-dark); background: var(--green-light); border: 1px solid var(--green-border); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 700; }
+    h1 { font-family: 'Darker Grotesque', sans-serif; font-size: 3rem; font-weight: 800; line-height: 1; margin: 0.3rem 0 0.15rem; color: var(--green-dark); }
+    .subtitle { color: var(--text-muted); margin: 0; font-size: 0.88rem; }
+    .theme-pill { display: inline-block; margin-top: 0.45rem; font-size: 0.78rem; font-weight: 700; color: var(--green-dark); background: var(--green-light); border: 1px solid var(--green-border); padding: 0.22rem 0.65rem; border-radius: 8px; }
+
+    .hud { display: flex; gap: 0.65rem; flex-wrap: wrap; align-items: stretch; }
+    .hud-box { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.5rem 0.9rem; display: flex; flex-direction: column; justify-content: center; min-width: 82px; }
+    .hud-label { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.08em; font-weight: 600; }
+    .hud-value { font-family: 'Darker Grotesque', sans-serif; font-size: 1.55rem; font-weight: 800; color: var(--green-dark); line-height: 1.1; }
+    select { background: transparent; color: var(--text-main); border: none; font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 600; margin-top: 0.2rem; cursor: pointer; }
+    .btn-today { background: var(--green-light); color: var(--green-dark); border: 1px solid var(--green-border); border-radius: 10px; padding: 0.5rem 0.95rem; font-family: 'Sora', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+    .btn-today:hover { background: #d1fae5; }
+
+    .archive-banner { background: #fefce8; border: 1px solid #fde047; color: #854d0e; padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .toast-bar { min-height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; }
+    .toast-msg { background: #0f172a; color: #ffffff; padding: 0.45rem 1rem; border-radius: 999px; font-size: 0.84rem; font-weight: 600; animation: popIn 0.2s ease; text-align: center; }
+    .toast-msg.warn { background: #b45309; }
+    .toast-msg.ok { background: var(--green-dark); }
+    .toast-msg.bad { background: #b91c1c; }
+    @keyframes popIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Campo */
+    .field-card { background: #14532d; border-radius: 14px; padding: 0.5rem; box-shadow: 0 6px 20px rgba(0, 89, 63, 0.18); margin-bottom: 0.6rem; position: relative; }
+    #field-svg { display: block; width: 100%; height: auto; border-radius: 10px; touch-action: manipulation; }
+    .field-info { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted); margin: 0 0.2rem 0.8rem; min-height: 1.2rem; }
+    .field-info strong { color: var(--green-dark); }
+    .play-path { fill: none; stroke-width: 7; stroke-linecap: round; cursor: pointer; }
+    .play-path.new { animation: drawPlay 0.9s ease-out forwards; }
+    @keyframes drawPlay { to { stroke-dashoffset: 0; } }
+    .play-hit { fill: none; stroke: transparent; stroke-width: 26; cursor: pointer; }
+    .ghost { opacity: 0.75; }
+    .td-flash { animation: tdFlash 1.4s ease 2; }
+    @keyframes tdFlash { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.95; } }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-bottom: 1rem; }
+    .chip { font-size: 0.72rem; font-weight: 700; padding: 0.22rem 0.55rem; border-radius: 999px; border: 1px solid rgba(15, 23, 42, 0.12); color: #0f172a; }
+
+    /* Tarjetas */
+    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-top: 4px solid var(--green-dark); border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1rem; animation: popIn 0.25s ease; }
+    .card h2 { margin: 0 0 0.4rem; color: var(--green-dark); font-size: 1.2rem; }
+    .card p { margin: 0.35rem 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.45; }
+    .round-tag { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; color: var(--green-main); }
+    .prompt { font-size: 1.15rem; font-weight: 800; margin: 0.35rem 0 0.9rem; line-height: 1.3; color: var(--text-main); }
+    .timer-row { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.9rem; }
+    .timer-track { flex: 1; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+    .timer-fill { height: 100%; background: var(--green-main); border-radius: 999px; transition: width 0.2s linear, background 0.3s; }
+    .timer-fill.low { background: #dc2626; }
+    .timer-num { font-family: 'Darker Grotesque', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--green-dark); min-width: 2.6rem; text-align: right; }
+    .answer-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .answer-input { flex: 1; min-width: 180px; background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--text-main); padding: 0.75rem 1rem; border-radius: 10px; font-family: 'Sora', sans-serif; font-size: 1rem; }
+    .answer-input:focus { outline: none; border-color: var(--green-main); box-shadow: 0 0 0 3px rgba(0, 117, 84, 0.15); }
+    .answer-input.shake { animation: shake 0.38s ease; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+    .tries { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.8rem; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; flex-wrap: wrap; }
+    .life-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green-main); display: inline-block; }
+    .life-dot.lost { background: #cbd5e1; }
+    .wrong-list { font-size: 0.8rem; color: #b91c1c; }
+    .rules { margin: 0.6rem 0 0.9rem; padding-left: 1.1rem; font-size: 0.86rem; color: var(--text-muted); line-height: 1.55; }
+    .play-result { display: flex; align-items: center; gap: 0.8rem; margin: 0.3rem 0 0.6rem; }
+    .play-emoji { font-size: 2.2rem; }
+    .play-name { font-family: 'Darker Grotesque', sans-serif; font-size: 1.9rem; font-weight: 800; color: var(--green-dark); line-height: 1; }
+    .niche { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem; }
+
+    .btn-sec { background: #ffffff; color: var(--text-main); border: 1.5px solid #cbd5e1; padding: 0.7rem 1.2rem; border-radius: 999px; font-family: 'Sora', sans-serif; font-size: 0.86rem; font-weight: 700; cursor: pointer; }
+    .btn-sec:hover:not(:disabled) { background: #f1f5f9; border-color: #94a3b8; }
+    .btn-primary { background: var(--green-dark); color: #ffffff; border: none; padding: 0.75rem 1.45rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: 'Sora', sans-serif; }
+    .btn-primary:hover:not(:disabled) { background: var(--green-main); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .emoji-recap { font-size: 1.5rem; letter-spacing: 0.12em; margin: 0.6rem 0; }
+    .recap-list { list-style: none; padding: 0; margin: 0.6rem 0 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .recap-list li { font-size: 0.84rem; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.55rem 0.75rem; line-height: 1.4; }
+    .recap-list .q { color: var(--text-muted); }
+    .board-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+    .nick-input { background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--text-main); padding: 0.7rem 1rem; border-radius: 8px; font-family: 'Sora', sans-serif; margin-right: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.9rem; }
+    th { background: #f1f5f9; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; }
+    th, td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border-subtle); text-align: left; }
+    tr.me { background: var(--green-light); }
+    .err-msg { color: #dc2626; font-size: 0.85rem; margin-top: 0.5rem; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 560px) {
+      h1 { font-size: 2.4rem; }
+      .isacbot-img { width: 58px; height: 58px; }
+      .hud-box { min-width: 70px; padding: 0.4rem 0.6rem; }
+      .hud-value { font-size: 1.3rem; }
+      .prompt { font-size: 1rem; }
+      .card { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <section class="wrapper">
+    <div class="top-nav">
+      <a class="back-link" href="../">← Hub ISAC Games</a>
+    </div>
+    <header class="game-header">
+      <div class="title-row">
+        <div class="isacbot-wrap">
+          <img id="isacbot-img" class="isacbot-img" alt="ISACBOT" hidden />
+        </div>
+        <div>
+          <span class="badge">ISAC LABS · SPORTS ANALYTICS</span>
+          <h1>KRILLION</h1>
+          <p class="subtitle">Responde lo más nicho posible: entre más rara tu respuesta, más yardas avanza tu drive.</p>
+          <span id="theme-pill" class="theme-pill"></span>
+        </div>
+      </div>
+      <div class="hud">
+        <div class="hud-box"><span class="hud-label">PUNTAJE</span><span id="hud-score" class="hud-value">0</span></div>
+        <div class="hud-box"><span class="hud-label">BALÓN EN</span><span id="hud-yard" class="hud-value">25</span></div>
+        <div class="hud-box"><span class="hud-label">STRIKES</span><span id="hud-strikes" class="hud-value">0 / 3</span></div>
+        <div class="hud-box"><span class="hud-label">TIEMPO</span><span id="hud-time" class="hud-value">00:00</span></div>
+        <div class="hud-box">
+          <span class="hud-label">ARCHIVO</span>
+          <select id="date-select" aria-label="Elegir día"></select>
+        </div>
+        <button id="btn-today" class="btn-today hidden" onclick="goToday()">Ir a Hoy</button>
+      </div>
+    </header>
+
+    <div id="archive-banner" class="archive-banner hidden"></div>
+    <div id="toast-bar" class="toast-bar"></div>
+
+    <div class="field-card">
+      <svg id="field-svg" viewBox="0 0 1200 400" role="img" aria-label="Campo de futbol americano con las jugadas del drive"></svg>
+    </div>
+    <div id="field-info" class="field-info"></div>
+    <div id="legend" class="legend"></div>
+
+    <div id="stage"></div>
+    <div id="summary-card" class="card hidden"></div>
+  </section>
+
+  <script>
+    const SUPABASE_URL = "https://jssdaxtpmonhilbyugsw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_jqW3J8NzJH7rEGRht4L49Q_V9oTDcRo";
+    const SB_HEADERS = {
+      apikey: SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      ...(SUPABASE_KEY.startsWith('eyJ') ? { Authorization: `Bearer ${SUPABASE_KEY}` } : {})
+    };
+    const GAME_ID = 'krillion';
+
+    const EMBEDDED_INDEX = [{"date": "2026-12-05", "theme": "Sábado multideporte ISAC", "sport": "isacbot"}, {"date": "2026-12-04", "theme": "Viernes de NFL: récords y franquicias", "sport": "americano1"}, {"date": "2026-12-03", "theme": "Jueves de NBA: leyendas y récords", "sport": "basket"}, {"date": "2026-12-02", "theme": "Miércoles de fútbol: sedes y ligas", "sport": "fut2"}, {"date": "2026-12-01", "theme": "Martes de Fórmula 1", "sport": "f1"}, {"date": "2026-11-30", "theme": "Lunes de MLB", "sport": "beis"}, {"date": "2026-11-29", "theme": "Domingo de NFL", "sport": "americano2"}, {"date": "2026-11-28", "theme": "Sábado de fútbol internacional", "sport": "fut1"}, {"date": "2026-11-27", "theme": "Viernes de NBA", "sport": "basket"}, {"date": "2026-11-26", "theme": "Jueves de Thanksgiving NFL", "sport": "americano1"}];
+
+    const EMBEDDED_PUZZLES = {"2026-12-05": {"date": "2026-12-05", "id": "sabado-multideporte", "theme": "Sábado multideporte ISAC", "sport": "isacbot", "rounds": [{"prompt": "Nombra a un tenista varonil con 10+ títulos de Grand Slam (hasta 2025)", "source": "ATP", "answers": [{"name": "Novak Djokovic", "aliases": ["Djokovic", "Nole"], "tier": 1}, {"name": "Rafael Nadal", "aliases": ["Nadal", "Rafa"], "tier": 1}, {"name": "Roger Federer", "aliases": ["Federer"], "tier": 1}, {"name": "Pete Sampras", "aliases": ["Sampras"], "tier": 2}, {"name": "Björn Borg", "aliases": ["Borg"], "tier": 3}, {"name": "Rod Laver", "aliases": ["Laver"], "tier": 4}, {"name": "Roy Emerson", "aliases": ["Emerson"], "tier": 5}, {"name": "Bill Tilden", "aliases": ["Tilden"], "tier": 5}]}, {"prompt": "Nombra una ciudad sede de Juegos Olímpicos de verano entre 1960 y 2024", "source": "COI", "answers": [{"name": "Ciudad de México", "aliases": ["Mexico", "CDMX"], "tier": 1}, {"name": "París", "aliases": [], "tier": 1}, {"name": "Tokio", "aliases": ["Tokyo"], "tier": 1}, {"name": "Londres", "aliases": ["London"], "tier": 2}, {"name": "Rio de Janeiro", "aliases": ["Rio"], "tier": 2}, {"name": "Pekín", "aliases": ["Beijing"], "tier": 2}, {"name": "Barcelona", "aliases": [], "tier": 2}, {"name": "Atenas", "aliases": ["Athens"], "tier": 3}, {"name": "Sídney", "aliases": ["Sydney"], "tier": 3}, {"name": "Los Ángeles", "aliases": ["LA"], "tier": 3}, {"name": "Atlanta", "aliases": [], "tier": 4}, {"name": "Seúl", "aliases": ["Seoul"], "tier": 4}, {"name": "Moscú", "aliases": ["Moscow"], "tier": 4}, {"name": "Montreal", "aliases": [], "tier": 4}, {"name": "Múnich", "aliases": ["Munchen"], "tier": 4}, {"name": "Roma", "aliases": ["Rome"], "tier": 5}]}, {"prompt": "Nombra un equipo campeón de la Stanley Cup entre 2000 y 2025", "source": "NHL.com", "answers": [{"name": "Pittsburgh Penguins", "aliases": ["Penguins", "Pens"], "tier": 1}, {"name": "Chicago Blackhawks", "aliases": ["Blackhawks"], "tier": 1}, {"name": "Detroit Red Wings", "aliases": ["Red Wings", "Detroit"], "tier": 1}, {"name": "Boston Bruins", "aliases": ["Bruins"], "tier": 2}, {"name": "Tampa Bay Lightning", "aliases": ["Lightning", "Tampa Bay"], "tier": 2}, {"name": "Colorado Avalanche", "aliases": ["Avalanche", "Avs", "Colorado"], "tier": 2}, {"name": "Florida Panthers", "aliases": ["Panthers"], "tier": 2}, {"name": "Los Angeles Kings", "aliases": ["LA Kings", "Kings"], "tier": 3}, {"name": "Washington Capitals", "aliases": ["Capitals", "Caps"], "tier": 3}, {"name": "Vegas Golden Knights", "aliases": ["Golden Knights", "Vegas"], "tier": 3}, {"name": "New Jersey Devils", "aliases": ["Devils", "New Jersey"], "tier": 4}, {"name": "St. Louis Blues", "aliases": ["Blues"], "tier": 4}, {"name": "Carolina Hurricanes", "aliases": ["Hurricanes", "Canes", "Carolina"], "tier": 5}, {"name": "Anaheim Ducks", "aliases": ["Ducks", "Anaheim"], "tier": 5}]}, {"prompt": "Nombra a un golfista con 5+ majors varoniles (hasta 2025)", "source": "PGA Tour", "answers": [{"name": "Tiger Woods", "aliases": ["Tiger", "Woods"], "tier": 1}, {"name": "Jack Nicklaus", "aliases": ["Nicklaus", "Jack"], "tier": 1}, {"name": "Rory McIlroy", "aliases": ["Rory", "McIlroy"], "tier": 2}, {"name": "Phil Mickelson", "aliases": ["Mickelson", "Phil", "Lefty"], "tier": 2}, {"name": "Arnold Palmer", "aliases": ["Palmer"], "tier": 2}, {"name": "Brooks Koepka", "aliases": ["Koepka"], "tier": 3}, {"name": "Gary Player", "aliases": ["Player"], "tier": 3}, {"name": "Seve Ballesteros", "aliases": ["Seve", "Ballesteros"], "tier": 3}, {"name": "Ben Hogan", "aliases": ["Hogan"], "tier": 3}, {"name": "Tom Watson", "aliases": ["Watson"], "tier": 3}, {"name": "Nick Faldo", "aliases": ["Faldo"], "tier": 3}, {"name": "Lee Trevino", "aliases": ["Trevino"], "tier": 3}, {"name": "Sam Snead", "aliases": ["Snead"], "tier": 4}, {"name": "Byron Nelson", "aliases": ["Nelson"], "tier": 4}, {"name": "Bobby Jones", "aliases": ["Jones"], "tier": 4}, {"name": "Gene Sarazen", "aliases": ["Sarazen"], "tier": 4}, {"name": "Walter Hagen", "aliases": ["Hagen"], "tier": 4}, {"name": "Harry Vardon", "aliases": ["Vardon"], "tier": 5}, {"name": "James Braid", "aliases": ["Braid"], "tier": 5}, {"name": "J.H. Taylor", "aliases": ["JH Taylor", "Taylor"], "tier": 5}, {"name": "Peter Thomson", "aliases": ["Thomson"], "tier": 5}]}, {"prompt": "Nombra a un jugador con 600+ goles de temporada regular NHL (al cierre de 2024-25)", "source": "NHL.com", "answers": [{"name": "Wayne Gretzky", "aliases": ["Gretzky", "The Great One"], "tier": 1}, {"name": "Alex Ovechkin", "aliases": ["Ovechkin", "Ovi"], "tier": 1}, {"name": "Mario Lemieux", "aliases": ["Lemieux"], "tier": 2}, {"name": "Sidney Crosby", "aliases": ["Crosby", "Sid"], "tier": 2}, {"name": "Gordie Howe", "aliases": ["Howe"], "tier": 2}, {"name": "Jaromír Jágr", "aliases": ["Jagr"], "tier": 2}, {"name": "Mark Messier", "aliases": ["Messier"], "tier": 3}, {"name": "Steve Yzerman", "aliases": ["Yzerman"], "tier": 3}, {"name": "Teemu Selänne", "aliases": ["Selanne"], "tier": 3}, {"name": "Joe Sakic", "aliases": ["Sakic"], "tier": 3}, {"name": "Brett Hull", "aliases": [], "tier": 3}, {"name": "Jarome Iginla", "aliases": ["Iginla"], "tier": 4}, {"name": "Phil Esposito", "aliases": ["Esposito"], "tier": 4}, {"name": "Bobby Hull", "aliases": [], "tier": 4}, {"name": "Brendan Shanahan", "aliases": ["Shanahan"], "tier": 4}, {"name": "Luc Robitaille", "aliases": ["Robitaille"], "tier": 4}, {"name": "Jari Kurri", "aliases": ["Kurri"], "tier": 4}, {"name": "Marcel Dionne", "aliases": ["Dionne"], "tier": 5}, {"name": "Mike Gartner", "aliases": ["Gartner"], "tier": 5}, {"name": "Dave Andreychuk", "aliases": ["Andreychuk"], "tier": 5}, {"name": "Dino Ciccarelli", "aliases": ["Ciccarelli"], "tier": 5}]}]}, "2026-12-04": {"date": "2026-12-04", "id": "viernes-nfl", "theme": "Viernes de NFL: récords y franquicias", "sport": "americano1", "rounds": [{"prompt": "Nombra a un jugador que NO sea QB y haya sido MVP de un Super Bowl (hasta el Super Bowl LIX)", "source": "Pro Football Reference", "answers": [{"name": "Jerry Rice", "aliases": ["Rice"], "tier": 1}, {"name": "Ray Lewis", "aliases": [], "tier": 2}, {"name": "Emmitt Smith", "aliases": ["Emmitt"], "tier": 2}, {"name": "Von Miller", "aliases": ["Miller"], "tier": 2}, {"name": "Cooper Kupp", "aliases": ["Kupp"], "tier": 2}, {"name": "Julian Edelman", "aliases": ["Edelman"], "tier": 2}, {"name": "Marcus Allen", "aliases": ["Allen"], "tier": 3}, {"name": "Terrell Davis", "aliases": ["Davis"], "tier": 3}, {"name": "Franco Harris", "aliases": ["Harris"], "tier": 3}, {"name": "Lynn Swann", "aliases": ["Swann"], "tier": 3}, {"name": "Hines Ward", "aliases": ["Ward"], "tier": 3}, {"name": "Desmond Howard", "aliases": ["Howard"], "tier": 3}, {"name": "Santonio Holmes", "aliases": ["Holmes"], "tier": 4}, {"name": "Malcolm Smith", "aliases": [], "tier": 4}, {"name": "John Riggins", "aliases": ["Riggins"], "tier": 4}, {"name": "Richard Dent", "aliases": ["Dent"], "tier": 4}, {"name": "Larry Csonka", "aliases": ["Csonka"], "tier": 4}, {"name": "Deion Branch", "aliases": ["Branch"], "tier": 4}, {"name": "Jake Scott", "aliases": ["Scott"], "tier": 5}, {"name": "Chuck Howley", "aliases": ["Howley"], "tier": 5}, {"name": "Randy White", "aliases": ["White"], "tier": 5}, {"name": "Harvey Martin", "aliases": ["Martin"], "tier": 5}, {"name": "Fred Biletnikoff", "aliases": ["Biletnikoff"], "tier": 5}, {"name": "Ottis Anderson", "aliases": ["Anderson"], "tier": 5}, {"name": "Larry Brown", "aliases": [], "tier": 5}, {"name": "Dexter Jackson", "aliases": ["Jackson"], "tier": 5}]}, {"prompt": "Nombra a un QB con una temporada de 5,000+ yardas por pase (hasta 2024)", "source": "Pro Football Reference", "answers": [{"name": "Tom Brady", "aliases": ["Brady"], "tier": 1}, {"name": "Patrick Mahomes", "aliases": ["Mahomes"], "tier": 1}, {"name": "Peyton Manning", "aliases": ["Peyton", "Manning"], "tier": 1}, {"name": "Drew Brees", "aliases": ["Brees"], "tier": 2}, {"name": "Dan Marino", "aliases": ["Marino"], "tier": 3}, {"name": "Matthew Stafford", "aliases": ["Stafford"], "tier": 3}, {"name": "Justin Herbert", "aliases": ["Herbert"], "tier": 4}, {"name": "Ben Roethlisberger", "aliases": ["Roethlisberger", "Big Ben"], "tier": 4}, {"name": "Jameis Winston", "aliases": ["Winston", "Jameis"], "tier": 5}]}, {"prompt": "Nombra una franquicia NFL que se haya mudado de ciudad desde 1960", "source": "Pro Football Reference", "answers": [{"name": "Las Vegas Raiders", "aliases": ["Raiders", "Oakland Raiders", "Los Angeles Raiders"], "tier": 1}, {"name": "Los Angeles Rams", "aliases": ["Rams", "St. Louis Rams"], "tier": 1}, {"name": "Los Angeles Chargers", "aliases": ["Chargers", "San Diego Chargers"], "tier": 2}, {"name": "Indianapolis Colts", "aliases": ["Colts", "Baltimore Colts"], "tier": 2}, {"name": "Tennessee Titans", "aliases": ["Titans", "Houston Oilers", "Oilers"], "tier": 3}, {"name": "Arizona Cardinals", "aliases": ["Cardinals", "Chicago Cardinals", "St. Louis Cardinals", "Phoenix Cardinals"], "tier": 4}, {"name": "Baltimore Ravens", "aliases": ["Ravens"], "tier": 4}, {"name": "Kansas City Chiefs", "aliases": ["Chiefs", "Dallas Texans"], "tier": 5}]}, {"prompt": "Nombra a un jugador con una temporada de 1,700+ yardas por recepción en la NFL (hasta 2024)", "source": "Pro Football Reference", "answers": [{"name": "Calvin Johnson", "aliases": ["Megatron", "Calvin"], "tier": 1}, {"name": "Jerry Rice", "aliases": ["Rice"], "tier": 1}, {"name": "Julio Jones", "aliases": ["Julio"], "tier": 2}, {"name": "Justin Jefferson", "aliases": ["Jefferson"], "tier": 2}, {"name": "Tyreek Hill", "aliases": ["Tyreek", "Hill"], "tier": 2}, {"name": "Cooper Kupp", "aliases": ["Kupp"], "tier": 3}, {"name": "Ja'Marr Chase", "aliases": ["Chase"], "tier": 3}, {"name": "CeeDee Lamb", "aliases": ["Lamb"], "tier": 3}, {"name": "Antonio Brown", "aliases": ["AB"], "tier": 3}, {"name": "Marvin Harrison", "aliases": ["Harrison"], "tier": 4}, {"name": "Isaac Bruce", "aliases": ["Bruce"], "tier": 4}, {"name": "Charley Hennigan", "aliases": ["Hennigan"], "tier": 5}]}, {"prompt": "Nombra una franquicia NFL con 2+ Super Bowls ganados (hasta el Super Bowl LIX)", "source": "NFL", "answers": [{"name": "New England Patriots", "aliases": ["Patriots", "Pats"], "tier": 1}, {"name": "Pittsburgh Steelers", "aliases": ["Steelers"], "tier": 1}, {"name": "Dallas Cowboys", "aliases": ["Cowboys"], "tier": 1}, {"name": "San Francisco 49ers", "aliases": ["49ers", "Niners"], "tier": 2}, {"name": "Kansas City Chiefs", "aliases": ["Chiefs"], "tier": 2}, {"name": "Green Bay Packers", "aliases": ["Packers"], "tier": 2}, {"name": "Philadelphia Eagles", "aliases": ["Eagles"], "tier": 2}, {"name": "New York Giants", "aliases": ["Giants"], "tier": 3}, {"name": "Denver Broncos", "aliases": ["Broncos"], "tier": 3}, {"name": "Las Vegas Raiders", "aliases": ["Raiders"], "tier": 3}, {"name": "Miami Dolphins", "aliases": ["Dolphins"], "tier": 3}, {"name": "Los Angeles Rams", "aliases": ["Rams"], "tier": 3}, {"name": "Baltimore Ravens", "aliases": ["Ravens"], "tier": 4}, {"name": "Tampa Bay Buccaneers", "aliases": ["Buccaneers", "Bucs"], "tier": 4}, {"name": "Indianapolis Colts", "aliases": ["Colts"], "tier": 4}, {"name": "Washington Commanders", "aliases": ["Commanders", "Redskins", "Washington"], "tier": 5}]}]}, "2026-12-03": {"date": "2026-12-03", "id": "jueves-nba", "theme": "Jueves de NBA: leyendas y récords", "sport": "basket", "rounds": [{"prompt": "Nombra a un MVP de temporada regular NBA entre 1980 y 2024", "source": "NBA.com", "answers": [{"name": "Michael Jordan", "aliases": ["Jordan", "MJ"], "tier": 1}, {"name": "LeBron James", "aliases": ["LeBron", "James"], "tier": 1}, {"name": "Stephen Curry", "aliases": ["Steph Curry", "Curry", "Steph"], "tier": 1}, {"name": "Kobe Bryant", "aliases": ["Kobe", "Bryant"], "tier": 2}, {"name": "Magic Johnson", "aliases": ["Magic"], "tier": 2}, {"name": "Larry Bird", "aliases": ["Bird"], "tier": 2}, {"name": "Nikola Jokić", "aliases": ["Jokic"], "tier": 2}, {"name": "Giannis Antetokounmpo", "aliases": ["Giannis", "Antetokounmpo"], "tier": 2}, {"name": "Shaquille O'Neal", "aliases": ["Shaq", "O'Neal"], "tier": 2}, {"name": "Kevin Durant", "aliases": ["Durant", "KD"], "tier": 2}, {"name": "Tim Duncan", "aliases": ["Duncan"], "tier": 3}, {"name": "Kareem Abdul-Jabbar", "aliases": ["Kareem", "Abdul-Jabbar"], "tier": 3}, {"name": "Allen Iverson", "aliases": ["Iverson", "AI"], "tier": 3}, {"name": "James Harden", "aliases": ["Harden"], "tier": 3}, {"name": "Russell Westbrook", "aliases": ["Westbrook", "Russ"], "tier": 3}, {"name": "Joel Embiid", "aliases": ["Embiid"], "tier": 3}, {"name": "Derrick Rose", "aliases": ["Rose"], "tier": 3}, {"name": "Dirk Nowitzki", "aliases": ["Dirk", "Nowitzki"], "tier": 3}, {"name": "Charles Barkley", "aliases": ["Barkley"], "tier": 3}, {"name": "Steve Nash", "aliases": ["Nash"], "tier": 4}, {"name": "Kevin Garnett", "aliases": ["Garnett", "KG"], "tier": 4}, {"name": "Hakeem Olajuwon", "aliases": ["Hakeem", "Olajuwon"], "tier": 4}, {"name": "Karl Malone", "aliases": ["The Mailman"], "tier": 4}, {"name": "David Robinson", "aliases": ["Robinson", "The Admiral"], "tier": 5}, {"name": "Julius Erving", "aliases": ["Dr. J", "Erving"], "tier": 5}, {"name": "Moses Malone", "aliases": ["Moses"], "tier": 5}]}, {"prompt": "Nombra a un jugador nacido fuera de los 50 estados de EE.UU. elegido #1 del Draft NBA", "source": "Basketball Reference", "answers": [{"name": "Victor Wembanyama", "aliases": ["Wembanyama", "Wemby"], "tier": 1}, {"name": "Yao Ming", "aliases": ["Yao"], "tier": 1}, {"name": "Hakeem Olajuwon", "aliases": ["Hakeem", "Olajuwon"], "tier": 2}, {"name": "Tim Duncan", "aliases": ["Duncan"], "tier": 3}, {"name": "Ben Simmons", "aliases": ["Simmons"], "tier": 3}, {"name": "Andrew Wiggins", "aliases": ["Wiggins"], "tier": 3}, {"name": "Kyrie Irving", "aliases": ["Kyrie", "Irving"], "tier": 4}, {"name": "Patrick Ewing", "aliases": ["Ewing"], "tier": 4}, {"name": "Deandre Ayton", "aliases": ["Ayton"], "tier": 4}, {"name": "Andrew Bogut", "aliases": ["Bogut"], "tier": 4}, {"name": "Andrea Bargnani", "aliases": ["Bargnani"], "tier": 4}, {"name": "Zaccharie Risacher", "aliases": ["Risacher"], "tier": 4}, {"name": "Anthony Bennett", "aliases": ["Bennett"], "tier": 4}, {"name": "Michael Olowokandi", "aliases": ["Olowokandi", "Kandi"], "tier": 5}, {"name": "Mychal Thompson", "aliases": ["Thompson"], "tier": 5}]}, {"prompt": "Nombra una franquicia NBA actual que haya jugado en otra ciudad (incluye etapa ABA)", "source": "Basketball Reference", "answers": [{"name": "Oklahoma City Thunder", "aliases": ["Thunder", "OKC", "Seattle SuperSonics", "SuperSonics", "Sonics"], "tier": 1}, {"name": "Memphis Grizzlies", "aliases": ["Grizzlies", "Vancouver Grizzlies"], "tier": 2}, {"name": "Utah Jazz", "aliases": ["Jazz", "New Orleans Jazz"], "tier": 2}, {"name": "Los Angeles Clippers", "aliases": ["Clippers", "Buffalo Braves", "San Diego Clippers"], "tier": 2}, {"name": "Los Angeles Lakers", "aliases": ["Lakers", "Minneapolis Lakers"], "tier": 2}, {"name": "Brooklyn Nets", "aliases": ["Nets", "New Jersey Nets"], "tier": 2}, {"name": "Golden State Warriors", "aliases": ["Warriors", "Philadelphia Warriors", "San Francisco Warriors"], "tier": 3}, {"name": "Sacramento Kings", "aliases": ["Kings", "Kansas City Kings", "Rochester Royals", "Cincinnati Royals"], "tier": 3}, {"name": "Houston Rockets", "aliases": ["Rockets", "San Diego Rockets"], "tier": 3}, {"name": "Atlanta Hawks", "aliases": ["Hawks", "St. Louis Hawks", "Tri-Cities Blackhawks", "Milwaukee Hawks"], "tier": 4}, {"name": "Washington Wizards", "aliases": ["Wizards", "Bullets", "Baltimore Bullets", "Chicago Packers", "Washington Bullets"], "tier": 4}, {"name": "Philadelphia 76ers", "aliases": ["76ers", "Sixers", "Syracuse Nationals"], "tier": 5}, {"name": "Detroit Pistons", "aliases": ["Pistons", "Fort Wayne Pistons"], "tier": 5}, {"name": "San Antonio Spurs", "aliases": ["Spurs", "Dallas Chaparrals"], "tier": 5}]}, {"prompt": "Nombra una universidad con 3+ títulos NCAA de básquetbol varonil (hasta 2025)", "source": "NCAA", "answers": [{"name": "Duke", "aliases": ["Blue Devils"], "tier": 1}, {"name": "North Carolina", "aliases": ["UNC", "Tar Heels"], "tier": 1}, {"name": "Kentucky", "aliases": ["Wildcats"], "tier": 2}, {"name": "UCLA", "aliases": ["Bruins"], "tier": 2}, {"name": "UConn", "aliases": ["Connecticut", "Huskies"], "tier": 2}, {"name": "Kansas", "aliases": ["Jayhawks"], "tier": 3}, {"name": "Villanova", "aliases": ["Wildcats de Villanova"], "tier": 3}, {"name": "Florida", "aliases": ["Gators"], "tier": 4}, {"name": "Indiana", "aliases": ["Hoosiers"], "tier": 5}]}, {"prompt": "Nombra a un jugador con un partido de 70+ puntos en la NBA (hasta la temporada 2024-25)", "source": "NBA.com", "answers": [{"name": "Kobe Bryant", "aliases": ["Kobe", "Bryant"], "tier": 1}, {"name": "Wilt Chamberlain", "aliases": ["Wilt", "Chamberlain"], "tier": 1}, {"name": "Luka Dončić", "aliases": ["Luka", "Doncic"], "tier": 2}, {"name": "Devin Booker", "aliases": ["Booker"], "tier": 2}, {"name": "Joel Embiid", "aliases": ["Embiid"], "tier": 3}, {"name": "Damian Lillard", "aliases": ["Lillard", "Dame"], "tier": 3}, {"name": "Donovan Mitchell", "aliases": ["Mitchell", "Spida"], "tier": 3}, {"name": "David Robinson", "aliases": ["Robinson", "The Admiral"], "tier": 4}, {"name": "Elgin Baylor", "aliases": ["Baylor"], "tier": 4}, {"name": "David Thompson", "aliases": ["Thompson", "Skywalker"], "tier": 5}]}]}, "2026-12-02": {"date": "2026-12-02", "id": "miercoles-futbol", "theme": "Miércoles de fútbol: sedes y ligas", "sport": "fut2", "rounds": [{"prompt": "Nombra a un país que haya sido sede de un Mundial varonil (hasta 2022)", "source": "FIFA", "answers": [{"name": "México", "aliases": [], "tier": 1}, {"name": "Qatar", "aliases": ["Catar"], "tier": 1}, {"name": "Brasil", "aliases": ["Brazil"], "tier": 1}, {"name": "Rusia", "aliases": ["Russia"], "tier": 1}, {"name": "Alemania", "aliases": ["Germany"], "tier": 2}, {"name": "Sudáfrica", "aliases": ["South Africa"], "tier": 2}, {"name": "Francia", "aliases": ["France"], "tier": 2}, {"name": "Estados Unidos", "aliases": ["EEUU", "EE UU", "USA"], "tier": 2}, {"name": "Corea del Sur", "aliases": ["Corea", "South Korea"], "tier": 3}, {"name": "Japón", "aliases": ["Japan"], "tier": 3}, {"name": "Argentina", "aliases": [], "tier": 3}, {"name": "España", "aliases": ["Spain"], "tier": 3}, {"name": "Italia", "aliases": ["Italy"], "tier": 3}, {"name": "Inglaterra", "aliases": ["England"], "tier": 3}, {"name": "Uruguay", "aliases": [], "tier": 4}, {"name": "Chile", "aliases": [], "tier": 4}, {"name": "Suiza", "aliases": ["Switzerland"], "tier": 5}, {"name": "Suecia", "aliases": ["Sweden"], "tier": 5}]}, {"prompt": "Nombra a un club campeón de la Concachampions / Copa de Campeones de CONCACAF entre 2000 y 2024", "source": "CONCACAF", "answers": [{"name": "América", "aliases": ["Club America"], "tier": 1}, {"name": "Monterrey", "aliases": ["Rayados"], "tier": 1}, {"name": "Pachuca", "aliases": ["Tuzos"], "tier": 2}, {"name": "Cruz Azul", "aliases": [], "tier": 2}, {"name": "Chivas", "aliases": ["Guadalajara"], "tier": 2}, {"name": "Tigres", "aliases": ["Tigres UANL"], "tier": 2}, {"name": "León", "aliases": ["Club Leon"], "tier": 3}, {"name": "Toluca", "aliases": [], "tier": 3}, {"name": "Atlante", "aliases": [], "tier": 4}, {"name": "Seattle Sounders", "aliases": ["Sounders", "Seattle"], "tier": 4}, {"name": "LA Galaxy", "aliases": ["Galaxy", "Los Angeles Galaxy"], "tier": 4}, {"name": "Saprissa", "aliases": ["Deportivo Saprissa"], "tier": 5}, {"name": "Alajuelense", "aliases": ["Liga Deportiva Alajuelense", "La Liga"], "tier": 5}]}, {"prompt": "Nombra a un país campeón de la Copa América (hasta 2024)", "source": "CONMEBOL", "answers": [{"name": "Argentina", "aliases": [], "tier": 1}, {"name": "Brasil", "aliases": ["Brazil"], "tier": 1}, {"name": "Uruguay", "aliases": [], "tier": 2}, {"name": "Chile", "aliases": [], "tier": 3}, {"name": "Colombia", "aliases": [], "tier": 3}, {"name": "Paraguay", "aliases": [], "tier": 4}, {"name": "Perú", "aliases": [], "tier": 4}, {"name": "Bolivia", "aliases": [], "tier": 5}]}, {"prompt": "Nombra a un club campeón de liga en Inglaterra, España o Italia (temporadas 1999-00 a 2024-25)", "source": "Premier League / LaLiga / Serie A", "answers": [{"name": "Real Madrid", "aliases": [], "tier": 1}, {"name": "FC Barcelona", "aliases": ["Barcelona", "Barca"], "tier": 1}, {"name": "Manchester City", "aliases": ["Man City"], "tier": 1}, {"name": "Manchester United", "aliases": ["Man United", "Man Utd"], "tier": 2}, {"name": "Liverpool", "aliases": [], "tier": 2}, {"name": "Juventus", "aliases": ["Juve"], "tier": 2}, {"name": "Chelsea", "aliases": [], "tier": 2}, {"name": "Arsenal", "aliases": [], "tier": 3}, {"name": "AC Milan", "aliases": ["Milan"], "tier": 3}, {"name": "Inter de Milan", "aliases": ["Inter", "Internazionale"], "tier": 3}, {"name": "Atlético de Madrid", "aliases": ["Atletico Madrid", "Atletico", "Atleti"], "tier": 3}, {"name": "Leicester City", "aliases": ["Leicester"], "tier": 3}, {"name": "Napoli", "aliases": ["Napoles"], "tier": 4}, {"name": "AS Roma", "aliases": ["Roma"], "tier": 4}, {"name": "Valencia", "aliases": [], "tier": 4}, {"name": "Lazio", "aliases": [], "tier": 5}, {"name": "Deportivo La Coruña", "aliases": ["Deportivo", "Depor"], "tier": 5}]}, {"prompt": "Nombra un estadio que haya sido sede de una final de Mundial varonil (hasta 2022)", "source": "FIFA", "answers": [{"name": "Estadio Azteca", "aliases": ["Azteca", "Estadio Banorte"], "tier": 1}, {"name": "Maracanã", "aliases": ["Estadio Maracana"], "tier": 1}, {"name": "Wembley", "aliases": ["Estadio de Wembley"], "tier": 2}, {"name": "Lusail", "aliases": ["Estadio Lusail", "Lusail Stadium"], "tier": 2}, {"name": "Santiago Bernabéu", "aliases": ["Bernabeu"], "tier": 2}, {"name": "Stade de France", "aliases": [], "tier": 2}, {"name": "Rose Bowl", "aliases": [], "tier": 3}, {"name": "Luzhniki", "aliases": ["Estadio Luzhniki"], "tier": 3}, {"name": "Estadio Monumental", "aliases": ["Monumental", "Mas Monumental"], "tier": 3}, {"name": "Soccer City", "aliases": ["FNB Stadium"], "tier": 3}, {"name": "Estadio Olímpico de Berlín", "aliases": ["Olimpico de Berlin", "Estadio Olimpico de Berlin"], "tier": 3}, {"name": "Estadio Olímpico de Roma", "aliases": ["Olimpico de Roma", "Estadio Olimpico de Roma"], "tier": 4}, {"name": "Estadio Internacional de Yokohama", "aliases": ["Yokohama", "Nissan Stadium"], "tier": 4}, {"name": "Estadio Olímpico de Múnich", "aliases": ["Olimpico de Munich", "Estadio Olimpico de Munich"], "tier": 4}, {"name": "Estadio Centenario", "aliases": ["Centenario"], "tier": 4}, {"name": "Wankdorf", "aliases": ["Estadio Wankdorf"], "tier": 5}, {"name": "Råsunda", "aliases": ["Estadio Rasunda"], "tier": 5}, {"name": "Estadio Nacional de Chile", "aliases": ["Estadio Nacional"], "tier": 5}, {"name": "Stade Olympique de Colombes", "aliases": ["Colombes", "Stade de Colombes"], "tier": 5}, {"name": "Stadio Nazionale PNF", "aliases": ["Stadio Nazionale", "Estadio Nacional PNF"], "tier": 5}]}]}, "2026-12-01": {"date": "2026-12-01", "id": "martes-f1", "theme": "Martes de Fórmula 1", "sport": "f1", "rounds": [{"prompt": "Nombra a un piloto campeón del mundo de F1 entre 1990 y 2024", "source": "FIA", "answers": [{"name": "Lewis Hamilton", "aliases": ["Hamilton", "Lewis"], "tier": 1}, {"name": "Max Verstappen", "aliases": ["Verstappen", "Max"], "tier": 1}, {"name": "Michael Schumacher", "aliases": ["Schumacher", "Schumi"], "tier": 1}, {"name": "Ayrton Senna", "aliases": ["Senna", "Ayrton"], "tier": 2}, {"name": "Fernando Alonso", "aliases": ["Alonso", "Fernando"], "tier": 2}, {"name": "Sebastian Vettel", "aliases": ["Vettel", "Seb"], "tier": 2}, {"name": "Kimi Räikkönen", "aliases": ["Raikkonen", "Kimi"], "tier": 3}, {"name": "Jenson Button", "aliases": ["Button", "Jenson"], "tier": 3}, {"name": "Nico Rosberg", "aliases": ["Rosberg"], "tier": 3}, {"name": "Alain Prost", "aliases": ["Prost"], "tier": 3}, {"name": "Mika Häkkinen", "aliases": ["Hakkinen", "Mika"], "tier": 4}, {"name": "Damon Hill", "aliases": ["Hill"], "tier": 4}, {"name": "Nigel Mansell", "aliases": ["Mansell"], "tier": 4}, {"name": "Jacques Villeneuve", "aliases": ["Villeneuve"], "tier": 5}]}, {"prompt": "Nombra a un piloto con 10+ victorias en F1 (al cierre de 2024)", "source": "FIA", "answers": [{"name": "Lewis Hamilton", "aliases": ["Hamilton"], "tier": 1}, {"name": "Max Verstappen", "aliases": ["Verstappen"], "tier": 1}, {"name": "Michael Schumacher", "aliases": ["Schumacher"], "tier": 1}, {"name": "Ayrton Senna", "aliases": ["Senna"], "tier": 2}, {"name": "Fernando Alonso", "aliases": ["Alonso"], "tier": 2}, {"name": "Sebastian Vettel", "aliases": ["Vettel"], "tier": 2}, {"name": "Alain Prost", "aliases": ["Prost"], "tier": 2}, {"name": "Niki Lauda", "aliases": ["Lauda"], "tier": 3}, {"name": "Kimi Räikkönen", "aliases": ["Raikkonen", "Kimi"], "tier": 3}, {"name": "Jenson Button", "aliases": ["Button"], "tier": 3}, {"name": "Nico Rosberg", "aliases": ["Rosberg"], "tier": 3}, {"name": "Mika Häkkinen", "aliases": ["Hakkinen"], "tier": 3}, {"name": "Nigel Mansell", "aliases": ["Mansell"], "tier": 3}, {"name": "Juan Manuel Fangio", "aliases": ["Fangio"], "tier": 3}, {"name": "Jackie Stewart", "aliases": ["Stewart"], "tier": 4}, {"name": "Jim Clark", "aliases": ["Clark"], "tier": 4}, {"name": "Nelson Piquet", "aliases": ["Piquet"], "tier": 4}, {"name": "Damon Hill", "aliases": [], "tier": 4}, {"name": "James Hunt", "aliases": ["Hunt"], "tier": 4}, {"name": "Valtteri Bottas", "aliases": ["Bottas"], "tier": 4}, {"name": "Felipe Massa", "aliases": ["Massa"], "tier": 4}, {"name": "Rubens Barrichello", "aliases": ["Barrichello", "Rubinho"], "tier": 4}, {"name": "David Coulthard", "aliases": ["Coulthard"], "tier": 4}, {"name": "Stirling Moss", "aliases": ["Moss"], "tier": 4}, {"name": "Emerson Fittipaldi", "aliases": ["Fittipaldi"], "tier": 5}, {"name": "Graham Hill", "aliases": [], "tier": 5}, {"name": "Jack Brabham", "aliases": ["Brabham"], "tier": 5}, {"name": "Alberto Ascari", "aliases": ["Ascari"], "tier": 5}, {"name": "Carlos Reutemann", "aliases": ["Reutemann"], "tier": 5}, {"name": "Alan Jones", "aliases": ["Jones"], "tier": 5}, {"name": "Jacques Villeneuve", "aliases": ["Villeneuve"], "tier": 5}, {"name": "Gerhard Berger", "aliases": ["Berger"], "tier": 5}, {"name": "Ronnie Peterson", "aliases": ["Peterson"], "tier": 5}, {"name": "Jody Scheckter", "aliases": ["Scheckter"], "tier": 5}]}, {"prompt": "Nombra a un constructor campeón de constructores de F1 entre 1990 y 2024", "source": "FIA", "answers": [{"name": "Ferrari", "aliases": ["Scuderia Ferrari"], "tier": 1}, {"name": "Red Bull", "aliases": ["Red Bull Racing", "RBR"], "tier": 1}, {"name": "Mercedes", "aliases": ["Mercedes AMG"], "tier": 1}, {"name": "McLaren", "aliases": [], "tier": 2}, {"name": "Williams", "aliases": [], "tier": 3}, {"name": "Renault", "aliases": [], "tier": 4}, {"name": "Benetton", "aliases": [], "tier": 4}, {"name": "Brawn GP", "aliases": ["Brawn"], "tier": 5}]}, {"prompt": "Nombra a un país con al menos un Gran Premio en el calendario de F1 2024", "source": "Formula1.com", "answers": [{"name": "México", "aliases": [], "tier": 1}, {"name": "Monaco", "aliases": [], "tier": 1}, {"name": "Estados Unidos", "aliases": ["EEUU", "EE UU", "USA", "Estados Unidos de America"], "tier": 1}, {"name": "Italia", "aliases": ["Italy"], "tier": 1}, {"name": "Brasil", "aliases": ["Brazil"], "tier": 2}, {"name": "Reino Unido", "aliases": ["UK", "Inglaterra", "Gran Bretana", "Great Britain"], "tier": 2}, {"name": "España", "aliases": ["Spain"], "tier": 2}, {"name": "Japón", "aliases": ["Japan"], "tier": 2}, {"name": "Canadá", "aliases": [], "tier": 2}, {"name": "Bélgica", "aliases": ["Belgium"], "tier": 3}, {"name": "Países Bajos", "aliases": ["Holanda", "Netherlands"], "tier": 3}, {"name": "Emiratos Árabes Unidos", "aliases": ["Emiratos", "EAU", "UAE", "Abu Dhabi"], "tier": 3}, {"name": "Australia", "aliases": [], "tier": 3}, {"name": "Austria", "aliases": [], "tier": 3}, {"name": "Singapur", "aliases": ["Singapore"], "tier": 3}, {"name": "Arabia Saudita", "aliases": ["Arabia", "Saudi Arabia"], "tier": 4}, {"name": "Baréin", "aliases": ["Bahrain"], "tier": 4}, {"name": "Hungría", "aliases": ["Hungary"], "tier": 4}, {"name": "China", "aliases": [], "tier": 4}, {"name": "Qatar", "aliases": ["Catar"], "tier": 4}, {"name": "Azerbaiyán", "aliases": ["Azerbaijan", "Baku"], "tier": 5}]}, {"prompt": "Nombra a un piloto titular de Red Bull Racing en algún GP (2005 a 2024)", "source": "Formula1.com", "answers": [{"name": "Max Verstappen", "aliases": ["Verstappen", "Max"], "tier": 1}, {"name": "Sergio Pérez", "aliases": ["Checo Perez", "Checo", "Perez"], "tier": 1}, {"name": "Sebastian Vettel", "aliases": ["Vettel"], "tier": 2}, {"name": "Daniel Ricciardo", "aliases": ["Ricciardo"], "tier": 2}, {"name": "Mark Webber", "aliases": ["Webber"], "tier": 3}, {"name": "Pierre Gasly", "aliases": ["Gasly"], "tier": 3}, {"name": "Alexander Albon", "aliases": ["Alex Albon", "Albon"], "tier": 3}, {"name": "Daniil Kvyat", "aliases": ["Kvyat"], "tier": 4}, {"name": "David Coulthard", "aliases": ["Coulthard", "DC"], "tier": 4}, {"name": "Christian Klien", "aliases": ["Klien"], "tier": 5}, {"name": "Vitantonio Liuzzi", "aliases": ["Tonio Liuzzi", "Liuzzi"], "tier": 5}, {"name": "Robert Doornbos", "aliases": ["Doornbos"], "tier": 5}]}]}, "2026-11-30": {"date": "2026-11-30", "id": "lunes-mlb", "theme": "Lunes de MLB", "sport": "beis", "rounds": [{"prompt": "Nombra a un equipo campeón de la Serie Mundial entre 2000 y 2024", "source": "MLB.com", "answers": [{"name": "New York Yankees", "aliases": ["Yankees"], "tier": 1}, {"name": "Los Angeles Dodgers", "aliases": ["Dodgers", "LA Dodgers"], "tier": 1}, {"name": "Boston Red Sox", "aliases": ["Red Sox", "Boston"], "tier": 1}, {"name": "Chicago Cubs", "aliases": ["Cubs"], "tier": 2}, {"name": "Houston Astros", "aliases": ["Astros", "Houston"], "tier": 2}, {"name": "San Francisco Giants", "aliases": ["Giants", "San Francisco"], "tier": 2}, {"name": "St. Louis Cardinals", "aliases": ["Cardinals"], "tier": 2}, {"name": "Atlanta Braves", "aliases": ["Braves", "Atlanta"], "tier": 3}, {"name": "Philadelphia Phillies", "aliases": ["Phillies", "Philadelphia"], "tier": 3}, {"name": "Kansas City Royals", "aliases": ["Royals", "Kansas City"], "tier": 4}, {"name": "Washington Nationals", "aliases": ["Nationals", "Nats", "Washington"], "tier": 4}, {"name": "Texas Rangers", "aliases": ["Rangers", "Texas"], "tier": 4}, {"name": "Chicago White Sox", "aliases": ["White Sox"], "tier": 4}, {"name": "Florida Marlins", "aliases": ["Marlins", "Miami Marlins", "Florida"], "tier": 4}, {"name": "Arizona Diamondbacks", "aliases": ["Diamondbacks", "D-backs", "Arizona"], "tier": 5}, {"name": "Anaheim Angels", "aliases": ["Angels", "Angelinos", "Anaheim"], "tier": 5}]}, {"prompt": "Nombra a un jugador con 600+ jonrones en MLB", "source": "Baseball Reference", "answers": [{"name": "Babe Ruth", "aliases": ["Ruth", "Bambino"], "tier": 1}, {"name": "Barry Bonds", "aliases": ["Bonds"], "tier": 1}, {"name": "Hank Aaron", "aliases": ["Aaron"], "tier": 2}, {"name": "Alex Rodríguez", "aliases": ["A-Rod", "Rodriguez"], "tier": 2}, {"name": "Albert Pujols", "aliases": ["Pujols"], "tier": 3}, {"name": "Willie Mays", "aliases": ["Mays"], "tier": 3}, {"name": "Ken Griffey Jr.", "aliases": ["Griffey", "Ken Griffey", "Junior"], "tier": 3}, {"name": "Sammy Sosa", "aliases": ["Sosa"], "tier": 3}, {"name": "Jim Thome", "aliases": ["Thome"], "tier": 5}]}, {"prompt": "Nombra a un pitcher con 300+ victorias en MLB", "source": "Baseball Reference", "answers": [{"name": "Cy Young", "aliases": [], "tier": 1}, {"name": "Nolan Ryan", "aliases": ["Ryan"], "tier": 1}, {"name": "Greg Maddux", "aliases": ["Maddux"], "tier": 2}, {"name": "Roger Clemens", "aliases": ["Clemens"], "tier": 2}, {"name": "Randy Johnson", "aliases": ["Big Unit"], "tier": 2}, {"name": "Tom Seaver", "aliases": ["Seaver"], "tier": 3}, {"name": "Tom Glavine", "aliases": ["Glavine"], "tier": 3}, {"name": "Walter Johnson", "aliases": ["Big Train"], "tier": 3}, {"name": "Steve Carlton", "aliases": ["Carlton"], "tier": 3}, {"name": "Warren Spahn", "aliases": ["Spahn"], "tier": 4}, {"name": "Phil Niekro", "aliases": ["Niekro"], "tier": 4}, {"name": "Gaylord Perry", "aliases": ["Perry"], "tier": 4}, {"name": "Don Sutton", "aliases": ["Sutton"], "tier": 4}, {"name": "Christy Mathewson", "aliases": ["Mathewson"], "tier": 4}, {"name": "Lefty Grove", "aliases": ["Grove"], "tier": 5}, {"name": "Early Wynn", "aliases": ["Wynn"], "tier": 5}, {"name": "Grover Cleveland Alexander", "aliases": ["Pete Alexander", "Alexander"], "tier": 5}, {"name": "Pud Galvin", "aliases": ["Galvin"], "tier": 5}, {"name": "Kid Nichols", "aliases": ["Nichols"], "tier": 5}, {"name": "Tim Keefe", "aliases": ["Keefe"], "tier": 5}, {"name": "John Clarkson", "aliases": ["Clarkson"], "tier": 5}, {"name": "Eddie Plank", "aliases": ["Plank"], "tier": 5}, {"name": "Old Hoss Radbourn", "aliases": ["Radbourn"], "tier": 5}, {"name": "Mickey Welch", "aliases": ["Welch"], "tier": 5}]}, {"prompt": "Nombra a un ganador del Home Run Derby entre 2010 y 2024", "source": "MLB.com", "answers": [{"name": "Aaron Judge", "aliases": ["Judge"], "tier": 1}, {"name": "Pete Alonso", "aliases": ["Alonso"], "tier": 2}, {"name": "Juan Soto", "aliases": ["Soto"], "tier": 2}, {"name": "Vladimir Guerrero Jr.", "aliases": ["Vladimir Guerrero", "Vladdy", "Guerrero"], "tier": 2}, {"name": "Bryce Harper", "aliases": ["Harper"], "tier": 2}, {"name": "Giancarlo Stanton", "aliases": ["Stanton"], "tier": 3}, {"name": "David Ortiz", "aliases": ["Ortiz", "Big Papi"], "tier": 3}, {"name": "Teoscar Hernández", "aliases": ["Teoscar"], "tier": 3}, {"name": "Robinson Canó", "aliases": ["Cano"], "tier": 4}, {"name": "Yoenis Céspedes", "aliases": ["Cespedes"], "tier": 4}, {"name": "Prince Fielder", "aliases": ["Fielder"], "tier": 4}, {"name": "Todd Frazier", "aliases": ["Frazier"], "tier": 5}]}, {"prompt": "Nombra a un jugador con 3,000+ hits en MLB (al cierre de 2024)", "source": "Baseball Reference", "answers": [{"name": "Derek Jeter", "aliases": ["Jeter"], "tier": 1}, {"name": "Ichiro Suzuki", "aliases": ["Ichiro"], "tier": 1}, {"name": "Pete Rose", "aliases": ["Rose"], "tier": 1}, {"name": "Hank Aaron", "aliases": ["Aaron"], "tier": 2}, {"name": "Albert Pujols", "aliases": ["Pujols"], "tier": 2}, {"name": "Miguel Cabrera", "aliases": ["Miggy", "Cabrera"], "tier": 2}, {"name": "Alex Rodríguez", "aliases": ["A-Rod", "Rodriguez"], "tier": 2}, {"name": "Roberto Clemente", "aliases": ["Clemente"], "tier": 2}, {"name": "Ty Cobb", "aliases": ["Cobb"], "tier": 3}, {"name": "Willie Mays", "aliases": ["Mays"], "tier": 3}, {"name": "Cal Ripken Jr.", "aliases": ["Cal Ripken", "Ripken"], "tier": 3}, {"name": "Tony Gwynn", "aliases": ["Gwynn"], "tier": 3}, {"name": "Stan Musial", "aliases": ["Musial"], "tier": 3}, {"name": "Rickey Henderson", "aliases": ["Henderson"], "tier": 3}, {"name": "Adrián Beltré", "aliases": ["Beltre"], "tier": 3}, {"name": "George Brett", "aliases": ["Brett"], "tier": 4}, {"name": "Robin Yount", "aliases": ["Yount"], "tier": 4}, {"name": "Craig Biggio", "aliases": ["Biggio"], "tier": 4}, {"name": "Wade Boggs", "aliases": ["Boggs"], "tier": 4}, {"name": "Carl Yastrzemski", "aliases": ["Yastrzemski", "Yaz"], "tier": 4}, {"name": "Eddie Murray", "aliases": ["Murray"], "tier": 4}, {"name": "Dave Winfield", "aliases": ["Winfield"], "tier": 4}, {"name": "Paul Molitor", "aliases": ["Molitor"], "tier": 4}, {"name": "Rafael Palmeiro", "aliases": ["Palmeiro"], "tier": 4}, {"name": "Rod Carew", "aliases": ["Carew"], "tier": 4}, {"name": "Lou Brock", "aliases": ["Brock"], "tier": 4}, {"name": "Al Kaline", "aliases": ["Kaline"], "tier": 4}, {"name": "Tris Speaker", "aliases": ["Speaker"], "tier": 5}, {"name": "Honus Wagner", "aliases": ["Wagner"], "tier": 5}, {"name": "Nap Lajoie", "aliases": ["Lajoie"], "tier": 5}, {"name": "Paul Waner", "aliases": ["Waner"], "tier": 5}, {"name": "Cap Anson", "aliases": ["Anson"], "tier": 5}, {"name": "Eddie Collins", "aliases": ["Collins"], "tier": 5}]}]}, "2026-11-29": {"date": "2026-11-29", "id": "domingo-nfl", "theme": "Domingo de NFL", "sport": "americano2", "rounds": [{"prompt": "Nombra a un head coach con al menos 2 Super Bowls ganados (hasta el Super Bowl LIX)", "source": "Pro Football Reference", "answers": [{"name": "Bill Belichick", "aliases": ["Belichick"], "tier": 1}, {"name": "Andy Reid", "aliases": ["Reid", "Big Red"], "tier": 1}, {"name": "Vince Lombardi", "aliases": ["Lombardi"], "tier": 2}, {"name": "Bill Parcells", "aliases": ["Parcells"], "tier": 2}, {"name": "Bill Walsh", "aliases": ["Walsh"], "tier": 3}, {"name": "Don Shula", "aliases": ["Shula"], "tier": 3}, {"name": "Tom Landry", "aliases": ["Landry"], "tier": 3}, {"name": "Joe Gibbs", "aliases": ["Gibbs"], "tier": 3}, {"name": "Jimmy Johnson", "aliases": ["Johnson"], "tier": 3}, {"name": "Tom Coughlin", "aliases": ["Coughlin"], "tier": 3}, {"name": "Chuck Noll", "aliases": ["Noll"], "tier": 4}, {"name": "Mike Shanahan", "aliases": ["Shanahan"], "tier": 4}, {"name": "Tom Flores", "aliases": ["Flores"], "tier": 5}, {"name": "George Seifert", "aliases": ["Seifert"], "tier": 5}]}, {"prompt": "Nombra a un QB con 50,000+ yardas por pase en su carrera NFL (al cierre de 2024)", "source": "Pro Football Reference", "answers": [{"name": "Tom Brady", "aliases": ["Brady"], "tier": 1}, {"name": "Peyton Manning", "aliases": ["Peyton"], "tier": 1}, {"name": "Drew Brees", "aliases": ["Brees"], "tier": 2}, {"name": "Brett Favre", "aliases": ["Favre"], "tier": 2}, {"name": "Aaron Rodgers", "aliases": ["Rodgers"], "tier": 2}, {"name": "Dan Marino", "aliases": ["Marino"], "tier": 3}, {"name": "Ben Roethlisberger", "aliases": ["Roethlisberger", "Big Ben"], "tier": 3}, {"name": "Eli Manning", "aliases": ["Eli"], "tier": 3}, {"name": "John Elway", "aliases": ["Elway"], "tier": 3}, {"name": "Matthew Stafford", "aliases": ["Stafford"], "tier": 4}, {"name": "Philip Rivers", "aliases": ["Rivers"], "tier": 4}, {"name": "Matt Ryan", "aliases": ["Ryan", "Matty Ice"], "tier": 5}]}, {"prompt": "Nombra a un MVP de temporada regular NFL entre 2000 y 2024", "source": "AP", "answers": [{"name": "Patrick Mahomes", "aliases": ["Mahomes"], "tier": 1}, {"name": "Tom Brady", "aliases": ["Brady"], "tier": 1}, {"name": "Aaron Rodgers", "aliases": ["Rodgers"], "tier": 2}, {"name": "Lamar Jackson", "aliases": ["Lamar", "Jackson"], "tier": 2}, {"name": "Peyton Manning", "aliases": ["Peyton", "Manning"], "tier": 2}, {"name": "Josh Allen", "aliases": ["Allen"], "tier": 2}, {"name": "Cam Newton", "aliases": ["Newton"], "tier": 3}, {"name": "Adrian Peterson", "aliases": ["Peterson", "AP"], "tier": 3}, {"name": "LaDainian Tomlinson", "aliases": ["Tomlinson", "LT"], "tier": 3}, {"name": "Kurt Warner", "aliases": ["Warner"], "tier": 4}, {"name": "Matt Ryan", "aliases": ["Ryan"], "tier": 4}, {"name": "Marshall Faulk", "aliases": ["Faulk"], "tier": 4}, {"name": "Shaun Alexander", "aliases": ["Alexander"], "tier": 4}, {"name": "Steve McNair", "aliases": ["McNair"], "tier": 5}, {"name": "Rich Gannon", "aliases": ["Gannon"], "tier": 5}]}, {"prompt": "Nombra a un jugador con 100+ touchdowns por tierra en su carrera NFL (al cierre de 2024)", "source": "Pro Football Reference", "answers": [{"name": "Emmitt Smith", "aliases": ["Emmitt", "Smith"], "tier": 1}, {"name": "Derrick Henry", "aliases": ["Henry"], "tier": 2}, {"name": "Walter Payton", "aliases": ["Payton", "Sweetness"], "tier": 2}, {"name": "LaDainian Tomlinson", "aliases": ["Tomlinson", "LT"], "tier": 2}, {"name": "Adrian Peterson", "aliases": ["Peterson", "AP"], "tier": 2}, {"name": "Jim Brown", "aliases": [], "tier": 3}, {"name": "Marcus Allen", "aliases": ["Allen"], "tier": 4}, {"name": "Marshall Faulk", "aliases": ["Faulk"], "tier": 4}, {"name": "John Riggins", "aliases": ["Riggins"], "tier": 5}, {"name": "Shaun Alexander", "aliases": ["Alexander"], "tier": 5}]}, {"prompt": "Nombra a un QB elegido #1 global del Draft NFL entre 2000 y 2025", "source": "NFL", "answers": [{"name": "Joe Burrow", "aliases": ["Burrow"], "tier": 1}, {"name": "Andrew Luck", "aliases": ["Luck"], "tier": 2}, {"name": "Cam Newton", "aliases": ["Newton"], "tier": 2}, {"name": "Trevor Lawrence", "aliases": ["Lawrence"], "tier": 2}, {"name": "Eli Manning", "aliases": ["Eli", "Manning"], "tier": 2}, {"name": "Caleb Williams", "aliases": ["Caleb", "Williams"], "tier": 2}, {"name": "Baker Mayfield", "aliases": ["Mayfield", "Baker"], "tier": 3}, {"name": "Michael Vick", "aliases": ["Vick"], "tier": 3}, {"name": "Matthew Stafford", "aliases": ["Stafford"], "tier": 3}, {"name": "Jared Goff", "aliases": ["Goff"], "tier": 3}, {"name": "Kyler Murray", "aliases": ["Kyler", "Murray"], "tier": 3}, {"name": "Bryce Young", "aliases": ["Young"], "tier": 3}, {"name": "Cam Ward", "aliases": ["Ward"], "tier": 3}, {"name": "Jameis Winston", "aliases": ["Winston"], "tier": 4}, {"name": "Sam Bradford", "aliases": ["Bradford"], "tier": 4}, {"name": "Carson Palmer", "aliases": ["Palmer"], "tier": 4}, {"name": "Alex Smith", "aliases": ["Smith"], "tier": 4}, {"name": "JaMarcus Russell", "aliases": ["JaMarcus", "Russell"], "tier": 5}, {"name": "David Carr", "aliases": ["Carr"], "tier": 5}]}]}, "2026-11-28": {"date": "2026-11-28", "id": "sabado-futbol", "theme": "Sábado de fútbol internacional", "sport": "fut1", "rounds": [{"prompt": "Nombra a un país campeón del Mundial varonil (hasta Qatar 2022)", "source": "FIFA", "answers": [{"name": "Brasil", "aliases": ["Brazil"], "tier": 1}, {"name": "Argentina", "aliases": [], "tier": 1}, {"name": "Alemania", "aliases": ["Germany", "Alemania Federal"], "tier": 2}, {"name": "Francia", "aliases": ["France"], "tier": 2}, {"name": "Italia", "aliases": ["Italy"], "tier": 3}, {"name": "España", "aliases": ["Spain"], "tier": 3}, {"name": "Inglaterra", "aliases": ["England"], "tier": 4}, {"name": "Uruguay", "aliases": [], "tier": 5}]}, {"prompt": "Nombra a un ganador del Balón de Oro entre 2000 y 2024", "source": "France Football", "answers": [{"name": "Lionel Messi", "aliases": ["Messi", "Leo Messi"], "tier": 1}, {"name": "Cristiano Ronaldo", "aliases": ["Cristiano", "CR7", "Ronaldo"], "tier": 1}, {"name": "Ronaldinho", "aliases": [], "tier": 2}, {"name": "Kaká", "aliases": [], "tier": 2}, {"name": "Luka Modrić", "aliases": ["Modric"], "tier": 2}, {"name": "Karim Benzema", "aliases": ["Benzema"], "tier": 2}, {"name": "Ronaldo Nazário", "aliases": ["R9", "El Fenomeno", "Nazario"], "tier": 2}, {"name": "Rodri", "aliases": ["Rodrigo Hernandez"], "tier": 3}, {"name": "Luis Figo", "aliases": ["Figo"], "tier": 3}, {"name": "Fabio Cannavaro", "aliases": ["Cannavaro"], "tier": 4}, {"name": "Andriy Shevchenko", "aliases": ["Shevchenko"], "tier": 4}, {"name": "Michael Owen", "aliases": ["Owen"], "tier": 4}, {"name": "Pavel Nedvěd", "aliases": ["Nedved"], "tier": 5}]}, {"prompt": "Nombra un club de España, Inglaterra o Italia campeón de la Copa de Europa / Champions League (hasta 2025)", "source": "UEFA", "answers": [{"name": "Real Madrid", "aliases": ["Madrid"], "tier": 1}, {"name": "FC Barcelona", "aliases": ["Barcelona", "Barca"], "tier": 1}, {"name": "Liverpool", "aliases": [], "tier": 2}, {"name": "Manchester United", "aliases": ["Man United", "Man Utd", "United"], "tier": 2}, {"name": "AC Milan", "aliases": ["Milan"], "tier": 2}, {"name": "Juventus", "aliases": ["Juve"], "tier": 2}, {"name": "Chelsea", "aliases": [], "tier": 3}, {"name": "Inter de Milan", "aliases": ["Inter", "Internazionale"], "tier": 3}, {"name": "Manchester City", "aliases": ["Man City", "City"], "tier": 3}, {"name": "Aston Villa", "aliases": ["Villa"], "tier": 4}, {"name": "Nottingham Forest", "aliases": ["Forest"], "tier": 5}]}, {"prompt": "Nombra un club mexicano con al menos 5 títulos de liga en la era profesional (hasta 2024)", "source": "Liga MX", "answers": [{"name": "América", "aliases": ["Club America", "Aguilas"], "tier": 1}, {"name": "Chivas", "aliases": ["Guadalajara", "Chivas Rayadas"], "tier": 1}, {"name": "Cruz Azul", "aliases": ["La Maquina", "Cementeros"], "tier": 2}, {"name": "Pumas", "aliases": ["Pumas UNAM", "UNAM"], "tier": 2}, {"name": "Tigres", "aliases": ["Tigres UANL"], "tier": 2}, {"name": "Toluca", "aliases": ["Diablos Rojos"], "tier": 3}, {"name": "Monterrey", "aliases": ["Rayados"], "tier": 3}, {"name": "León", "aliases": ["Club Leon", "La Fiera"], "tier": 4}, {"name": "Pachuca", "aliases": ["Tuzos"], "tier": 4}, {"name": "Santos Laguna", "aliases": ["Santos", "Guerreros"], "tier": 5}]}, {"prompt": "Nombra a un jugador con 10+ goles en Mundiales varoniles (hasta 2022)", "source": "FIFA", "answers": [{"name": "Lionel Messi", "aliases": ["Messi"], "tier": 1}, {"name": "Kylian Mbappé", "aliases": ["Mbappe"], "tier": 1}, {"name": "Miroslav Klose", "aliases": ["Klose"], "tier": 2}, {"name": "Ronaldo Nazário", "aliases": ["Ronaldo", "R9"], "tier": 2}, {"name": "Pelé", "aliases": [], "tier": 2}, {"name": "Gerd Müller", "aliases": [], "tier": 3}, {"name": "Gabriel Batistuta", "aliases": ["Batistuta", "Batigol"], "tier": 3}, {"name": "Thomas Müller", "aliases": [], "tier": 3}, {"name": "Gary Lineker", "aliases": ["Lineker"], "tier": 3}, {"name": "Just Fontaine", "aliases": ["Fontaine"], "tier": 4}, {"name": "Jürgen Klinsmann", "aliases": ["Klinsmann"], "tier": 4}, {"name": "Sándor Kocsis", "aliases": ["Kocsis"], "tier": 5}, {"name": "Helmut Rahn", "aliases": ["Rahn"], "tier": 5}, {"name": "Teófilo Cubillas", "aliases": ["Cubillas"], "tier": 5}, {"name": "Grzegorz Lato", "aliases": ["Lato"], "tier": 5}]}]}, "2026-11-27": {"date": "2026-11-27", "id": "viernes-nba", "theme": "Viernes de NBA", "sport": "basket", "rounds": [{"prompt": "Nombra a un MVP de las Finales NBA entre 2000 y 2024", "source": "NBA.com", "answers": [{"name": "LeBron James", "aliases": ["LeBron", "James"], "tier": 1}, {"name": "Stephen Curry", "aliases": ["Steph Curry", "Curry", "Steph"], "tier": 1}, {"name": "Kobe Bryant", "aliases": ["Kobe", "Bryant"], "tier": 1}, {"name": "Shaquille O'Neal", "aliases": ["Shaq", "O'Neal", "Shaquille"], "tier": 2}, {"name": "Tim Duncan", "aliases": ["Duncan"], "tier": 2}, {"name": "Kevin Durant", "aliases": ["Durant", "KD"], "tier": 2}, {"name": "Giannis Antetokounmpo", "aliases": ["Giannis", "Antetokounmpo"], "tier": 2}, {"name": "Nikola Jokić", "aliases": ["Jokic"], "tier": 2}, {"name": "Dwyane Wade", "aliases": ["Wade", "D-Wade"], "tier": 2}, {"name": "Dirk Nowitzki", "aliases": ["Dirk", "Nowitzki"], "tier": 3}, {"name": "Kawhi Leonard", "aliases": ["Kawhi", "Leonard"], "tier": 3}, {"name": "Paul Pierce", "aliases": ["Pierce"], "tier": 3}, {"name": "Tony Parker", "aliases": ["Parker"], "tier": 4}, {"name": "Jaylen Brown", "aliases": ["Brown"], "tier": 4}, {"name": "Chauncey Billups", "aliases": ["Billups"], "tier": 5}, {"name": "Andre Iguodala", "aliases": ["Iguodala", "Iggy"], "tier": 5}]}, {"prompt": "Nombra un equipo campeón de la NBA entre 1990 y 2024", "source": "NBA.com", "answers": [{"name": "Los Angeles Lakers", "aliases": ["Lakers", "LA Lakers"], "tier": 1}, {"name": "Chicago Bulls", "aliases": ["Bulls", "Chicago"], "tier": 1}, {"name": "Golden State Warriors", "aliases": ["Warriors", "Golden State"], "tier": 1}, {"name": "Boston Celtics", "aliases": ["Celtics", "Boston"], "tier": 2}, {"name": "Miami Heat", "aliases": ["Heat", "Miami"], "tier": 2}, {"name": "San Antonio Spurs", "aliases": ["Spurs", "San Antonio"], "tier": 2}, {"name": "Cleveland Cavaliers", "aliases": ["Cavaliers", "Cavs", "Cleveland"], "tier": 3}, {"name": "Houston Rockets", "aliases": ["Rockets", "Houston"], "tier": 4}, {"name": "Dallas Mavericks", "aliases": ["Mavericks", "Mavs", "Dallas"], "tier": 4}, {"name": "Toronto Raptors", "aliases": ["Raptors", "Toronto"], "tier": 4}, {"name": "Milwaukee Bucks", "aliases": ["Bucks", "Milwaukee"], "tier": 4}, {"name": "Denver Nuggets", "aliases": ["Nuggets", "Denver"], "tier": 4}, {"name": "Detroit Pistons", "aliases": ["Pistons", "Detroit"], "tier": 5}]}, {"prompt": "Nombra a un jugador elegido #1 del Draft NBA entre 2000 y 2024", "source": "Basketball Reference", "answers": [{"name": "LeBron James", "aliases": ["LeBron", "James"], "tier": 1}, {"name": "Victor Wembanyama", "aliases": ["Wembanyama", "Wemby", "Victor"], "tier": 1}, {"name": "Zion Williamson", "aliases": ["Zion", "Williamson"], "tier": 1}, {"name": "Yao Ming", "aliases": ["Yao"], "tier": 2}, {"name": "Anthony Davis", "aliases": ["AD", "Davis"], "tier": 2}, {"name": "Kyrie Irving", "aliases": ["Kyrie", "Irving"], "tier": 2}, {"name": "Derrick Rose", "aliases": ["Rose"], "tier": 2}, {"name": "Anthony Edwards", "aliases": ["Ant Edwards", "Edwards"], "tier": 3}, {"name": "Karl-Anthony Towns", "aliases": ["Towns", "KAT"], "tier": 3}, {"name": "Ben Simmons", "aliases": ["Simmons"], "tier": 3}, {"name": "Blake Griffin", "aliases": ["Griffin"], "tier": 3}, {"name": "Dwight Howard", "aliases": ["Howard"], "tier": 3}, {"name": "Cade Cunningham", "aliases": ["Cade", "Cunningham"], "tier": 3}, {"name": "Paolo Banchero", "aliases": ["Paolo", "Banchero"], "tier": 3}, {"name": "John Wall", "aliases": ["Wall"], "tier": 4}, {"name": "Andrew Wiggins", "aliases": ["Wiggins"], "tier": 4}, {"name": "Deandre Ayton", "aliases": ["Ayton"], "tier": 4}, {"name": "Greg Oden", "aliases": ["Oden"], "tier": 4}, {"name": "Markelle Fultz", "aliases": ["Fultz"], "tier": 4}, {"name": "Kenyon Martin", "aliases": ["Martin"], "tier": 5}, {"name": "Kwame Brown", "aliases": ["Kwame"], "tier": 5}, {"name": "Andrew Bogut", "aliases": ["Bogut"], "tier": 5}, {"name": "Andrea Bargnani", "aliases": ["Bargnani"], "tier": 5}, {"name": "Anthony Bennett", "aliases": ["Bennett"], "tier": 5}, {"name": "Zaccharie Risacher", "aliases": ["Risacher"], "tier": 5}]}, {"prompt": "Nombra una franquicia NBA que nunca haya sido campeona de la NBA", "source": "NBA.com", "answers": [{"name": "Phoenix Suns", "aliases": ["Suns", "Phoenix"], "tier": 1}, {"name": "Los Angeles Clippers", "aliases": ["Clippers", "LA Clippers"], "tier": 1}, {"name": "Utah Jazz", "aliases": ["Jazz", "Utah"], "tier": 1}, {"name": "Brooklyn Nets", "aliases": ["Nets", "Brooklyn", "New Jersey Nets"], "tier": 2}, {"name": "Indiana Pacers", "aliases": ["Pacers", "Indiana"], "tier": 2}, {"name": "Orlando Magic", "aliases": ["Magic", "Orlando"], "tier": 2}, {"name": "Minnesota Timberwolves", "aliases": ["Timberwolves", "Wolves", "Minnesota"], "tier": 3}, {"name": "Memphis Grizzlies", "aliases": ["Grizzlies", "Memphis"], "tier": 3}, {"name": "Charlotte Hornets", "aliases": ["Hornets", "Charlotte"], "tier": 4}, {"name": "New Orleans Pelicans", "aliases": ["Pelicans", "New Orleans"], "tier": 5}]}, {"prompt": "Nombra a un jugador con 30,000+ puntos de temporada regular NBA (al cierre de 2024-25)", "source": "Basketball Reference", "answers": [{"name": "LeBron James", "aliases": ["LeBron", "James"], "tier": 1}, {"name": "Michael Jordan", "aliases": ["Jordan", "MJ"], "tier": 1}, {"name": "Kareem Abdul-Jabbar", "aliases": ["Kareem", "Abdul-Jabbar"], "tier": 2}, {"name": "Kobe Bryant", "aliases": ["Kobe", "Bryant"], "tier": 2}, {"name": "Kevin Durant", "aliases": ["Durant", "KD"], "tier": 3}, {"name": "Wilt Chamberlain", "aliases": ["Wilt", "Chamberlain"], "tier": 4}, {"name": "Dirk Nowitzki", "aliases": ["Dirk", "Nowitzki"], "tier": 4}, {"name": "Karl Malone", "aliases": ["Malone", "The Mailman"], "tier": 5}]}]}, "2026-11-26": {"date": "2026-11-26", "id": "thanksgiving-nfl", "theme": "Jueves de Thanksgiving NFL", "sport": "americano1", "rounds": [{"prompt": "Nombra a un QB que haya sido MVP de un Super Bowl (hasta el Super Bowl LIX)", "source": "Pro Football Reference", "answers": [{"name": "Tom Brady", "aliases": ["Brady"], "tier": 1}, {"name": "Patrick Mahomes", "aliases": ["Mahomes"], "tier": 1}, {"name": "Joe Montana", "aliases": ["Montana"], "tier": 1}, {"name": "Peyton Manning", "aliases": ["Peyton"], "tier": 2}, {"name": "Eli Manning", "aliases": ["Eli"], "tier": 2}, {"name": "John Elway", "aliases": ["Elway"], "tier": 2}, {"name": "Drew Brees", "aliases": ["Brees"], "tier": 2}, {"name": "Aaron Rodgers", "aliases": ["Rodgers"], "tier": 2}, {"name": "Jalen Hurts", "aliases": ["Hurts"], "tier": 3}, {"name": "Troy Aikman", "aliases": ["Aikman"], "tier": 3}, {"name": "Steve Young", "aliases": ["Young"], "tier": 3}, {"name": "Terry Bradshaw", "aliases": ["Bradshaw"], "tier": 3}, {"name": "Kurt Warner", "aliases": ["Warner"], "tier": 3}, {"name": "Joe Flacco", "aliases": ["Flacco"], "tier": 3}, {"name": "Nick Foles", "aliases": ["Foles"], "tier": 3}, {"name": "Joe Namath", "aliases": ["Namath"], "tier": 4}, {"name": "Roger Staubach", "aliases": ["Staubach"], "tier": 4}, {"name": "Bart Starr", "aliases": ["Starr"], "tier": 4}, {"name": "Phil Simms", "aliases": ["Simms"], "tier": 4}, {"name": "Jim Plunkett", "aliases": ["Plunkett"], "tier": 5}, {"name": "Len Dawson", "aliases": ["Dawson"], "tier": 5}, {"name": "Doug Williams", "aliases": ["Williams"], "tier": 5}, {"name": "Mark Rypien", "aliases": ["Rypien"], "tier": 5}]}, {"prompt": "Nombra una franquicia NFL que nunca haya ganado el Super Bowl", "source": "NFL", "answers": [{"name": "Buffalo Bills", "aliases": ["Bills", "Buffalo"], "tier": 1}, {"name": "Minnesota Vikings", "aliases": ["Vikings", "Minnesota"], "tier": 1}, {"name": "Detroit Lions", "aliases": ["Lions", "Detroit"], "tier": 2}, {"name": "Cleveland Browns", "aliases": ["Browns", "Cleveland"], "tier": 2}, {"name": "Cincinnati Bengals", "aliases": ["Bengals", "Cincinnati"], "tier": 2}, {"name": "Los Angeles Chargers", "aliases": ["Chargers", "LA Chargers", "San Diego Chargers"], "tier": 3}, {"name": "Atlanta Falcons", "aliases": ["Falcons", "Atlanta"], "tier": 3}, {"name": "Carolina Panthers", "aliases": ["Panthers", "Carolina"], "tier": 3}, {"name": "Arizona Cardinals", "aliases": ["Cardinals", "Arizona"], "tier": 4}, {"name": "Tennessee Titans", "aliases": ["Titans", "Tennessee", "Houston Oilers", "Oilers"], "tier": 4}, {"name": "Jacksonville Jaguars", "aliases": ["Jaguars", "Jacksonville", "Jags"], "tier": 5}, {"name": "Houston Texans", "aliases": ["Texans", "Houston"], "tier": 5}]}, {"prompt": "Nombra a un jugador con 2,000+ yardas por tierra en una temporada NFL (hasta 2024)", "source": "Pro Football Reference", "answers": [{"name": "Saquon Barkley", "aliases": ["Saquon", "Barkley"], "tier": 1}, {"name": "Derrick Henry", "aliases": ["Henry"], "tier": 1}, {"name": "Adrian Peterson", "aliases": ["Peterson", "AP"], "tier": 2}, {"name": "Barry Sanders", "aliases": ["Sanders"], "tier": 2}, {"name": "Eric Dickerson", "aliases": ["Dickerson"], "tier": 3}, {"name": "O.J. Simpson", "aliases": ["OJ Simpson", "Simpson"], "tier": 3}, {"name": "Terrell Davis", "aliases": ["Davis"], "tier": 4}, {"name": "Chris Johnson", "aliases": ["CJ2K", "Johnson"], "tier": 4}, {"name": "Jamal Lewis", "aliases": ["Lewis"], "tier": 5}]}, {"prompt": "Nombra un estadio actual de la NFL con techo fijo o retráctil (temporada 2025)", "source": "NFL", "answers": [{"name": "AT&T Stadium", "aliases": ["ATT Stadium", "Jerry World", "Cowboys Stadium"], "tier": 1}, {"name": "Caesars Superdome", "aliases": ["Superdome", "Mercedes-Benz Superdome"], "tier": 1}, {"name": "SoFi Stadium", "aliases": ["SoFi"], "tier": 2}, {"name": "Allegiant Stadium", "aliases": ["Allegiant"], "tier": 2}, {"name": "Mercedes-Benz Stadium", "aliases": ["Mercedes Benz Stadium"], "tier": 2}, {"name": "U.S. Bank Stadium", "aliases": ["US Bank Stadium", "US Bank"], "tier": 3}, {"name": "Ford Field", "aliases": [], "tier": 3}, {"name": "Lucas Oil Stadium", "aliases": ["Lucas Oil"], "tier": 3}, {"name": "NRG Stadium", "aliases": ["NRG", "Reliant Stadium"], "tier": 4}, {"name": "State Farm Stadium", "aliases": ["State Farm", "University of Phoenix Stadium"], "tier": 5}]}, {"prompt": "Nombra a un QB que haya ganado el Trofeo Heisman entre 2000 y 2024", "source": "Heisman Trust", "answers": [{"name": "Joe Burrow", "aliases": ["Burrow"], "tier": 1}, {"name": "Lamar Jackson", "aliases": ["Lamar", "Jackson"], "tier": 1}, {"name": "Tim Tebow", "aliases": ["Tebow"], "tier": 1}, {"name": "Cam Newton", "aliases": ["Newton"], "tier": 2}, {"name": "Baker Mayfield", "aliases": ["Mayfield", "Baker"], "tier": 2}, {"name": "Kyler Murray", "aliases": ["Kyler", "Murray"], "tier": 2}, {"name": "Johnny Manziel", "aliases": ["Manziel", "Johnny Football"], "tier": 2}, {"name": "Robert Griffin III", "aliases": ["RG3", "RGIII", "Robert Griffin"], "tier": 3}, {"name": "Jameis Winston", "aliases": ["Winston", "Jameis"], "tier": 3}, {"name": "Marcus Mariota", "aliases": ["Mariota"], "tier": 3}, {"name": "Bryce Young", "aliases": ["Young"], "tier": 3}, {"name": "Caleb Williams", "aliases": ["Caleb", "Williams"], "tier": 3}, {"name": "Jayden Daniels", "aliases": ["Daniels"], "tier": 3}, {"name": "Sam Bradford", "aliases": ["Bradford"], "tier": 4}, {"name": "Matt Leinart", "aliases": ["Leinart"], "tier": 4}, {"name": "Carson Palmer", "aliases": ["Palmer"], "tier": 4}, {"name": "Chris Weinke", "aliases": ["Weinke"], "tier": 5}, {"name": "Eric Crouch", "aliases": ["Crouch"], "tier": 5}, {"name": "Jason White", "aliases": ["White"], "tier": 5}, {"name": "Troy Smith", "aliases": ["Smith"], "tier": 5}]}]}};
+
+    const ROUNDS = 5, ROUND_SECONDS = 30, TRIES = 3, MAX_STRIKES = 3, START_YARD = 25, SACK_YARDS = 5, TD_BONUS = 70;
+    const PLAY_TYPES = {
+      1: { name: 'Carrera de 2 yardas', short: 'Carrera', yd: 2, pts: 20, emoji: '🏃', color: '#fde047' },
+      2: { name: 'Pase corto', short: 'Pase corto', yd: 6, pts: 40, emoji: '🎯', color: '#86efac' },
+      3: { name: 'Pase intermedio', short: 'Pase intermedio', yd: 15, pts: 60, emoji: '🏈', color: '#7dd3fc' },
+      4: { name: 'Jugada explosiva', short: 'Explosiva', yd: 25, pts: 80, emoji: '💥', color: '#fb923c' },
+      5: { name: 'Bomba', short: 'Bomba', yd: 50, pts: 100, emoji: '🚀', color: '#e879f9' }
+    };
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    /*isac-lock-future*/
+    (function () {
+      try {
+        const idx = EMBEDDED_INDEX.filter(i => i.date <= todayStr);
+        if (!idx.length) return;                       // seguridad: nunca dejar el juego vacio
+        EMBEDDED_INDEX.splice(0, EMBEDDED_INDEX.length, ...idx);
+        [typeof EMBEDDED_PUZZLES !== 'undefined' ? EMBEDDED_PUZZLES : null,
+         typeof EMBEDDED_BOARDS !== 'undefined' ? EMBEDDED_BOARDS : null].forEach(o => {
+          if (o) Object.keys(o).forEach(k => { if (k > todayStr) delete o[k]; });
+        });
+      } catch (e) { console.warn('lock-future', e); }
+    })();
+
+    /* Recarga automatica a las 00:00:02 hora CDMX para estrenar el reto diario */
+    (function scheduleMidnightRefresh() {
+      try {
+        const fmt = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        });
+        const p = {};
+        fmt.formatToParts(new Date()).forEach(x => { p[x.type] = x.value; });
+        const secNow = (parseInt(p.hour, 10) % 24) * 3600 + parseInt(p.minute, 10) * 60 + parseInt(p.second, 10);
+        setTimeout(() => { location.reload(); }, (86400 - secNow + 2) * 1000);
+      } catch (e) {}
+    })();
+
+    function setBotMood(mood) {
+      const img = document.getElementById('isacbot-img');
+      if (!img) return;
+      const file = `${mood}.webp`;
+      const candidates = [`../assets/ISACLOGOS/${file}`, `assets/ISACLOGOS/${file}`];
+      let idx = 0;
+      img.onload = () => {
+        img.hidden = false;
+        img.classList.remove('bounce');
+        void img.offsetWidth;
+        img.classList.add('bounce');
+      };
+      img.onerror = () => {
+        idx++;
+        if (idx < candidates.length) img.src = candidates[idx];
+        else img.hidden = true;
+      };
+      img.src = candidates[0];
+    }
+
+    // ---------- utilidades ----------
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    // misma normalizacion que krillion_refresh.py: NFD, sin no-ASCII, minusculas, solo letras y numeros
+    const norm = s => String(s).normalize('NFD').replace(/[^\x00-\x7f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const fmtTime = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+    function lev(a, b, max) {
+      if (Math.abs(a.length - b.length) > max) return max + 1;
+      let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+      for (let i = 1; i <= a.length; i++) {
+        const cur = [i];
+        let best = i;
+        for (let j = 1; j <= b.length; j++) {
+          cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+          if (cur[j] < best) best = cur[j];
+        }
+        if (best > max) return max + 1;
+        prev = cur;
+      }
+      return prev[b.length];
+    }
+
+    // Devuelve la respuesta (objeto) o null. Exacta por nombre/alias; si no, tolera 1 error de dedo (2 en textos largos)
+    function matchAnswer(round, guess) {
+      const g = norm(guess);
+      if (!g) return null;
+      for (const a of round.answers) {
+        if ([a.name, ...(a.aliases || [])].some(x => norm(x) === g)) return a;
+      }
+      if (g.length < 5) return null;
+      const tol = g.length >= 10 ? 2 : 1;
+      const hits = new Set();
+      round.answers.forEach(a => {
+        [a.name, ...(a.aliases || [])].forEach(x => {
+          const k = norm(x);
+          if (k.length >= 5 && lev(g, k, tol) <= tol) hits.add(a);
+        });
+      });
+      return hits.size === 1 ? [...hits][0] : null;
+    }
+
+    function getDeviceId() {
+      let id = localStorage.getItem('isac_device_id');
+      if (!id) {
+        id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+              const r = Math.random() * 16 | 0;
+              return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        localStorage.setItem('isac_device_id', id);
+      }
+      return id;
+    }
+
+    let toastTimer = null;
+    function showToast(msg, type = '') {
+      const bar = document.getElementById('toast-bar');
+      bar.innerHTML = `<div class="toast-msg ${type}">${msg}</div>`;
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { bar.innerHTML = ''; }, 2800);
+    }
+
+    // ---------- estado ----------
+    let puzzle = null;
+    let st = null;
+    let ticker = null;
+    let leaderboard = [];
+    let lastDrawn = -1;
+
+    const freshState = () => ({ phase: 'intro', round: 0, deadline: 0, tries: TRIES, wrong: [], plays: [], yard: START_YARD, tds: 0, elapsed: 0, scoreSubmitted: false });
+    const storeKey = d => `isac_krillion_v1_${d}`;
+    const saveLocal = () => localStorage.setItem(storeKey(puzzle.date), JSON.stringify(st));
+
+    const strikes = () => st.plays.filter(p => p.result !== 'gain').length;
+    const isLost = () => strikes() >= MAX_STRIKES;
+    const isDone = () => isLost() || st.plays.length >= ROUNDS;
+    const isWon = () => isDone() && !isLost();
+    const rawScore = () => st.plays.reduce((s, p) => s + p.pts + p.bonus, 0) + st.tds * TD_BONUS;
+    const calcScore = () => (isWon() ? rawScore() : 0);
+
+    async function fetchLeaderboard(dateStr) {
+      leaderboard = [];
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/game_scores?select=nickname,score,attempts,time_seconds,device_id&game_id=eq.${GAME_ID}&puzzle_date=eq.${dateStr}&order=score.desc,time_seconds.asc&limit=10`;
+        const res = await fetch(url, { headers: SB_HEADERS, cache: 'no-store' });
+        if (res.ok) leaderboard = await res.json();
+      } catch (e) {
+        console.warn('No se pudo cargar el ranking remoto:', e);
+      }
+    }
+
+    async function init() {
+      setBotMood('saluda');
+      const sel = document.getElementById('date-select');
+      EMBEDDED_INDEX.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.date;
+        opt.textContent = `${item.date} ${item.date === todayStr ? '(Hoy)' : ''}`;
+        sel.appendChild(opt);
+      });
+      const hasToday = EMBEDDED_INDEX.some(i => i.date === todayStr);
+      const initial = hasToday ? todayStr : EMBEDDED_INDEX[0].date;
+      sel.value = initial;
+      sel.onchange = () => loadDay(sel.value);
+      renderLegend();
+      await loadDay(initial);
+    }
+
+    window.goToday = async () => {
+      const hasToday = EMBEDDED_INDEX.some(i => i.date === todayStr);
+      await loadDay(hasToday ? todayStr : EMBEDDED_INDEX[0].date);
+    };
+
+    window.refreshBoard = async () => {
+      await fetchLeaderboard(puzzle.date);
+      renderSummary();
+    };
+
+    async function loadDay(dateStr) {
+      stopTicker();
+      document.getElementById('date-select').value = dateStr;
+      puzzle = EMBEDDED_PUZZLES[dateStr];
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem(storeKey(dateStr)) || 'null'); } catch (e) { saved = null; }
+      st = saved && Array.isArray(saved.plays) ? { ...freshState(), ...saved } : freshState();
+      lastDrawn = st.plays.length - 1;
+
+      document.getElementById('theme-pill').textContent = `Tema: ${puzzle.theme}`;
+      const banner = document.getElementById('archive-banner');
+      const btnToday = document.getElementById('btn-today');
+      if (puzzle.date !== todayStr) {
+        banner.innerHTML = `<span>Estás jugando en <strong>Modo Archivo (${puzzle.date})</strong>. Esta partida no suma al ranking diario.</span><button class="btn-today" onclick="goToday()">Volver a Hoy</button>`;
+        banner.classList.remove('hidden');
+        btnToday.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+        btnToday.classList.add('hidden');
+      }
+
+      await fetchLeaderboard(puzzle.date);
+      if (leaderboard.some(r => r.device_id === getDeviceId())) st.scoreSubmitted = true;
+
+      // si se recargo la pagina con una jugada en curso, el reloj siguio corriendo
+      if (st.phase === 'play' && Date.now() >= st.deadline) {
+        resolveSack(true);
+        showToast('Saliste con una jugada en curso y se acabó el reloj: sack.', 'bad');
+      }
+
+      if (isDone()) { st.phase = 'done'; setBotMood(isWon() ? 'celebracion' : 'facepalm'); }
+      else if (st.phase === 'intro') setBotMood(puzzle.sport || 'saluda');
+      else setBotMood('pensativo');
+
+      renderAll();
+      if (st.phase === 'play') startTicker();
+    }
+
+    // ---------- flujo de juego ----------
+    window.startDrive = () => {
+      if (st.phase !== 'intro') return;
+      startPlay();
+    };
+
+    function startPlay() {
+      st.phase = 'play';
+      st.tries = TRIES;
+      st.wrong = [];
+      st.deadline = Date.now() + ROUND_SECONDS * 1000;
+      saveLocal();
+      setBotMood('pensativo');
+      renderAll();
+      startTicker();
+      const inp = document.getElementById('answer-input');
+      if (inp) inp.focus();
+    }
+
+    window.nextPlay = () => {
+      if (st.phase !== 'result' || isDone()) return;
+      st.round++;
+      startPlay();
+    };
+
+    function secsLeft() { return Math.max(0, Math.ceil((st.deadline - Date.now()) / 1000)); }
+
+    function startTicker() {
+      stopTicker();
+      ticker = setInterval(() => {
+        if (st.phase !== 'play') { stopTicker(); return; }
+        if (Date.now() >= st.deadline) { resolveSack(false); return; }
+        renderTimer();
+      }, 200);
+      renderTimer();
+    }
+    function stopTicker() { if (ticker) clearInterval(ticker); ticker = null; }
+
+    function pushPlay(play) {
+      st.plays.push(play);
+      st.elapsed += play.used;
+      st.phase = isDone() ? 'done' : 'result';
+      saveLocal();
+    }
+
+    function resolveSack(silent) {
+      stopTicker();
+      const from = st.yard;
+      st.yard = Math.max(1, st.yard - SACK_YARDS);
+      pushPlay({ round: st.round, result: 'sack', answer: null, tier: 0, yards: -(from - st.yard), from, to: st.yard, td: false, pts: 0, bonus: 0, used: ROUND_SECONDS });
+      if (!silent) {
+        setBotMood('facepalm');
+        showToast(`¡Sack! Se acabó el reloj: ${from - st.yard} yardas de pérdida.`, 'bad');
+        renderAll();
+      }
+    }
+
+    window.submitAnswer = () => {
+      if (st.phase !== 'play') return;
+      if (Date.now() >= st.deadline) { resolveSack(false); return; }
+      const inp = document.getElementById('answer-input');
+      const raw = inp.value.trim();
+      if (!raw) return;
+      const round = puzzle.rounds[st.round];
+      const hit = matchAnswer(round, raw);
+      if (hit) {
+        stopTicker();
+        const left = secsLeft();
+        const pt = PLAY_TYPES[hit.tier];
+        const from = st.yard;
+        let to = from + pt.yd;
+        let td = false;
+        if (to >= 100) { td = true; st.tds++; }
+        st.yard = td ? START_YARD : to;
+        pushPlay({ round: st.round, result: 'gain', answer: hit.name, tier: hit.tier, yards: pt.yd, from, to: Math.min(to, 100), td, pts: pt.pts, bonus: Math.min(10, Math.floor(left / 3)), used: ROUND_SECONDS - left });
+        setBotMood('celebracion');
+        showToast(td ? `¡TOUCHDOWN! ${pt.emoji} ${pt.name} con ${esc(hit.name)}` : `${pt.emoji} ${pt.name}: ${esc(hit.name)} (+${pt.yd} yd)`, 'ok');
+        renderAll();
+        return;
+      }
+      const key = norm(raw);
+      if (st.wrong.some(w => norm(w) === key)) { showToast('Ya intentaste esa respuesta.', 'warn'); inp.select(); return; }
+      st.wrong.push(raw);
+      st.tries--;
+      setBotMood('facepalm');
+      if (st.tries <= 0) {
+        stopTicker();
+        const left = secsLeft();
+        pushPlay({ round: st.round, result: 'inc', answer: null, tier: 0, yards: 0, from: st.yard, to: st.yard, td: false, pts: 0, bonus: 0, used: ROUND_SECONDS - left });
+        showToast('Pase incompleto: se acabaron los intentos de esta jugada.', 'bad');
+        renderAll();
+        return;
+      }
+      saveLocal();
+      showToast(`"${esc(raw)}" no está en la lista. Te quedan ${st.tries} ${st.tries === 1 ? 'intento' : 'intentos'}.`, 'warn');
+      renderStage();
+      const inp2 = document.getElementById('answer-input');
+      if (inp2) { inp2.classList.add('shake'); setTimeout(() => inp2.classList.remove('shake'), 400); inp2.focus(); }
+    };
+
+    // ---------- render ----------
+    function renderAll() {
+      renderHud();
+      renderField();
+      renderStage();
+      renderSummary();
+    }
+
+    function renderHud() {
+      document.getElementById('hud-score').textContent = isLost() ? 0 : rawScore();
+      document.getElementById('hud-yard').textContent = yardLabel(st.yard);
+      document.getElementById('hud-strikes').textContent = `${strikes()} / ${MAX_STRIKES}`;
+      document.getElementById('hud-time').textContent = fmtTime(st.elapsed);
+    }
+
+    // yarda propia 1-49 -> "Propia 25"; 50 -> "50"; 51-99 -> "Rival 30"
+    const yardLabel = y => (y < 50 ? `P${y}` : y === 50 ? '50' : `R${100 - y}`);
+
+    function renderLegend() {
+      document.getElementById('legend').innerHTML = [1, 2, 3, 4, 5].map(t => {
+        const p = PLAY_TYPES[t];
+        return `<span class="chip" style="background:${p.color}">T${t} · ${p.emoji} ${p.short} ${p.yd} yd · ${p.pts} pts</span>`;
+      }).join('') + `<span class="chip" style="background:#fecaca">✕ Incompleto 0 yd</span><span class="chip" style="background:#fca5a5">🛑 Sack −${SACK_YARDS} yd</span>`;
+    }
+
+    const X = y => 100 + y * 10;               // yarda propia -> x del SVG
+    const laneY = i => 78 + i * 60;
+
+    function playPath(p, i) {
+      const y = laneY(i);
+      const x1 = X(p.from);
+      if (p.result === 'sack') return { d: `M ${x1} ${y} L ${X(p.to)} ${y}`, color: '#ef4444', dash: '' };
+      if (p.result === 'inc') {
+        const x2 = Math.min(1090, x1 + 120);
+        return { d: `M ${x1} ${y} Q ${(x1 + x2) / 2} ${y - 50} ${x2} ${y}`, color: '#fecaca', dash: '10 10', x2 };
+      }
+      const x2 = p.td ? 1150 : X(p.to);
+      const color = PLAY_TYPES[p.tier].color;
+      if (p.tier === 1) return { d: `M ${x1} ${y} L ${x2} ${y}`, color, dash: '' };
+      const h = Math.min(62, 18 + (x2 - x1) * 0.12);
+      return { d: `M ${x1} ${y} Q ${(x1 + x2) / 2} ${y - h} ${x2} ${y}`, color, dash: '' };
+    }
+
+    function renderField() {
+      const svg = document.getElementById('field-svg');
+      let s = '';
+      s += `<rect x="0" y="0" width="1200" height="400" fill="#2f7d4f"/>`;
+      for (let i = 0; i < 10; i++) if (i % 2 === 0) s += `<rect x="${100 + i * 100}" y="0" width="100" height="400" fill="#2a7348"/>`;
+      s += `<rect x="0" y="0" width="100" height="400" fill="#00593f"/>`;
+      s += `<rect id="endzone" x="1100" y="0" width="100" height="400" fill="#00593f"/>`;
+      s += `<text x="50" y="200" fill="#a7f3d0" font-family="Darker Grotesque, sans-serif" font-weight="800" font-size="44" text-anchor="middle" transform="rotate(-90 50 200)" opacity="0.8">ISAC</text>`;
+      s += `<text x="1150" y="200" fill="#ecfdf5" font-family="Darker Grotesque, sans-serif" font-weight="800" font-size="44" text-anchor="middle" transform="rotate(90 1150 200)" opacity="0.35">KRILLION</text>`;
+      for (let yd = 0; yd <= 100; yd += 5) {
+        const x = X(yd);
+        s += `<line x1="${x}" y1="0" x2="${x}" y2="400" stroke="#ffffff" stroke-opacity="${yd % 10 === 0 ? 0.75 : 0.35}" stroke-width="${yd % 10 === 0 ? 3 : 1.5}"/>`;
+        if (yd % 10 === 0 && yd > 0 && yd < 100) {
+          const n = yd <= 50 ? yd : 100 - yd;
+          s += `<text x="${x}" y="30" fill="#ffffff" fill-opacity="0.8" font-family="Sora, sans-serif" font-weight="700" font-size="22" text-anchor="middle">${n}</text>`;
+          s += `<text x="${x}" y="388" fill="#ffffff" fill-opacity="0.8" font-family="Sora, sans-serif" font-weight="700" font-size="22" text-anchor="middle">${n}</text>`;
+        }
+      }
+      for (let yd = 1; yd < 100; yd++) {
+        const x = X(yd);
+        s += `<line x1="${x}" y1="150" x2="${x}" y2="158" stroke="#ffffff" stroke-opacity="0.4" stroke-width="2"/><line x1="${x}" y1="242" x2="${x}" y2="250" stroke="#ffffff" stroke-opacity="0.4" stroke-width="2"/>`;
+      }
+      // jugadas
+      st.plays.forEach((p, i) => {
+        const g = playPath(p, i);
+        const isNew = i > lastDrawn;
+        const tip = playTip(p);
+        s += `<g data-play="${i}">`;
+        s += `<path class="play-path${isNew ? ' new' : ''}" d="${g.d}" stroke="${g.color}" ${g.dash ? `stroke-dasharray="${g.dash}"` : ''} data-len="1"><title>${esc(tip)}</title></path>`;
+        s += `<path class="play-hit" d="${g.d}"><title>${esc(tip)}</title></path>`;
+        s += `<circle cx="${X(p.from)}" cy="${laneY(i)}" r="7" fill="#ffffff"/>`;
+        if (p.result === 'inc') s += `<text x="${g.x2}" y="${laneY(i) + 9}" fill="#fecaca" font-size="28" font-weight="800" text-anchor="middle">✕</text>`;
+        if (p.td) s += `<text x="1150" y="${laneY(i) - 14}" fill="#fde047" stroke="#0f172a" stroke-width="5" paint-order="stroke" font-family="Darker Grotesque, sans-serif" font-size="38" font-weight="800" text-anchor="middle">TD</text>`;
+        s += `<text x="${X(p.from) - 14}" y="${laneY(i) + 6}" fill="#ffffff" font-family="Sora, sans-serif" font-size="16" font-weight="800" text-anchor="end">${i + 1}</text>`;
+        s += `</g>`;
+      });
+      // linea de golpeo y guias de la jugada en curso
+      if (!isDone()) {
+        const xl = X(st.yard);
+        s += `<line x1="${xl}" y1="0" x2="${xl}" y2="400" stroke="#60a5fa" stroke-width="4"/>`;
+        if (st.phase === 'play' || st.phase === 'intro' || st.phase === 'result') {
+          const y = laneY(Math.min(st.plays.length, ROUNDS - 1));
+          [1, 2, 3, 4, 5].forEach(t => {
+            const to = st.yard + PLAY_TYPES[t].yd;
+            const xg = to >= 100 ? 1150 : X(to);
+            s += `<g class="ghost"><line x1="${xg}" y1="${y - 26}" x2="${xg}" y2="${y + 12}" stroke="${PLAY_TYPES[t].color}" stroke-width="2" stroke-dasharray="4 4"/><circle cx="${xg}" cy="${y - 26}" r="11" fill="${PLAY_TYPES[t].color}" stroke="#0f172a" stroke-opacity="0.3"/><text x="${xg}" y="${y - 21}" font-family="Sora, sans-serif" font-size="12" font-weight="800" text-anchor="middle" fill="#0f172a">T${t}</text></g>`;
+          });
+          s += `<g><ellipse cx="${xl}" cy="${y}" rx="16" ry="10" fill="#7c2d12" stroke="#ffffff" stroke-width="2"/><line x1="${xl - 7}" y1="${y}" x2="${xl + 7}" y2="${y}" stroke="#ffffff" stroke-width="2"/></g>`;
+        }
+      }
+      svg.innerHTML = s;
+      svg.querySelectorAll('.play-path.new').forEach(el => {
+        const len = el.getTotalLength ? el.getTotalLength() : 0;
+        if (!el.getAttribute('stroke-dasharray')) { el.style.strokeDasharray = len; el.style.strokeDashoffset = len; }
+        else el.classList.remove('new');
+      });
+      if (st.plays.length && st.plays[st.plays.length - 1].td && st.plays.length - 1 > lastDrawn) {
+        const ez = document.getElementById('endzone');
+        if (ez) ez.classList.add('td-flash');
+      }
+      lastDrawn = st.plays.length - 1;
+      svg.querySelectorAll('g[data-play]').forEach(g => {
+        g.addEventListener('click', () => showPlayInfo(parseInt(g.dataset.play, 10)));
+        g.addEventListener('mouseenter', () => showPlayInfo(parseInt(g.dataset.play, 10)));
+      });
+      renderFieldInfo();
+    }
+
+    function playTip(p) {
+      const n = p.round + 1;
+      if (p.result === 'sack') return `Jugada ${n}: Sack (−${Math.abs(p.yards)} yd), se acabó el reloj`;
+      if (p.result === 'inc') return `Jugada ${n}: Pase incompleto (0 yd)`;
+      return `Jugada ${n}: ${PLAY_TYPES[p.tier].name} (+${p.yards} yd${p.td ? ', TOUCHDOWN' : ''}) con ${p.answer} · tier ${p.tier} · ${p.pts + p.bonus} pts`;
+    }
+
+    function showPlayInfo(i) {
+      const p = st.plays[i];
+      if (!p) return;
+      document.getElementById('field-info').innerHTML = `<span><strong>${esc(playTip(p))}</strong></span>`;
+    }
+
+    function renderFieldInfo() {
+      const info = document.getElementById('field-info');
+      if (isDone()) {
+        info.innerHTML = `<span>Toca o pasa el cursor sobre una jugada para ver el detalle.</span><span><strong>${st.tds}</strong> TD · <strong>${st.plays.filter(p => p.result === 'gain').reduce((s, p) => s + p.yards, 0)}</strong> yd ganadas</span>`;
+      } else {
+        info.innerHTML = `<span>Balón en tu yarda <strong>${st.yard}</strong> · faltan <strong>${100 - st.yard}</strong> yd para touchdown</span><span>Jugada <strong>${Math.min(st.plays.length + 1, ROUNDS)}</strong> de ${ROUNDS}</span>`;
+      }
+    }
+
+    function nicheExamples(round, exclude) {
+      return round.answers.filter(a => a.tier === 5 && a.name !== exclude).slice(0, 3).map(a => a.name);
+    }
+
+    function renderStage() {
+      const stage = document.getElementById('stage');
+      if (st.phase === 'intro') {
+        stage.innerHTML = `
+          <div class="card">
+            <h2>Tu drive de hoy</h2>
+            <p>Arrancas en tu yarda ${START_YARD}. Tienes <strong>${ROUNDS} jugadas</strong>: en cada una te damos una pregunta con muchas respuestas válidas. Entre más <strong>nicho</strong> sea tu respuesta, más yardas avanzas.</p>
+            <ul class="rules">
+              <li><strong>${ROUND_SECONDS} segundos</strong> y <strong>${TRIES} intentos</strong> por jugada. Una respuesta que no está en la lista gasta un intento.</li>
+              <li>Sin intentos: pase incompleto (0 yd). Sin tiempo: <strong>sack</strong> (−${SACK_YARDS} yd).</li>
+              <li>3 incompletos o sacks = <strong>turnover on downs</strong>: el drive termina y no entra al ranking.</li>
+              <li>Puntos: los de la jugada + bono de tiempo (+1 por cada 3 s sobrantes, máx. +10) + <strong>${TD_BONUS} por touchdown</strong>. Tras un TD el balón vuelve a tu yarda ${START_YARD}.</li>
+            </ul>
+            <button class="btn-primary" id="btn-start" onclick="startDrive()">Iniciar drive</button>
+          </div>`;
+        return;
+      }
+      if (st.phase === 'play') {
+        const r = puzzle.rounds[st.round];
+        const dots = Array.from({ length: TRIES }, (_, i) => `<span class="life-dot${i < TRIES - st.tries ? ' lost' : ''}"></span>`).join('');
+        stage.innerHTML = `
+          <div class="card">
+            <span class="round-tag">JUGADA ${st.round + 1} DE ${ROUNDS}</span>
+            <div class="prompt">${esc(r.prompt)}</div>
+            <div class="timer-row"><div class="timer-track"><div id="timer-fill" class="timer-fill"></div></div><span id="timer-num" class="timer-num">${ROUND_SECONDS}</span></div>
+            <div class="answer-row">
+              <input id="answer-input" class="answer-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Tu respuesta más nicho..." maxlength="60" />
+              <button class="btn-primary" id="btn-answer" onclick="submitAnswer()">Jugar</button>
+            </div>
+            <div class="tries">Intentos: ${dots} ${st.wrong.length ? `<span class="wrong-list">· No cuentan: ${st.wrong.map(esc).join(', ')}</span>` : ''}</div>
+          </div>`;
+        const inp = document.getElementById('answer-input');
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(); });
+        renderTimer();
+        return;
+      }
+      if (st.phase === 'result') {
+        const p = st.plays[st.plays.length - 1];
+        const r = puzzle.rounds[p.round];
+        stage.innerHTML = `<div class="card">${playResultHtml(p, r)}<button class="btn-primary" id="btn-next" onclick="nextPlay()">Siguiente jugada</button></div>`;
+        return;
+      }
+      stage.innerHTML = '';
+    }
+
+    function playResultHtml(p, r) {
+      const niche = nicheExamples(r, p.answer);
+      let head;
+      if (p.result === 'gain') {
+        const pt = PLAY_TYPES[p.tier];
+        head = `<div class="play-result"><span class="play-emoji">${p.td ? '🙌' : pt.emoji}</span><div><div class="play-name">${p.td ? '¡TOUCHDOWN!' : pt.name}</div><p>${esc(p.answer)} es tier ${p.tier}: +${p.yards} yd · ${pt.pts} pts + ${p.bonus} de bono${p.td ? ` + ${TD_BONUS} por TD` : ''}.</p></div></div>`;
+      } else if (p.result === 'inc') {
+        head = `<div class="play-result"><span class="play-emoji">✕</span><div><div class="play-name">Pase incompleto</div><p>Se acabaron los intentos. 0 yardas. Strike ${strikes()} de ${MAX_STRIKES}.</p></div></div>`;
+      } else {
+        head = `<div class="play-result"><span class="play-emoji">🛑</span><div><div class="play-name">Sack</div><p>Se acabó el reloj: ${Math.abs(p.yards)} yardas de pérdida. Strike ${strikes()} de ${MAX_STRIKES}.</p></div></div>`;
+      }
+      return `<span class="round-tag">JUGADA ${p.round + 1} DE ${ROUNDS}</span><p class="q"><strong>${esc(r.prompt)}</strong></p>${head}${niche.length ? `<div class="niche">Bombas posibles (tier 5): ${niche.map(esc).join(', ')}. Fuente: ${esc(r.source)}.</div>` : ''}`;
+    }
+
+    function renderTimer() {
+      const fill = document.getElementById('timer-fill');
+      const num = document.getElementById('timer-num');
+      if (!fill || !num) return;
+      const ms = Math.max(0, st.deadline - Date.now());
+      fill.style.width = `${(ms / (ROUND_SECONDS * 1000)) * 100}%`;
+      fill.classList.toggle('low', ms <= 10000);
+      num.textContent = Math.ceil(ms / 1000);
+    }
+
+    const emojiFor = p => (p.result === 'sack' ? '🛑' : p.result === 'inc' ? '✕' : p.td ? '🙌' : PLAY_TYPES[p.tier].emoji);
+
+    window.copyShare = () => {
+      const text = `ISAC Krillion · ${puzzle.date}\n${st.plays.map(emojiFor).join('')}\n${isWon() ? `${st.tds} TD · ${calcScore()} pts` : 'Turnover on downs'} · ${fmtTime(st.elapsed)}`;
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('Resultado copiado al portapapeles', 'ok')).catch(() => {});
+    };
+
+    function renderSummary() {
+      const card = document.getElementById('summary-card');
+      if (!isDone()) { card.classList.add('hidden'); return; }
+      stopTicker();
+      const won = isWon();
+      const isArchive = puzzle.date !== todayStr;
+      const myId = getDeviceId();
+      const savedNick = localStorage.getItem('isac_player_nickname') || '';
+      const errores = st.plays.reduce((s, p) => s + (p.result === 'gain' ? 0 : 1), 0);
+      card.classList.remove('hidden');
+      card.innerHTML = `
+        <h2>${won ? (st.tds ? `¡Drive completado con ${st.tds} ${st.tds === 1 ? 'touchdown' : 'touchdowns'}!` : '¡Drive completado!') : 'Turnover on downs'}</h2>
+        <p>${won
+          ? `Terminaste tus ${ROUNDS} jugadas en <strong>${fmtTime(st.elapsed)}</strong> con <strong>${errores} ${errores === 1 ? 'strike' : 'strikes'}</strong>: <strong>${calcScore()} pts</strong>.`
+          : `Llegaste a ${MAX_STRIKES} strikes y perdiste el balón. Este drive no entra al ranking. ¡Mañana hay otro!`}</p>
+        <div class="emoji-recap">${st.plays.map(emojiFor).join(' ')}</div>
+        <ul class="recap-list">
+          ${st.plays.map(p => `<li><span class="q">${p.round + 1}. ${esc(puzzle.rounds[p.round].prompt)}</span><br/>${emojiFor(p)} ${esc(playTip(p).replace(/^Jugada \d+: /, ''))}</li>`).join('')}
+        </ul>
+        <div style="margin-bottom:1rem;"><button class="btn-sec" onclick="copyShare()">Copiar resultado</button></div>
+        ${won && !isArchive && !st.scoreSubmitted ? `
+          <div style="margin:1rem 0;">
+            <input id="nick-input" class="nick-input" value="${esc(savedNick)}" placeholder="Tu nickname..." maxlength="18" />
+            <button id="submit-btn" class="btn-primary" onclick="saveScore()">Guardar en Scoreboard</button>
+            <div id="submit-err" class="err-msg"></div>
+          </div>` : ''}
+        <div class="board-header">
+          <h3 style="margin:0;">Ranking Global (${puzzle.date}) — Krillion</h3>
+          <button class="btn-sec" onclick="refreshBoard()">Actualizar ranking</button>
+        </div>
+        ${leaderboard.length ? `
+          <table>
+            <thead><tr><th>#</th><th>Jugador</th><th>Strikes</th><th>Tiempo</th><th>Puntos</th></tr></thead>
+            <tbody>
+              ${leaderboard.map((r, i) => `
+                <tr class="${r.device_id === myId ? 'me' : ''}">
+                  <td>${i + 1}</td>
+                  <td>${esc(r.nickname)} ${r.device_id === myId ? '(Tú)' : ''}</td>
+                  <td>${r.attempts}</td>
+                  <td>${fmtTime(r.time_seconds)}</td>
+                  <td><strong>${r.score}</strong></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>` : '<p style="color:#475569;font-size:0.9rem;">Aún no hay drives registrados hoy. ¡Sé el primero!</p>'}
+      `;
+    }
+
+    window.saveScore = async () => {
+      /*isac-score-guard*/ const _hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }); if (puzzle.date !== _hoy) { console.warn('[guard] score no registrado: dia no vigente'); const _ge = document.getElementById('submit-err'); if (_ge) _ge.textContent = 'Este dia ya no esta vigente: tu puntaje no se registro.'; return; }
+      const nickInput = document.getElementById('nick-input');
+      const errEl = document.getElementById('submit-err');
+      const btn = document.getElementById('submit-btn');
+      const nick = nickInput.value.trim();
+      if (!isWon()) return;
+      if (nick.length < 2) { errEl.textContent = 'Escribe un nickname de al menos 2 caracteres.'; return; }
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+      errEl.textContent = '';
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/game_scores`, {
+          method: 'POST',
+          headers: { ...SB_HEADERS, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            game_id: GAME_ID,
+            puzzle_date: puzzle.date,
+            nickname: nick,
+            device_id: getDeviceId(),
+            score: calcScore(),
+            attempts: strikes(),
+            time_seconds: Math.max(1, st.elapsed)
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          if (errData.code === '23505') throw new Error('Ya registraste tu resultado hoy desde este dispositivo.');
+          throw new Error(errData.message || 'Error al guardar puntaje.');
+        }
+        localStorage.setItem('isac_player_nickname', nick);
+        st.scoreSubmitted = true;
+        saveLocal();
+        await fetchLeaderboard(puzzle.date);
+        renderSummary();
+      } catch (e) {
+        errEl.textContent = e.message;
+        btn.disabled = false;
+        btn.textContent = 'Guardar en Scoreboard';
+      }
+    };
+
+    init();
+  </script>
+</body>
+</html>
