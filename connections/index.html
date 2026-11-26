@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ISAC Labs · Connections</title>
+  <title>ISAC Labs · ISAC-Connections</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800&family=Sora:wght@400;600;700;800&display=swap" />
@@ -147,7 +147,7 @@
         </div>
         <div>
           <span class="badge">ISAC LABS · SPORTS ANALYTICS</span>
-          <h1>ISAC CONNECTIONS</h1>
+          <h1>ISAC-CONNECTIONS</h1>
           <p class="subtitle">Agrupa los 16 conceptos en 4 categorías ocultas de 4 elementos.</p>
           <span id="theme-pill" class="theme-pill"></span>
         </div>
@@ -528,7 +528,7 @@
     };
 
     window.copyShare = () => {
-      const text = `ISAC Connections · ${puzzle.date}\n${guessHistory.join('\n')}\nPuntaje: ${calcScore()} pts · ${fmtTime(elapsed)}`;
+      const text = `ISAC-Connections · ${puzzle.date}\n${guessHistory.join('\n')}\nPuntaje: ${calcScore()} pts · ${fmtTime(elapsed)}`;
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(() => showToast('Resultado copiado al portapapeles', 'ok'));
       }
@@ -558,7 +558,7 @@
     window.shareResult = () => {
       const _s = Math.max(0, Math.floor(elapsed || 0));
       const _t = `${Math.floor(_s / 60)}:${String(_s % 60).padStart(2, '0')}`;
-      const text = `🏟️ ISAC Connections — ${puzzle.theme}\n${guessHistory.join('\n')}\n✅ ${solvedLevels.length}/${4} · ⭐ ${calcScore()} pts · ⏱ ${_t}\n\nhttps://militomtzc-lang.github.io/simuladores-web/connections/`;
+      const text = `🏟️ ISAC-Connections — ${puzzle.theme}\n${guessHistory.join('\n')}\n✅ ${solvedLevels.length}/${4} · ⭐ ${calcScore()} pts · ⏱ ${_t}\n\nhttps://militomtzc-lang.github.io/simuladores-web/connections/`;
       _isacShareCopy(text);
       return text;
     };
@@ -593,7 +593,7 @@
             <div id="submit-err" class="err-msg"></div>
           </div>` : ''}
         <div class="board-header">
-          <h3 style="margin:0;">Ranking Global (${puzzle.date}) — Connections</h3>
+          <h3 style="margin:0;">Ranking Global (${puzzle.date}) — ISAC-Connections</h3>
           <button class="btn-sec" onclick="refreshBoard()">Actualizar ranking</button>
         </div>
         ${leaderboard.length ? `
