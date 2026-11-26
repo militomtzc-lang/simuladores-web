@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ISAC Labs · ISACBOT Adivina</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800&family=Sora:wght@400;600;700;800&display=swap" />
+  <style>
+    :root {
+      --green-dark: #00593f; --green-main: #007554; --green-light: #ecfdf5; --green-border: #a7f3d0;
+      --bg-page: #f8fafc; --bg-card: #ffffff; --text-main: #0f172a; --text-muted: #475569; --border-subtle: #e2e8f0;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg-page); color: var(--text-main); font-family: 'Sora', sans-serif; }
+    .wrapper { max-width: 900px; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .back-link { font-size: 0.8rem; font-weight: 700; color: var(--green-dark); text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--green-light); border: 1px solid var(--green-border); }
+    .back-link:hover { background: #d1fae5; }
+    .game-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border-subtle); padding-bottom: 1.25rem; }
+    .title-row { display: flex; align-items: center; gap: 0.9rem; }
+    .isacbot-wrap { position: relative; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+    .isacbot-img { width: 74px; height: 74px; object-fit: contain; transition: transform 0.2s ease; }
+    .isacbot-img.bounce { animation: botBounce 0.45s ease; }
+    @keyframes botBounce { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.12) rotate(-3deg); } }
+    .badge { display: inline-block; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--green-dark); background: var(--green-light); border: 1px solid var(--green-border); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 700; }
+    h1 { font-family: 'Darker Grotesque', sans-serif; font-size: 3rem; font-weight: 800; line-height: 1; margin: 0.3rem 0 0.15rem; color: var(--green-dark); }
+    .subtitle { color: var(--text-muted); margin: 0; font-size: 0.88rem; }
+    .hud { display: flex; gap: 0.65rem; flex-wrap: wrap; align-items: stretch; }
+    .hud-box { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.5rem 0.9rem; display: flex; flex-direction: column; justify-content: center; min-width: 82px; }
+    .hud-label { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.08em; font-weight: 600; }
+    .hud-value { font-family: 'Darker Grotesque', sans-serif; font-size: 1.55rem; font-weight: 800; color: var(--green-dark); line-height: 1.1; }
+    select { background: transparent; color: var(--text-main); border: none; font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 600; margin-top: 0.2rem; cursor: pointer; }
+    .btn-today { background: var(--green-light); color: var(--green-dark); border: 1px solid var(--green-border); border-radius: 10px; padding: 0.5rem 0.95rem; font-family: 'Sora', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tab { flex: 1; min-width: 200px; background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--text-main); border-radius: 12px; padding: 0.75rem 1rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-align: left; }
+    .tab small { display: block; font-weight: 600; color: var(--text-muted); font-size: 0.74rem; margin-top: 0.15rem; }
+    .tab.active { background: var(--green-dark); border-color: var(--green-dark); color: #ffffff; }
+    .tab.active small { color: #d1fae5; }
+    .archive-banner { background: #fefce8; border: 1px solid #fde047; color: #854d0e; padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .toast-bar { min-height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; }
+    .toast-msg { background: #0f172a; color: #ffffff; padding: 0.45rem 1rem; border-radius: 999px; font-size: 0.84rem; font-weight: 600; animation: popIn 0.2s ease; text-align: center; }
+    .toast-msg.warn { background: #b45309; } .toast-msg.ok { background: var(--green-dark); } .toast-msg.bad { background: #b91c1c; }
+    @keyframes popIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-top: 4px solid var(--green-dark); border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1rem; animation: popIn 0.25s ease; }
+    .card h2 { margin: 0 0 0.4rem; color: var(--green-dark); font-size: 1.2rem; }
+    .card p { margin: 0.35rem 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.45; }
+    .bubble { position: relative; background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: 16px; padding: 1rem 1.2rem; font-size: 1.15rem; font-weight: 800; line-height: 1.35; margin: 0.4rem 0 1rem; }
+    .qnum { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; color: var(--green-main); }
+    .answers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; }
+    @media (max-width: 640px) { .answers { grid-template-columns: repeat(2, 1fr); } .answers .ans-ns { grid-column: span 2; } }
+    .ans { border: none; border-radius: 12px; padding: 0.8rem 0.4rem; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 0.88rem; cursor: pointer; color: #0f172a; }
+    .ans-si { background: #86efac; } .ans-ps { background: #d9f99d; } .ans-ns { background: #e2e8f0; } .ans-pn { background: #fed7aa; } .ans-no { background: #fca5a5; }
+    .ans:hover { filter: brightness(0.95); }
+    .btn-primary { background: var(--green-dark); color: #ffffff; border: none; padding: 0.75rem 1.45rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: 'Sora', sans-serif; }
+    .btn-primary:hover:not(:disabled) { background: var(--green-main); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-sec { background: #ffffff; color: var(--text-main); border: 1.5px solid #cbd5e1; padding: 0.7rem 1.2rem; border-radius: 999px; font-family: 'Sora', sans-serif; font-size: 0.86rem; font-weight: 700; cursor: pointer; }
+    .btn-sec:hover:not(:disabled) { background: #f1f5f9; }
+    .btn-share { background: #00593f; color: #fff; border: none; border-radius: 999px; padding: 0.75rem 1.5rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; margin-top: 0.5rem; }
+    .btn-share:hover { background: #007554; }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    .text-input { flex: 1; min-width: 200px; background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--text-main); padding: 0.75rem 1rem; border-radius: 10px; font-family: 'Sora', sans-serif; font-size: 1rem; }
+    .text-input:focus { outline: none; border-color: var(--green-main); box-shadow: 0 0 0 3px rgba(0, 117, 84, 0.15); }
+    .seal { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700; color: #854d0e; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 999px; padding: 0.25rem 0.7rem; }
+    .log { list-style: none; padding: 0; margin: 0.6rem 0 0; display: flex; flex-direction: column; gap: 0.35rem; max-height: 320px; overflow: auto; }
+    .log li { font-size: 0.84rem; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.45rem 0.7rem; display: flex; justify-content: space-between; gap: 0.6rem; }
+    .log .a { font-weight: 800; white-space: nowrap; }
+    .a-si { color: #15803d; } .a-no { color: #b91c1c; } .a-mid { color: #475569; }
+    .cats { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.6rem; }
+    details.cat { border: 1px solid var(--border-subtle); border-radius: 10px; background: #ffffff; }
+    details.cat summary { cursor: pointer; padding: 0.6rem 0.8rem; font-weight: 800; font-size: 0.88rem; color: var(--green-dark); }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0 0.8rem 0.8rem; }
+    .chip { background: var(--green-light); border: 1px solid var(--green-border); color: var(--text-main); border-radius: 999px; padding: 0.35rem 0.7rem; font-family: 'Sora', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; text-align: left; }
+    .chip:hover:not(:disabled) { background: #d1fae5; }
+    .chip:disabled { cursor: default; opacity: 1; }
+    .chip.yes { background: #bbf7d0; border-color: #22c55e; } .chip.no { background: #fee2e2; border-color: #fca5a5; color: #7f1d1d; }
+    .chip.off { opacity: 0.45; }
+    .player-card { display: flex; gap: 0.9rem; align-items: center; background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: 14px; padding: 0.9rem 1rem; margin: 0.6rem 0; }
+    .player-card .big { font-family: 'Darker Grotesque', sans-serif; font-size: 2rem; font-weight: 800; color: var(--green-dark); line-height: 1; }
+    .meter { height: 10px; border-radius: 999px; background: #e2e8f0; overflow: hidden; margin: 0.35rem 0 0.8rem; }
+    .meter > div { height: 100%; background: var(--green-main); transition: width 0.3s; }
+    .note { font-size: 0.78rem; color: var(--text-muted); }
+    .board-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+    .nick-input { background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--text-main); padding: 0.7rem 1rem; border-radius: 8px; font-family: 'Sora', sans-serif; margin-right: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.9rem; }
+    th { background: #f1f5f9; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; }
+    th, td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border-subtle); text-align: left; }
+    tr.me { background: var(--green-light); }
+    .err-msg { color: #dc2626; font-size: 0.85rem; margin-top: 0.5rem; }
+    .hidden { display: none !important; }
+    @media (max-width: 560px) { h1 { font-size: 2.3rem; } .isacbot-img { width: 58px; height: 58px; } .card { padding: 1rem; } .bubble { font-size: 1rem; } }
+  </style>
+</head>
+<body>
+  <section class="wrapper">
+    <div class="top-nav">
+      <a class="back-link" href="../">← Hub ISAC Games</a>
+    </div>
+    <header class="game-header">
+      <div class="title-row">
+        <div class="isacbot-wrap">
+          <img id="isacbot-img" class="isacbot-img" alt="ISACBOT" hidden />
+        </div>
+        <div>
+          <span class="badge">ISAC LABS · SPORTS ANALYTICS</span>
+          <h1>ISACBOT ADIVINA</h1>
+          <p class="subtitle">Preguntas de Sí o No sobre figuras del deporte. ¿Quién adivina primero?</p>
+        </div>
+      </div>
+      <div class="hud" id="hud-daily">
+        <div class="hud-box"><span class="hud-label">PUNTAJE</span><span id="hud-score" class="hud-value">1000</span></div>
+        <div class="hud-box"><span class="hud-label">PREGUNTAS</span><span id="hud-q" class="hud-value">0 / 20</span></div>
+        <div class="hud-box"><span class="hud-label">FALLOS</span><span id="hud-miss" class="hud-value">0 / 3</span></div>
+        <div class="hud-box"><span class="hud-label">TIEMPO</span><span id="hud-time" class="hud-value">00:00</span></div>
+        <div class="hud-box">
+          <span class="hud-label">ARCHIVO</span>
+          <select id="date-select" aria-label="Elegir día"></select>
+        </div>
+        <button id="btn-today" class="btn-today hidden" onclick="goToday()">Ir a Hoy</button>
+      </div>
+    </header>
+
+    <div class="tabs" role="tablist">
+      <button id="tab-daily" class="tab active" onclick="setMode('daily')">🧠 Jugador del día<small>El ISACBOT piensa a alguien; tú preguntas. Con ranking.</small></button>
+      <button id="tab-free" class="tab" onclick="setMode('free')">🤖 El ISACBOT adivina<small>Tú piensas a alguien; él pregunta. Modo libre.</small></button>
+    </div>
+
+    <div id="archive-banner" class="archive-banner hidden"></div>
+    <div id="toast-bar" class="toast-bar"></div>
+    <div id="stage"></div>
+    <div id="summary-card" class="card hidden"></div>
+    <p class="note">Datos de títulos hasta la temporada 2024-25 (Super Bowl LIX, Finales NBA 2025, Serie Mundial 2024, F1 2024). "Equipos" cuenta cualquier etapa en el club, incluidos préstamos.</p>
+  </section>
+
+  <datalist id="player-list"></datalist>
+
+  <script>
+    const SUPABASE_URL = "https://jssdaxtpmonhilbyugsw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_jqW3J8NzJH7rEGRht4L49Q_V9oTDcRo";
+    const SB_HEADERS = {
+      apikey: SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      ...(SUPABASE_KEY.startsWith('eyJ') ? { Authorization: `Bearer ${SUPABASE_KEY}` } : {})
+    };
+    const GAME_ID = 'adivina';
+
+    const EMBEDDED_VOCAB = {"sports": {"fut": "fútbol", "nfl": "futbol americano (NFL)", "nba": "básquetbol (NBA)", "mlb": "béisbol (MLB)", "f1": "Fórmula 1", "tenis": "tenis"}, "countries": {"ARG": ["Argentina", "sud"], "POR": ["Portugal", "eur"], "BRA": ["Brasil", "sud"], "FRA": ["Francia", "eur"], "NOR": ["Noruega", "eur"], "POL": ["Polonia", "eur"], "CRO": ["Croacia", "eur"], "EGY": ["Egipto", "afr"], "BEL": ["Bélgica", "eur"], "ENG": ["Inglaterra", "eur"], "URU": ["Uruguay", "sud"], "SWE": ["Suecia", "eur"], "ESP": ["España", "eur"], "ITA": ["Italia", "eur"], "GER": ["Alemania", "eur"], "MEX": ["México", "nca"], "CIV": ["Costa de Marfil", "afr"], "CMR": ["Camerún", "afr"], "NED": ["Países Bajos", "eur"], "KOR": ["Corea del Sur", "asi"], "COL": ["Colombia", "sud"], "CHI": ["Chile", "sud"], "USA": ["Estados Unidos", "nca"], "JPN": ["Japón", "asi"], "DOM": ["República Dominicana", "nca"], "PAN": ["Panamá", "nca"], "VEN": ["Venezuela", "sud"], "PRI": ["Puerto Rico", "nca"], "GRE": ["Grecia", "eur"], "SRB": ["Serbia", "eur"], "SVN": ["Eslovenia", "eur"], "CAN": ["Canadá", "nca"], "MON": ["Mónaco", "eur"], "FIN": ["Finlandia", "eur"], "AUT": ["Austria", "eur"], "SUI": ["Suiza", "eur"], "SCO": ["Escocia", "eur"], "RUS": ["Rusia", "eur"]}, "continents": {"eur": "Europa", "sud": "Sudamérica", "nca": "Norteamérica, Centroamérica o el Caribe", "afr": "África", "asi": "Asia"}, "latam": ["ARG", "BRA", "URU", "COL", "CHI", "VEN", "MEX", "DOM", "PAN", "PRI"], "uk": ["ENG", "SCO"], "positions": {"por": ["fut", "¿Es portero?"], "def": ["fut", "¿Es defensa?"], "med": ["fut", "¿Es mediocampista?"], "del": ["fut", "¿Es delantero?"], "qb": ["nfl", "¿Es quarterback?"], "rb": ["nfl", "¿Es corredor (running back)?"], "rec": ["nfl", "¿Es receptor o tight end?"], "defn": ["nfl", "¿Juega a la defensiva en la NFL?"], "guard": ["nba", "¿Es base o escolta?"], "fwd": ["nba", "¿Es alero o ala-pívot?"], "center": ["nba", "¿Es pívot?"], "pitcher": ["mlb", "¿Es (o fue) lanzador?"], "bat": ["mlb", "¿Juega (o jugó) en una posición de bateo, no solo de lanzador?"]}, "teams": {"barcelona": "el Barcelona", "real_madrid": "el Real Madrid", "atletico": "el Atlético de Madrid", "real_sociedad": "la Real Sociedad", "man_united": "el Manchester United", "man_city": "el Manchester City", "liverpool": "el Liverpool", "chelsea": "el Chelsea", "arsenal": "el Arsenal", "tottenham": "el Tottenham", "aston_villa": "el Aston Villa", "bayern": "el Bayern Múnich", "dortmund": "el Borussia Dortmund", "leverkusen": "el Bayer Leverkusen", "wolfsburg": "el Wolfsburgo", "juventus": "la Juventus", "milan": "el AC Milan", "inter": "el Inter de Milán", "roma": "la Roma", "napoli": "el Napoli", "psg": "el PSG", "monaco": "el Mónaco", "lyon": "el Olympique de Lyon", "ajax": "el Ajax", "psv": "el PSV", "porto": "el Porto", "sporting": "el Sporting de Lisboa", "santos": "el Santos de Brasil", "flamengo": "el Flamengo", "river": "River Plate", "boca": "Boca Juniors", "al_nassr": "el Al Nassr", "al_hilal": "el Al Hilal", "al_ittihad": "el Al Ittihad", "inter_miami": "el Inter Miami", "la_galaxy": "el LA Galaxy", "america": "el América", "chivas": "las Chivas", "pumas": "los Pumas", "cruz_azul": "el Cruz Azul", "atlas": "el Atlas", "monterrey": "el Monterrey", "pachuca": "el Pachuca", "patriots": "los Patriots", "buccaneers": "los Buccaneers", "colts": "los Colts", "broncos": "los Broncos", "chiefs": "los Chiefs", "packers": "los Packers", "jets": "los Jets", "steelers": "los Steelers", "49ers": "los 49ers", "raiders": "los Raiders", "seahawks": "los Seahawks", "bills": "los Bills", "ravens": "los Ravens", "bengals": "los Bengals", "chargers": "los Chargers", "saints": "los Saints", "texans": "los Texans", "cardinals_nfl": "los Cardinals de Arizona (NFL)", "rams": "los Rams", "giants_nfl": "los Giants de Nueva York (NFL)", "bears": "los Bears", "lions": "los Lions", "cowboys": "los Cowboys", "dolphins": "los Dolphins", "vikings": "los Vikings", "titans": "los Titans", "eagles": "los Eagles", "falcons": "los Falcons", "bulls": "los Bulls", "wizards": "los Wizards", "cavaliers": "los Cavaliers", "heat": "el Heat", "lakers": "los Lakers", "warriors": "los Warriors", "thunder": "el Thunder", "nets": "los Nets", "suns": "los Suns", "rockets": "los Rockets", "magic": "el Magic", "celtics": "los Celtics", "spurs": "los Spurs", "bucks": "los Bucks", "nuggets": "los Nuggets", "mavericks": "los Mavericks", "76ers": "los 76ers", "pistons": "los Pistons", "grizzlies": "los Grizzlies", "timberwolves": "los Timberwolves", "hornets": "los Hornets", "raptors": "los Raptors", "clippers": "los Clippers", "blazers": "los Trail Blazers", "red_sox": "los Red Sox", "yankees": "los Yankees", "braves": "los Braves", "angels": "los Angels", "dodgers": "los Dodgers", "cardinals_mlb": "los Cardinals de San Luis (MLB)", "padres": "los Padres", "twins": "los Twins", "mariners": "los Mariners", "reds": "los Reds", "white_sox": "los White Sox", "pirates": "los Pirates", "giants_mlb": "los Giants de San Francisco (MLB)", "expos": "los Expos de Montreal", "mets": "los Mets", "phillies": "los Phillies", "marlins": "los Marlins", "tigers": "los Tigers", "astros": "los Astros", "diamondbacks": "los Diamondbacks", "nationals": "los Nationals", "benetton": "Benetton", "ferrari": "Ferrari", "mercedes": "Mercedes", "mclaren": "McLaren", "toro_rosso": "Toro Rosso", "red_bull": "Red Bull", "lotus": "Lotus", "williams": "Williams", "renault": "Renault", "aston_martin": "Aston Martin", "sauber": "Sauber (incl. BMW Sauber y Alfa Romeo)", "force_india": "Force India / Racing Point"}, "leagues": {"laliga": "LaLiga de España", "premier": "la Premier League", "seriea": "la Serie A de Italia", "bundesliga": "la Bundesliga", "ligue1": "la Ligue 1 de Francia", "mls": "la MLS", "ligamx": "la Liga MX", "saudi": "la liga de Arabia Saudita", "eredivisie": "la Eredivisie (Países Bajos)", "portugal": "la liga de Portugal", "brasil": "la liga de Brasil", "argentina": "la liga de Argentina"}, "titles": {"mundial": "¿Ganó un Mundial de fútbol?", "champions": "¿Ganó la Champions League (o Copa de Europa)?", "balon_oro": "¿Ganó el Balón de Oro?", "super_bowl": "¿Ganó un Super Bowl?", "mvp_nfl": "¿Fue MVP de la temporada de la NFL?", "anillo_nba": "¿Ganó un campeonato de la NBA?", "mvp_nba": "¿Fue MVP de la temporada de la NBA?", "serie_mundial": "¿Ganó una Serie Mundial?", "mvp_mlb": "¿Fue MVP de la temporada de MLB?", "cy_young": "¿Ganó el premio Cy Young?", "campeon_f1": "¿Fue campeón mundial de F1?", "roland_garros": "¿Ganó Roland Garros?"}};
+
+    const EMBEDDED_PLAYERS = [{"id": "messi", "name": "Lionel Messi", "aliases": ["Messi", "Leo Messi"], "sport": "fut", "country": "ARG", "debut": 2004, "retired": null, "pos": ["del"], "teams": ["barcelona", "psg", "inter_miami"], "leagues": ["laliga", "ligue1", "mls"], "titles": ["mundial", "champions", "balon_oro"]}, {"id": "cr7", "name": "Cristiano Ronaldo", "aliases": ["CR7", "Cristiano"], "sport": "fut", "country": "POR", "debut": 2002, "retired": null, "pos": ["del"], "teams": ["sporting", "man_united", "real_madrid", "juventus", "al_nassr"], "leagues": ["premier", "laliga", "seriea", "saudi", "portugal"], "titles": ["champions", "balon_oro"]}, {"id": "neymar", "name": "Neymar", "aliases": ["Neymar Jr"], "sport": "fut", "country": "BRA", "debut": 2009, "retired": null, "pos": ["del"], "teams": ["santos", "barcelona", "psg", "al_hilal"], "leagues": ["laliga", "ligue1", "saudi", "brasil"], "titles": ["champions"]}, {"id": "mbappe", "name": "Kylian Mbappé", "aliases": ["Mbappe"], "sport": "fut", "country": "FRA", "debut": 2015, "retired": null, "pos": ["del"], "teams": ["monaco", "psg", "real_madrid"], "leagues": ["ligue1", "laliga"], "titles": ["mundial"]}, {"id": "haaland", "name": "Erling Haaland", "aliases": ["Haaland"], "sport": "fut", "country": "NOR", "debut": 2017, "retired": null, "pos": ["del"], "teams": ["dortmund", "man_city"], "leagues": ["bundesliga", "premier"], "titles": ["champions"]}, {"id": "lewandowski", "name": "Robert Lewandowski", "aliases": ["Lewandowski", "Lewy"], "sport": "fut", "country": "POL", "debut": 2006, "retired": null, "pos": ["del"], "teams": ["dortmund", "bayern", "barcelona"], "leagues": ["bundesliga", "laliga"], "titles": ["champions"]}, {"id": "modric", "name": "Luka Modrić", "aliases": ["Modric"], "sport": "fut", "country": "CRO", "debut": 2003, "retired": null, "pos": ["med"], "teams": ["tottenham", "real_madrid", "milan"], "leagues": ["premier", "laliga", "seriea"], "titles": ["champions", "balon_oro"]}, {"id": "benzema", "name": "Karim Benzema", "aliases": ["Benzema"], "sport": "fut", "country": "FRA", "debut": 2004, "retired": null, "pos": ["del"], "teams": ["lyon", "real_madrid", "al_ittihad"], "leagues": ["ligue1", "laliga", "saudi"], "titles": ["champions", "balon_oro"]}, {"id": "salah", "name": "Mohamed Salah", "aliases": ["Salah", "Mo Salah"], "sport": "fut", "country": "EGY", "debut": 2010, "retired": null, "pos": ["del"], "teams": ["chelsea", "roma", "liverpool"], "leagues": ["premier", "seriea"], "titles": ["champions"]}, {"id": "debruyne", "name": "Kevin De Bruyne", "aliases": ["De Bruyne", "KDB"], "sport": "fut", "country": "BEL", "debut": 2008, "retired": null, "pos": ["med"], "teams": ["chelsea", "wolfsburg", "man_city", "napoli"], "leagues": ["premier", "bundesliga", "seriea"], "titles": ["champions"]}, {"id": "kane", "name": "Harry Kane", "aliases": ["Kane"], "sport": "fut", "country": "ENG", "debut": 2011, "retired": null, "pos": ["del"], "teams": ["tottenham", "bayern"], "leagues": ["premier", "bundesliga"], "titles": []}, {"id": "vinicius", "name": "Vinícius Júnior", "aliases": ["Vinicius", "Vini Jr", "Vini"], "sport": "fut", "country": "BRA", "debut": 2017, "retired": null, "pos": ["del"], "teams": ["flamengo", "real_madrid"], "leagues": ["laliga", "brasil"], "titles": ["champions"]}, {"id": "bellingham", "name": "Jude Bellingham", "aliases": ["Bellingham"], "sport": "fut", "country": "ENG", "debut": 2019, "retired": null, "pos": ["med"], "teams": ["dortmund", "real_madrid"], "leagues": ["bundesliga", "laliga"], "titles": ["champions"]}, {"id": "griezmann", "name": "Antoine Griezmann", "aliases": ["Griezmann"], "sport": "fut", "country": "FRA", "debut": 2009, "retired": null, "pos": ["del"], "teams": ["real_sociedad", "atletico", "barcelona"], "leagues": ["laliga"], "titles": ["mundial"]}, {"id": "suarez", "name": "Luis Suárez", "aliases": ["Suarez", "Luisito Suarez"], "sport": "fut", "country": "URU", "debut": 2005, "retired": null, "pos": ["del"], "teams": ["ajax", "liverpool", "barcelona", "atletico", "inter_miami"], "leagues": ["premier", "laliga", "mls", "eredivisie", "brasil"], "titles": ["champions"]}, {"id": "zlatan", "name": "Zlatan Ibrahimović", "aliases": ["Ibrahimovic", "Zlatan", "Ibra"], "sport": "fut", "country": "SWE", "debut": 1999, "retired": 2023, "pos": ["del"], "teams": ["ajax", "juventus", "inter", "barcelona", "milan", "psg", "man_united", "la_galaxy"], "leagues": ["seriea", "laliga", "ligue1", "premier", "mls", "eredivisie"], "titles": []}, {"id": "ronaldinho", "name": "Ronaldinho", "aliases": ["Ronaldinho Gaucho", "Dinho"], "sport": "fut", "country": "BRA", "debut": 1998, "retired": 2015, "pos": ["med", "del"], "teams": ["psg", "barcelona", "milan", "flamengo"], "leagues": ["ligue1", "laliga", "seriea", "ligamx", "brasil"], "titles": ["mundial", "champions", "balon_oro"]}, {"id": "ronaldo9", "name": "Ronaldo Nazário", "aliases": ["Ronaldo", "R9", "El Fenomeno", "Ronaldo Fenomeno"], "sport": "fut", "country": "BRA", "debut": 1993, "retired": 2011, "pos": ["del"], "teams": ["psv", "barcelona", "inter", "real_madrid", "milan"], "leagues": ["laliga", "seriea", "brasil", "eredivisie"], "titles": ["mundial", "balon_oro"]}, {"id": "zidane", "name": "Zinedine Zidane", "aliases": ["Zidane", "Zizou"], "sport": "fut", "country": "FRA", "debut": 1989, "retired": 2006, "pos": ["med"], "teams": ["juventus", "real_madrid"], "leagues": ["ligue1", "seriea", "laliga"], "titles": ["mundial", "champions", "balon_oro"]}, {"id": "beckham", "name": "David Beckham", "aliases": ["Beckham"], "sport": "fut", "country": "ENG", "debut": 1992, "retired": 2013, "pos": ["med"], "teams": ["man_united", "real_madrid", "la_galaxy", "milan", "psg"], "leagues": ["premier", "laliga", "mls", "seriea", "ligue1"], "titles": ["champions"]}, {"id": "henry", "name": "Thierry Henry", "aliases": ["Henry", "Titi Henry"], "sport": "fut", "country": "FRA", "debut": 1994, "retired": 2014, "pos": ["del"], "teams": ["monaco", "juventus", "arsenal", "barcelona"], "leagues": ["ligue1", "seriea", "premier", "laliga", "mls"], "titles": ["mundial", "champions"]}, {"id": "iniesta", "name": "Andrés Iniesta", "aliases": ["Iniesta"], "sport": "fut", "country": "ESP", "debut": 2002, "retired": 2024, "pos": ["med"], "teams": ["barcelona"], "leagues": ["laliga"], "titles": ["mundial", "champions"]}, {"id": "xavi", "name": "Xavi Hernández", "aliases": ["Xavi", "Xavi Hernandez"], "sport": "fut", "country": "ESP", "debut": 1998, "retired": 2019, "pos": ["med"], "teams": ["barcelona"], "leagues": ["laliga"], "titles": ["mundial", "champions"]}, {"id": "casillas", "name": "Iker Casillas", "aliases": ["Casillas", "San Iker"], "sport": "fut", "country": "ESP", "debut": 1999, "retired": 2020, "pos": ["por"], "teams": ["real_madrid", "porto"], "leagues": ["laliga", "portugal"], "titles": ["mundial", "champions"]}, {"id": "buffon", "name": "Gianluigi Buffon", "aliases": ["Buffon", "Gigi Buffon"], "sport": "fut", "country": "ITA", "debut": 1995, "retired": 2023, "pos": ["por"], "teams": ["juventus", "psg"], "leagues": ["seriea", "ligue1"], "titles": ["mundial"]}, {"id": "neuer", "name": "Manuel Neuer", "aliases": ["Neuer"], "sport": "fut", "country": "GER", "debut": 2006, "retired": null, "pos": ["por"], "teams": ["bayern"], "leagues": ["bundesliga"], "titles": ["mundial", "champions"]}, {"id": "ramos", "name": "Sergio Ramos", "aliases": ["Ramos"], "sport": "fut", "country": "ESP", "debut": 2004, "retired": null, "pos": ["def"], "teams": ["real_madrid", "psg", "monterrey"], "leagues": ["laliga", "ligue1", "ligamx"], "titles": ["mundial", "champions"]}, {"id": "pirlo", "name": "Andrea Pirlo", "aliases": ["Pirlo"], "sport": "fut", "country": "ITA", "debut": 1995, "retired": 2017, "pos": ["med"], "teams": ["inter", "milan", "juventus"], "leagues": ["seriea", "mls"], "titles": ["mundial", "champions"]}, {"id": "totti", "name": "Francesco Totti", "aliases": ["Totti"], "sport": "fut", "country": "ITA", "debut": 1992, "retired": 2017, "pos": ["del"], "teams": ["roma"], "leagues": ["seriea"], "titles": ["mundial"]}, {"id": "kaka", "name": "Kaká", "aliases": ["Kaka", "Ricardo Kaka"], "sport": "fut", "country": "BRA", "debut": 2001, "retired": 2017, "pos": ["med"], "teams": ["milan", "real_madrid"], "leagues": ["seriea", "laliga", "mls", "brasil"], "titles": ["mundial", "champions", "balon_oro"]}, {"id": "maradona", "name": "Diego Maradona", "aliases": ["Maradona", "Diego Armando Maradona", "Pelusa"], "sport": "fut", "country": "ARG", "debut": 1976, "retired": 1997, "pos": ["med", "del"], "teams": ["boca", "barcelona", "napoli"], "leagues": ["laliga", "seriea", "argentina"], "titles": ["mundial"]}, {"id": "pele", "name": "Pelé", "aliases": ["Pele", "O Rei"], "sport": "fut", "country": "BRA", "debut": 1956, "retired": 1977, "pos": ["del"], "teams": ["santos"], "leagues": ["brasil"], "titles": ["mundial"]}, {"id": "hugo", "name": "Hugo Sánchez", "aliases": ["Hugo Sanchez", "Hugol"], "sport": "fut", "country": "MEX", "debut": 1976, "retired": 1997, "pos": ["del"], "teams": ["pumas", "atletico", "real_madrid", "america"], "leagues": ["ligamx", "laliga", "mls"], "titles": []}, {"id": "chicharito", "name": "Javier Hernández", "aliases": ["Chicharito", "Javier Hernandez"], "sport": "fut", "country": "MEX", "debut": 2006, "retired": null, "pos": ["del"], "teams": ["chivas", "man_united", "real_madrid", "leverkusen", "la_galaxy"], "leagues": ["ligamx", "premier", "laliga", "bundesliga", "mls"], "titles": []}, {"id": "marquez", "name": "Rafael Márquez", "aliases": ["Rafa Marquez", "Rafael Marquez", "Kaiser de Michoacan"], "sport": "fut", "country": "MEX", "debut": 1996, "retired": 2018, "pos": ["def"], "teams": ["atlas", "monaco", "barcelona"], "leagues": ["ligamx", "ligue1", "laliga", "mls", "seriea"], "titles": ["champions"]}, {"id": "ochoa", "name": "Guillermo Ochoa", "aliases": ["Memo Ochoa", "Ochoa", "Paco Memo"], "sport": "fut", "country": "MEX", "debut": 2004, "retired": null, "pos": ["por"], "teams": ["america"], "leagues": ["ligamx", "ligue1", "laliga", "seriea", "portugal"], "titles": []}, {"id": "blanco", "name": "Cuauhtémoc Blanco", "aliases": ["Cuauhtemoc Blanco", "Cuau", "Cuauhtemoc"], "sport": "fut", "country": "MEX", "debut": 1992, "retired": 2016, "pos": ["del"], "teams": ["america"], "leagues": ["ligamx", "laliga", "mls"], "titles": []}, {"id": "lozano", "name": "Hirving Lozano", "aliases": ["Chucky Lozano", "Chucky", "Lozano"], "sport": "fut", "country": "MEX", "debut": 2014, "retired": null, "pos": ["del"], "teams": ["pachuca", "psv", "napoli"], "leagues": ["ligamx", "eredivisie", "seriea", "mls"], "titles": []}, {"id": "jimenez", "name": "Raúl Jiménez", "aliases": ["Raul Jimenez"], "sport": "fut", "country": "MEX", "debut": 2011, "retired": null, "pos": ["del"], "teams": ["america", "atletico"], "leagues": ["ligamx", "laliga", "premier", "portugal"], "titles": []}, {"id": "edson", "name": "Edson Álvarez", "aliases": ["Edson Alvarez", "Machin"], "sport": "fut", "country": "MEX", "debut": 2016, "retired": null, "pos": ["def", "med"], "teams": ["america", "ajax"], "leagues": ["ligamx", "eredivisie", "premier"], "titles": []}, {"id": "santi", "name": "Santiago Giménez", "aliases": ["Santiago Gimenez", "Santi Gimenez", "Bebote"], "sport": "fut", "country": "MEX", "debut": 2019, "retired": null, "pos": ["del"], "teams": ["cruz_azul", "milan"], "leagues": ["ligamx", "eredivisie", "seriea"], "titles": []}, {"id": "guardado", "name": "Andrés Guardado", "aliases": ["Andres Guardado", "Guardado", "Principito"], "sport": "fut", "country": "MEX", "debut": 2005, "retired": 2024, "pos": ["med"], "teams": ["atlas", "leverkusen", "psv"], "leagues": ["ligamx", "laliga", "bundesliga", "eredivisie"], "titles": []}, {"id": "campos", "name": "Jorge Campos", "aliases": ["Campos", "Brody"], "sport": "fut", "country": "MEX", "debut": 1988, "retired": 2004, "pos": ["por"], "teams": ["pumas", "la_galaxy", "cruz_azul"], "leagues": ["ligamx", "mls"], "titles": []}, {"id": "pique", "name": "Gerard Piqué", "aliases": ["Pique"], "sport": "fut", "country": "ESP", "debut": 2004, "retired": 2022, "pos": ["def"], "teams": ["man_united", "barcelona"], "leagues": ["premier", "laliga"], "titles": ["mundial", "champions"]}, {"id": "puyol", "name": "Carles Puyol", "aliases": ["Puyol"], "sport": "fut", "country": "ESP", "debut": 1999, "retired": 2014, "pos": ["def"], "teams": ["barcelona"], "leagues": ["laliga"], "titles": ["mundial", "champions"]}, {"id": "lampard", "name": "Frank Lampard", "aliases": ["Lampard"], "sport": "fut", "country": "ENG", "debut": 1995, "retired": 2016, "pos": ["med"], "teams": ["chelsea", "man_city"], "leagues": ["premier", "mls"], "titles": ["champions"]}, {"id": "gerrard", "name": "Steven Gerrard", "aliases": ["Gerrard"], "sport": "fut", "country": "ENG", "debut": 1998, "retired": 2016, "pos": ["med"], "teams": ["liverpool", "la_galaxy"], "leagues": ["premier", "mls"], "titles": ["champions"]}, {"id": "rooney", "name": "Wayne Rooney", "aliases": ["Rooney"], "sport": "fut", "country": "ENG", "debut": 2002, "retired": 2021, "pos": ["del"], "teams": ["man_united"], "leagues": ["premier", "mls"], "titles": ["champions"]}, {"id": "drogba", "name": "Didier Drogba", "aliases": ["Drogba"], "sport": "fut", "country": "CIV", "debut": 1998, "retired": 2018, "pos": ["del"], "teams": ["chelsea"], "leagues": ["ligue1", "premier", "mls"], "titles": ["champions"]}, {"id": "etoo", "name": "Samuel Eto'o", "aliases": ["Etoo", "Eto o"], "sport": "fut", "country": "CMR", "debut": 1997, "retired": 2019, "pos": ["del"], "teams": ["real_madrid", "barcelona", "inter", "chelsea"], "leagues": ["laliga", "seriea", "premier"], "titles": ["champions"]}, {"id": "aguero", "name": "Sergio Agüero", "aliases": ["Aguero", "Kun Aguero", "Kun"], "sport": "fut", "country": "ARG", "debut": 2003, "retired": 2021, "pos": ["del"], "teams": ["atletico", "man_city", "barcelona"], "leagues": ["laliga", "premier", "argentina"], "titles": []}, {"id": "dimaria", "name": "Ángel Di María", "aliases": ["Di Maria", "Angel Di Maria", "Fideo"], "sport": "fut", "country": "ARG", "debut": 2005, "retired": null, "pos": ["med", "del"], "teams": ["real_madrid", "man_united", "psg", "juventus"], "leagues": ["laliga", "premier", "ligue1", "seriea", "portugal", "argentina"], "titles": ["mundial", "champions"]}, {"id": "julian", "name": "Julián Álvarez", "aliases": ["Julian Alvarez", "La Arana"], "sport": "fut", "country": "ARG", "debut": 2018, "retired": null, "pos": ["del"], "teams": ["river", "man_city", "atletico"], "leagues": ["argentina", "premier", "laliga"], "titles": ["mundial", "champions"]}, {"id": "dibu", "name": "Emiliano Martínez", "aliases": ["Dibu Martinez", "Dibu", "Emiliano Martinez"], "sport": "fut", "country": "ARG", "debut": 2012, "retired": null, "pos": ["por"], "teams": ["arsenal", "aston_villa"], "leagues": ["premier", "laliga"], "titles": ["mundial"]}, {"id": "courtois", "name": "Thibaut Courtois", "aliases": ["Courtois"], "sport": "fut", "country": "BEL", "debut": 2009, "retired": null, "pos": ["por"], "teams": ["chelsea", "atletico", "real_madrid"], "leagues": ["premier", "laliga"], "titles": ["champions"]}, {"id": "kroos", "name": "Toni Kroos", "aliases": ["Kroos"], "sport": "fut", "country": "GER", "debut": 2007, "retired": 2024, "pos": ["med"], "teams": ["bayern", "leverkusen", "real_madrid"], "leagues": ["bundesliga", "laliga"], "titles": ["mundial", "champions"]}, {"id": "muller", "name": "Thomas Müller", "aliases": ["Muller", "Mueller", "Thomas Muller"], "sport": "fut", "country": "GER", "debut": 2008, "retired": null, "pos": ["del", "med"], "teams": ["bayern"], "leagues": ["bundesliga", "mls"], "titles": ["mundial", "champions"]}, {"id": "yamal", "name": "Lamine Yamal", "aliases": ["Yamal", "Lamine"], "sport": "fut", "country": "ESP", "debut": 2023, "retired": null, "pos": ["del"], "teams": ["barcelona"], "leagues": ["laliga"], "titles": []}, {"id": "vandijk", "name": "Virgil van Dijk", "aliases": ["Van Dijk", "VVD"], "sport": "fut", "country": "NED", "debut": 2011, "retired": null, "pos": ["def"], "teams": ["liverpool"], "leagues": ["eredivisie", "premier"], "titles": ["champions"]}, {"id": "son", "name": "Son Heung-min", "aliases": ["Son", "Sonny", "Heung-min Son"], "sport": "fut", "country": "KOR", "debut": 2010, "retired": null, "pos": ["del"], "teams": ["leverkusen", "tottenham"], "leagues": ["bundesliga", "premier", "mls"], "titles": []}, {"id": "pogba", "name": "Paul Pogba", "aliases": ["Pogba"], "sport": "fut", "country": "FRA", "debut": 2011, "retired": null, "pos": ["med"], "teams": ["man_united", "juventus", "monaco"], "leagues": ["premier", "seriea", "ligue1"], "titles": ["mundial"]}, {"id": "kante", "name": "N'Golo Kanté", "aliases": ["Kante", "Ngolo Kante"], "sport": "fut", "country": "FRA", "debut": 2012, "retired": null, "pos": ["med"], "teams": ["chelsea", "al_ittihad"], "leagues": ["ligue1", "premier", "saudi"], "titles": ["mundial", "champions"]}, {"id": "rodri", "name": "Rodri", "aliases": ["Rodrigo Hernandez"], "sport": "fut", "country": "ESP", "debut": 2015, "retired": null, "pos": ["med"], "teams": ["atletico", "man_city"], "leagues": ["laliga", "premier"], "titles": ["champions", "balon_oro"]}, {"id": "cavani", "name": "Edinson Cavani", "aliases": ["Cavani", "Matador Cavani"], "sport": "fut", "country": "URU", "debut": 2006, "retired": null, "pos": ["del"], "teams": ["napoli", "psg", "man_united", "boca"], "leagues": ["seriea", "ligue1", "premier", "laliga", "argentina"], "titles": []}, {"id": "falcao", "name": "Radamel Falcao", "aliases": ["Falcao", "El Tigre"], "sport": "fut", "country": "COL", "debut": 2005, "retired": null, "pos": ["del"], "teams": ["river", "porto", "atletico", "monaco", "man_united", "chelsea"], "leagues": ["argentina", "portugal", "laliga", "ligue1", "premier"], "titles": []}, {"id": "james", "name": "James Rodríguez", "aliases": ["James", "James Rodriguez"], "sport": "fut", "country": "COL", "debut": 2008, "retired": null, "pos": ["med"], "teams": ["porto", "monaco", "real_madrid", "bayern"], "leagues": ["argentina", "portugal", "ligue1", "laliga", "bundesliga", "premier", "brasil", "ligamx"], "titles": ["champions"]}, {"id": "alexis", "name": "Alexis Sánchez", "aliases": ["Alexis", "Alexis Sanchez", "Nino Maravilla"], "sport": "fut", "country": "CHI", "debut": 2005, "retired": null, "pos": ["del"], "teams": ["river", "barcelona", "arsenal", "man_united", "inter"], "leagues": ["seriea", "argentina", "laliga", "premier", "ligue1"], "titles": []}, {"id": "valverde", "name": "Federico Valverde", "aliases": ["Fede Valverde", "Valverde", "Pajarito"], "sport": "fut", "country": "URU", "debut": 2016, "retired": null, "pos": ["med"], "teams": ["real_madrid"], "leagues": ["laliga"], "titles": ["champions"]}, {"id": "cruyff", "name": "Johan Cruyff", "aliases": ["Cruyff"], "sport": "fut", "country": "NED", "debut": 1964, "retired": 1984, "pos": ["del"], "teams": ["ajax", "barcelona"], "leagues": ["eredivisie", "laliga"], "titles": ["champions", "balon_oro"]}, {"id": "maldini", "name": "Paolo Maldini", "aliases": ["Maldini"], "sport": "fut", "country": "ITA", "debut": 1985, "retired": 2009, "pos": ["def"], "teams": ["milan"], "leagues": ["seriea"], "titles": ["champions"]}, {"id": "brady", "name": "Tom Brady", "aliases": ["Brady"], "sport": "nfl", "country": "USA", "debut": 2000, "retired": 2022, "pos": ["qb"], "teams": ["patriots", "buccaneers"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "pmanning", "name": "Peyton Manning", "aliases": ["Peyton", "Peyton Manning"], "sport": "nfl", "country": "USA", "debut": 1998, "retired": 2015, "pos": ["qb"], "teams": ["colts", "broncos"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "mahomes", "name": "Patrick Mahomes", "aliases": ["Mahomes"], "sport": "nfl", "country": "USA", "debut": 2017, "retired": null, "pos": ["qb"], "teams": ["chiefs"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "rodgers", "name": "Aaron Rodgers", "aliases": ["Rodgers"], "sport": "nfl", "country": "USA", "debut": 2005, "retired": null, "pos": ["qb"], "teams": ["packers", "jets", "steelers"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "montana", "name": "Joe Montana", "aliases": ["Montana"], "sport": "nfl", "country": "USA", "debut": 1979, "retired": 1994, "pos": ["qb"], "teams": ["49ers", "chiefs"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "rice", "name": "Jerry Rice", "aliases": ["Rice"], "sport": "nfl", "country": "USA", "debut": 1985, "retired": 2004, "pos": ["rec"], "teams": ["49ers", "raiders", "seahawks"], "leagues": [], "titles": ["super_bowl"]}, {"id": "kelce", "name": "Travis Kelce", "aliases": ["Kelce"], "sport": "nfl", "country": "USA", "debut": 2013, "retired": null, "pos": ["rec"], "teams": ["chiefs"], "leagues": [], "titles": ["super_bowl"]}, {"id": "allen", "name": "Josh Allen", "aliases": ["Allen"], "sport": "nfl", "country": "USA", "debut": 2018, "retired": null, "pos": ["qb"], "teams": ["bills"], "leagues": [], "titles": ["mvp_nfl"]}, {"id": "lamar", "name": "Lamar Jackson", "aliases": ["Lamar"], "sport": "nfl", "country": "USA", "debut": 2018, "retired": null, "pos": ["qb"], "teams": ["ravens"], "leagues": [], "titles": ["mvp_nfl"]}, {"id": "burrow", "name": "Joe Burrow", "aliases": ["Burrow"], "sport": "nfl", "country": "USA", "debut": 2020, "retired": null, "pos": ["qb"], "teams": ["bengals"], "leagues": [], "titles": []}, {"id": "brees", "name": "Drew Brees", "aliases": ["Brees"], "sport": "nfl", "country": "USA", "debut": 2001, "retired": 2020, "pos": ["qb"], "teams": ["chargers", "saints"], "leagues": [], "titles": ["super_bowl"]}, {"id": "raylewis", "name": "Ray Lewis", "aliases": ["Ray Lewis"], "sport": "nfl", "country": "USA", "debut": 1996, "retired": 2012, "pos": ["defn"], "teams": ["ravens"], "leagues": [], "titles": ["super_bowl"]}, {"id": "watt", "name": "J.J. Watt", "aliases": ["JJ Watt", "Watt"], "sport": "nfl", "country": "USA", "debut": 2011, "retired": 2022, "pos": ["defn"], "teams": ["texans", "cardinals_nfl"], "leagues": [], "titles": []}, {"id": "donald", "name": "Aaron Donald", "aliases": ["Donald"], "sport": "nfl", "country": "USA", "debut": 2014, "retired": 2023, "pos": ["defn"], "teams": ["rams"], "leagues": [], "titles": ["super_bowl"]}, {"id": "lt", "name": "Lawrence Taylor", "aliases": ["LT", "Taylor"], "sport": "nfl", "country": "USA", "debut": 1981, "retired": 1993, "pos": ["defn"], "teams": ["giants_nfl"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "payton", "name": "Walter Payton", "aliases": ["Payton", "Sweetness"], "sport": "nfl", "country": "USA", "debut": 1975, "retired": 1987, "pos": ["rb"], "teams": ["bears"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "bsanders", "name": "Barry Sanders", "aliases": ["Barry Sanders"], "sport": "nfl", "country": "USA", "debut": 1989, "retired": 1998, "pos": ["rb"], "teams": ["lions"], "leagues": [], "titles": ["mvp_nfl"]}, {"id": "emmitt", "name": "Emmitt Smith", "aliases": ["Emmitt"], "sport": "nfl", "country": "USA", "debut": 1990, "retired": 2004, "pos": ["rb"], "teams": ["cowboys", "cardinals_nfl"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "marino", "name": "Dan Marino", "aliases": ["Marino"], "sport": "nfl", "country": "USA", "debut": 1983, "retired": 1999, "pos": ["qb"], "teams": ["dolphins"], "leagues": [], "titles": ["mvp_nfl"]}, {"id": "elway", "name": "John Elway", "aliases": ["Elway"], "sport": "nfl", "country": "USA", "debut": 1983, "retired": 1998, "pos": ["qb"], "teams": ["broncos"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "gronk", "name": "Rob Gronkowski", "aliases": ["Gronk", "Gronkowski"], "sport": "nfl", "country": "USA", "debut": 2010, "retired": 2021, "pos": ["rec"], "teams": ["patriots", "buccaneers"], "leagues": [], "titles": ["super_bowl"]}, {"id": "moss", "name": "Randy Moss", "aliases": ["Moss"], "sport": "nfl", "country": "USA", "debut": 1998, "retired": 2012, "pos": ["rec"], "teams": ["vikings", "raiders", "patriots", "titans", "49ers"], "leagues": [], "titles": []}, {"id": "megatron", "name": "Calvin Johnson", "aliases": ["Megatron"], "sport": "nfl", "country": "USA", "debut": 2007, "retired": 2015, "pos": ["rec"], "teams": ["lions"], "leagues": [], "titles": []}, {"id": "jefferson", "name": "Justin Jefferson", "aliases": ["Jefferson"], "sport": "nfl", "country": "USA", "debut": 2020, "retired": null, "pos": ["rec"], "teams": ["vikings"], "leagues": [], "titles": []}, {"id": "barkley", "name": "Saquon Barkley", "aliases": ["Saquon", "Barkley"], "sport": "nfl", "country": "USA", "debut": 2018, "retired": null, "pos": ["rb"], "teams": ["giants_nfl", "eagles"], "leagues": [], "titles": ["super_bowl"]}, {"id": "hurts", "name": "Jalen Hurts", "aliases": ["Hurts"], "sport": "nfl", "country": "USA", "debut": 2020, "retired": null, "pos": ["qb"], "teams": ["eagles"], "leagues": [], "titles": ["super_bowl"]}, {"id": "eli", "name": "Eli Manning", "aliases": ["Eli"], "sport": "nfl", "country": "USA", "debut": 2004, "retired": 2019, "pos": ["qb"], "teams": ["giants_nfl"], "leagues": [], "titles": ["super_bowl"]}, {"id": "bigben", "name": "Ben Roethlisberger", "aliases": ["Big Ben", "Roethlisberger"], "sport": "nfl", "country": "USA", "debut": 2004, "retired": 2021, "pos": ["qb"], "teams": ["steelers"], "leagues": [], "titles": ["super_bowl"]}, {"id": "favre", "name": "Brett Favre", "aliases": ["Favre"], "sport": "nfl", "country": "USA", "debut": 1991, "retired": 2010, "pos": ["qb"], "teams": ["falcons", "packers", "jets", "vikings"], "leagues": [], "titles": ["super_bowl", "mvp_nfl"]}, {"id": "polamalu", "name": "Troy Polamalu", "aliases": ["Polamalu"], "sport": "nfl", "country": "USA", "debut": 2003, "retired": 2014, "pos": ["defn"], "teams": ["steelers"], "leagues": [], "titles": ["super_bowl"]}, {"id": "jordan", "name": "Michael Jordan", "aliases": ["Jordan", "MJ"], "sport": "nba", "country": "USA", "debut": 1984, "retired": 2003, "pos": ["guard"], "teams": ["bulls", "wizards"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "lebron", "name": "LeBron James", "aliases": ["LeBron", "King James"], "sport": "nba", "country": "USA", "debut": 2003, "retired": null, "pos": ["fwd"], "teams": ["cavaliers", "heat", "lakers"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "kobe", "name": "Kobe Bryant", "aliases": ["Kobe"], "sport": "nba", "country": "USA", "debut": 1996, "retired": 2016, "pos": ["guard"], "teams": ["lakers"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "curry", "name": "Stephen Curry", "aliases": ["Curry", "Steph Curry"], "sport": "nba", "country": "USA", "debut": 2009, "retired": null, "pos": ["guard"], "teams": ["warriors"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "durant", "name": "Kevin Durant", "aliases": ["Durant", "KD"], "sport": "nba", "country": "USA", "debut": 2007, "retired": null, "pos": ["fwd"], "teams": ["thunder", "warriors", "nets", "suns", "rockets"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "shaq", "name": "Shaquille O'Neal", "aliases": ["Shaq", "Shaquille Oneal"], "sport": "nba", "country": "USA", "debut": 1992, "retired": 2011, "pos": ["center"], "teams": ["magic", "lakers", "heat", "suns", "cavaliers", "celtics"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "duncan", "name": "Tim Duncan", "aliases": ["Duncan"], "sport": "nba", "country": "USA", "debut": 1997, "retired": 2016, "pos": ["fwd", "center"], "teams": ["spurs"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "magic", "name": "Magic Johnson", "aliases": ["Magic"], "sport": "nba", "country": "USA", "debut": 1979, "retired": 1996, "pos": ["guard"], "teams": ["lakers"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "bird", "name": "Larry Bird", "aliases": ["Bird"], "sport": "nba", "country": "USA", "debut": 1979, "retired": 1992, "pos": ["fwd"], "teams": ["celtics"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "kareem", "name": "Kareem Abdul-Jabbar", "aliases": ["Kareem", "Abdul-Jabbar"], "sport": "nba", "country": "USA", "debut": 1969, "retired": 1989, "pos": ["center"], "teams": ["bucks", "lakers"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "giannis", "name": "Giannis Antetokounmpo", "aliases": ["Giannis", "Antetokounmpo"], "sport": "nba", "country": "GRE", "debut": 2013, "retired": null, "pos": ["fwd"], "teams": ["bucks"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "jokic", "name": "Nikola Jokić", "aliases": ["Jokic"], "sport": "nba", "country": "SRB", "debut": 2015, "retired": null, "pos": ["center"], "teams": ["nuggets"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "doncic", "name": "Luka Dončić", "aliases": ["Doncic", "Luka Doncic"], "sport": "nba", "country": "SVN", "debut": 2015, "retired": null, "pos": ["guard"], "teams": ["real_madrid", "mavericks", "lakers"], "leagues": [], "titles": []}, {"id": "wemby", "name": "Victor Wembanyama", "aliases": ["Wemby", "Wembanyama"], "sport": "nba", "country": "FRA", "debut": 2019, "retired": null, "pos": ["center"], "teams": ["spurs"], "leagues": [], "titles": []}, {"id": "dirk", "name": "Dirk Nowitzki", "aliases": ["Dirk", "Nowitzki"], "sport": "nba", "country": "GER", "debut": 1998, "retired": 2019, "pos": ["fwd"], "teams": ["mavericks"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "iverson", "name": "Allen Iverson", "aliases": ["Iverson", "AI"], "sport": "nba", "country": "USA", "debut": 1996, "retired": 2010, "pos": ["guard"], "teams": ["76ers", "nuggets", "pistons", "grizzlies"], "leagues": [], "titles": ["mvp_nba"]}, {"id": "kg", "name": "Kevin Garnett", "aliases": ["Garnett", "KG"], "sport": "nba", "country": "USA", "debut": 1995, "retired": 2016, "pos": ["fwd"], "teams": ["timberwolves", "celtics", "nets"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "wade", "name": "Dwyane Wade", "aliases": ["Wade", "D-Wade", "Dwayne Wade"], "sport": "nba", "country": "USA", "debut": 2003, "retired": 2019, "pos": ["guard"], "teams": ["heat", "bulls", "cavaliers"], "leagues": [], "titles": ["anillo_nba"]}, {"id": "parker", "name": "Tony Parker", "aliases": ["Parker"], "sport": "nba", "country": "FRA", "debut": 1999, "retired": 2019, "pos": ["guard"], "teams": ["spurs", "hornets"], "leagues": [], "titles": ["anillo_nba"]}, {"id": "manu", "name": "Manu Ginóbili", "aliases": ["Ginobili", "Manu Ginobili"], "sport": "nba", "country": "ARG", "debut": 1995, "retired": 2018, "pos": ["guard"], "teams": ["spurs"], "leagues": [], "titles": ["anillo_nba"]}, {"id": "kawhi", "name": "Kawhi Leonard", "aliases": ["Kawhi"], "sport": "nba", "country": "USA", "debut": 2011, "retired": null, "pos": ["fwd"], "teams": ["spurs", "raptors", "clippers"], "leagues": [], "titles": ["anillo_nba"]}, {"id": "harden", "name": "James Harden", "aliases": ["Harden", "La Barba"], "sport": "nba", "country": "USA", "debut": 2009, "retired": null, "pos": ["guard"], "teams": ["thunder", "rockets", "nets", "76ers", "clippers"], "leagues": [], "titles": ["mvp_nba"]}, {"id": "pippen", "name": "Scottie Pippen", "aliases": ["Pippen"], "sport": "nba", "country": "USA", "debut": 1987, "retired": 2004, "pos": ["fwd"], "teams": ["bulls", "rockets", "blazers"], "leagues": [], "titles": ["anillo_nba"]}, {"id": "rodman", "name": "Dennis Rodman", "aliases": ["Rodman", "El Gusano"], "sport": "nba", "country": "USA", "debut": 1986, "retired": 2000, "pos": ["fwd"], "teams": ["pistons", "spurs", "bulls", "lakers", "mavericks"], "leagues": [], "titles": ["anillo_nba"]}, {"id": "tatum", "name": "Jayson Tatum", "aliases": ["Tatum"], "sport": "nba", "country": "USA", "debut": 2017, "retired": null, "pos": ["fwd"], "teams": ["celtics"], "leagues": [], "titles": ["anillo_nba"]}, {"id": "sga", "name": "Shai Gilgeous-Alexander", "aliases": ["SGA", "Shai"], "sport": "nba", "country": "CAN", "debut": 2018, "retired": null, "pos": ["guard"], "teams": ["clippers", "thunder"], "leagues": [], "titles": ["anillo_nba", "mvp_nba"]}, {"id": "ruth", "name": "Babe Ruth", "aliases": ["Ruth", "Bambino"], "sport": "mlb", "country": "USA", "debut": 1914, "retired": 1935, "pos": ["pitcher", "bat"], "teams": ["red_sox", "yankees", "braves"], "leagues": [], "titles": ["serie_mundial", "mvp_mlb"]}, {"id": "jeter", "name": "Derek Jeter", "aliases": ["Jeter"], "sport": "mlb", "country": "USA", "debut": 1995, "retired": 2014, "pos": ["bat"], "teams": ["yankees"], "leagues": [], "titles": ["serie_mundial"]}, {"id": "ohtani", "name": "Shohei Ohtani", "aliases": ["Ohtani", "Shotime"], "sport": "mlb", "country": "JPN", "debut": 2013, "retired": null, "pos": ["pitcher", "bat"], "teams": ["angels", "dodgers"], "leagues": [], "titles": ["serie_mundial", "mvp_mlb"]}, {"id": "judge", "name": "Aaron Judge", "aliases": ["Judge"], "sport": "mlb", "country": "USA", "debut": 2016, "retired": null, "pos": ["bat"], "teams": ["yankees"], "leagues": [], "titles": ["mvp_mlb"]}, {"id": "trout", "name": "Mike Trout", "aliases": ["Trout"], "sport": "mlb", "country": "USA", "debut": 2011, "retired": null, "pos": ["bat"], "teams": ["angels"], "leagues": [], "titles": ["mvp_mlb"]}, {"id": "fernando", "name": "Fernando Valenzuela", "aliases": ["Valenzuela", "El Toro Valenzuela"], "sport": "mlb", "country": "MEX", "debut": 1980, "retired": 1997, "pos": ["pitcher"], "teams": ["dodgers", "angels", "cardinals_mlb", "padres"], "leagues": [], "titles": ["serie_mundial", "cy_young"]}, {"id": "pujols", "name": "Albert Pujols", "aliases": ["Pujols"], "sport": "mlb", "country": "DOM", "debut": 2001, "retired": 2022, "pos": ["bat"], "teams": ["cardinals_mlb", "angels", "dodgers"], "leagues": [], "titles": ["serie_mundial", "mvp_mlb"]}, {"id": "ortiz", "name": "David Ortiz", "aliases": ["Big Papi", "Ortiz"], "sport": "mlb", "country": "DOM", "debut": 1997, "retired": 2016, "pos": ["bat"], "teams": ["twins", "red_sox"], "leagues": [], "titles": ["serie_mundial"]}, {"id": "rivera", "name": "Mariano Rivera", "aliases": ["Mariano", "Rivera"], "sport": "mlb", "country": "PAN", "debut": 1995, "retired": 2013, "pos": ["pitcher"], "teams": ["yankees"], "leagues": [], "titles": ["serie_mundial"]}, {"id": "griffey", "name": "Ken Griffey Jr.", "aliases": ["Griffey", "Ken Griffey", "Junior Griffey"], "sport": "mlb", "country": "USA", "debut": 1989, "retired": 2010, "pos": ["bat"], "teams": ["mariners", "reds", "white_sox"], "leagues": [], "titles": ["mvp_mlb"]}, {"id": "bonds", "name": "Barry Bonds", "aliases": ["Bonds"], "sport": "mlb", "country": "USA", "debut": 1986, "retired": 2007, "pos": ["bat"], "teams": ["pirates", "giants_mlb"], "leagues": [], "titles": ["mvp_mlb"]}, {"id": "kershaw", "name": "Clayton Kershaw", "aliases": ["Kershaw"], "sport": "mlb", "country": "USA", "debut": 2008, "retired": null, "pos": ["pitcher"], "teams": ["dodgers"], "leagues": [], "titles": ["serie_mundial", "mvp_mlb", "cy_young"]}, {"id": "pedro", "name": "Pedro Martínez", "aliases": ["Pedro Martinez"], "sport": "mlb", "country": "DOM", "debut": 1992, "retired": 2009, "pos": ["pitcher"], "teams": ["dodgers", "expos", "red_sox", "mets", "phillies"], "leagues": [], "titles": ["serie_mundial", "cy_young"]}, {"id": "miggy", "name": "Miguel Cabrera", "aliases": ["Miggy", "Cabrera"], "sport": "mlb", "country": "VEN", "debut": 2003, "retired": 2023, "pos": ["bat"], "teams": ["marlins", "tigers"], "leagues": [], "titles": ["serie_mundial", "mvp_mlb"]}, {"id": "ichiro", "name": "Ichiro Suzuki", "aliases": ["Ichiro"], "sport": "mlb", "country": "JPN", "debut": 1992, "retired": 2019, "pos": ["bat"], "teams": ["mariners", "yankees", "marlins"], "leagues": [], "titles": ["mvp_mlb"]}, {"id": "jackie", "name": "Jackie Robinson", "aliases": ["Jackie"], "sport": "mlb", "country": "USA", "debut": 1945, "retired": 1956, "pos": ["bat"], "teams": ["dodgers"], "leagues": [], "titles": ["serie_mundial", "mvp_mlb"]}, {"id": "clemente", "name": "Roberto Clemente", "aliases": ["Clemente"], "sport": "mlb", "country": "PRI", "debut": 1955, "retired": 1972, "pos": ["bat"], "teams": ["pirates"], "leagues": [], "titles": ["serie_mundial", "mvp_mlb"]}, {"id": "rjohnson", "name": "Randy Johnson", "aliases": ["Big Unit", "Randy Johnson"], "sport": "mlb", "country": "USA", "debut": 1988, "retired": 2009, "pos": ["pitcher"], "teams": ["expos", "mariners", "astros", "diamondbacks", "yankees", "giants_mlb"], "leagues": [], "titles": ["serie_mundial", "cy_young"]}, {"id": "betts", "name": "Mookie Betts", "aliases": ["Mookie", "Betts"], "sport": "mlb", "country": "USA", "debut": 2014, "retired": null, "pos": ["bat"], "teams": ["red_sox", "dodgers"], "leagues": [], "titles": ["serie_mundial", "mvp_mlb"]}, {"id": "soto", "name": "Juan Soto", "aliases": ["Soto"], "sport": "mlb", "country": "DOM", "debut": 2018, "retired": null, "pos": ["bat"], "teams": ["nationals", "padres", "yankees", "mets"], "leagues": [], "titles": ["serie_mundial"]}, {"id": "schumacher", "name": "Michael Schumacher", "aliases": ["Schumacher", "Schumi"], "sport": "f1", "country": "GER", "debut": 1991, "retired": 2012, "pos": [], "teams": ["benetton", "ferrari", "mercedes"], "leagues": [], "titles": ["campeon_f1"]}, {"id": "hamilton", "name": "Lewis Hamilton", "aliases": ["Hamilton"], "sport": "f1", "country": "ENG", "debut": 2007, "retired": null, "pos": [], "teams": ["mclaren", "mercedes", "ferrari"], "leagues": [], "titles": ["campeon_f1"]}, {"id": "verstappen", "name": "Max Verstappen", "aliases": ["Verstappen", "Max"], "sport": "f1", "country": "NED", "debut": 2015, "retired": null, "pos": [], "teams": ["toro_rosso", "red_bull"], "leagues": [], "titles": ["campeon_f1"]}, {"id": "senna", "name": "Ayrton Senna", "aliases": ["Senna"], "sport": "f1", "country": "BRA", "debut": 1984, "retired": 1994, "pos": [], "teams": ["lotus", "mclaren", "williams"], "leagues": [], "titles": ["campeon_f1"]}, {"id": "alonso", "name": "Fernando Alonso", "aliases": ["Alonso", "Nano"], "sport": "f1", "country": "ESP", "debut": 2001, "retired": null, "pos": [], "teams": ["renault", "mclaren", "ferrari", "aston_martin"], "leagues": [], "titles": ["campeon_f1"]}, {"id": "checo", "name": "Sergio Pérez", "aliases": ["Checo Perez", "Checo", "Sergio Perez"], "sport": "f1", "country": "MEX", "debut": 2011, "retired": null, "pos": [], "teams": ["sauber", "mclaren", "force_india", "red_bull"], "leagues": [], "titles": []}, {"id": "vettel", "name": "Sebastian Vettel", "aliases": ["Vettel"], "sport": "f1", "country": "GER", "debut": 2007, "retired": 2022, "pos": [], "teams": ["sauber", "toro_rosso", "red_bull", "ferrari", "aston_martin"], "leagues": [], "titles": ["campeon_f1"]}, {"id": "leclerc", "name": "Charles Leclerc", "aliases": ["Leclerc"], "sport": "f1", "country": "MON", "debut": 2018, "retired": null, "pos": [], "teams": ["sauber", "ferrari"], "leagues": [], "titles": []}, {"id": "prost", "name": "Alain Prost", "aliases": ["Prost"], "sport": "f1", "country": "FRA", "debut": 1980, "retired": 1993, "pos": [], "teams": ["mclaren", "renault", "ferrari", "williams"], "leagues": [], "titles": ["campeon_f1"]}, {"id": "raikkonen", "name": "Kimi Räikkönen", "aliases": ["Raikkonen", "Kimi"], "sport": "f1", "country": "FIN", "debut": 2001, "retired": 2021, "pos": [], "teams": ["sauber", "mclaren", "ferrari"], "leagues": [], "titles": ["campeon_f1"]}, {"id": "lauda", "name": "Niki Lauda", "aliases": ["Lauda"], "sport": "f1", "country": "AUT", "debut": 1971, "retired": 1985, "pos": [], "teams": ["ferrari", "mclaren"], "leagues": [], "titles": ["campeon_f1"]}, {"id": "federer", "name": "Roger Federer", "aliases": ["Federer"], "sport": "tenis", "country": "SUI", "debut": 1998, "retired": 2022, "pos": [], "teams": [], "leagues": [], "titles": ["roland_garros"]}, {"id": "nadal", "name": "Rafael Nadal", "aliases": ["Nadal", "Rafa Nadal"], "sport": "tenis", "country": "ESP", "debut": 2001, "retired": 2024, "pos": [], "teams": [], "leagues": [], "titles": ["roland_garros"]}, {"id": "djokovic", "name": "Novak Djokovic", "aliases": ["Djokovic", "Nole"], "sport": "tenis", "country": "SRB", "debut": 2003, "retired": null, "pos": [], "teams": [], "leagues": [], "titles": ["roland_garros"]}, {"id": "alcaraz", "name": "Carlos Alcaraz", "aliases": ["Alcaraz", "Carlitos"], "sport": "tenis", "country": "ESP", "debut": 2018, "retired": null, "pos": [], "teams": [], "leagues": [], "titles": ["roland_garros"]}, {"id": "sinner", "name": "Jannik Sinner", "aliases": ["Sinner"], "sport": "tenis", "country": "ITA", "debut": 2018, "retired": null, "pos": [], "teams": [], "leagues": [], "titles": []}, {"id": "serena", "name": "Serena Williams", "aliases": ["Serena"], "sport": "tenis", "country": "USA", "debut": 1995, "retired": 2022, "pos": [], "teams": [], "leagues": [], "titles": ["roland_garros"], "female": true}, {"id": "murray", "name": "Andy Murray", "aliases": ["Murray"], "sport": "tenis", "country": "SCO", "debut": 2005, "retired": 2024, "pos": [], "teams": [], "leagues": [], "titles": []}, {"id": "sampras", "name": "Pete Sampras", "aliases": ["Sampras"], "sport": "tenis", "country": "USA", "debut": 1988, "retired": 2002, "pos": [], "teams": [], "leagues": [], "titles": []}, {"id": "agassi", "name": "Andre Agassi", "aliases": ["Agassi"], "sport": "tenis", "country": "USA", "debut": 1986, "retired": 2006, "pos": [], "teams": [], "leagues": [], "titles": ["roland_garros"]}, {"id": "sharapova", "name": "Maria Sharapova", "aliases": ["Sharapova"], "sport": "tenis", "country": "RUS", "debut": 2001, "retired": 2020, "pos": [], "teams": [], "leagues": [], "titles": ["roland_garros"], "female": true}];
+
+    const EMBEDDED_INDEX = [{"date": "2027-01-25", "theme": "Jugador misterioso"}, {"date": "2027-01-24", "theme": "Jugador misterioso"}, {"date": "2027-01-23", "theme": "Jugador misterioso"}, {"date": "2027-01-22", "theme": "Jugador misterioso"}, {"date": "2027-01-21", "theme": "Jugador misterioso"}, {"date": "2027-01-20", "theme": "Jugador misterioso"}, {"date": "2027-01-19", "theme": "Jugador misterioso"}, {"date": "2027-01-18", "theme": "Jugador misterioso"}, {"date": "2027-01-17", "theme": "Jugador misterioso"}, {"date": "2027-01-16", "theme": "Jugador misterioso"}, {"date": "2027-01-15", "theme": "Jugador misterioso"}, {"date": "2027-01-14", "theme": "Jugador misterioso"}, {"date": "2027-01-13", "theme": "Jugador misterioso"}, {"date": "2027-01-12", "theme": "Jugador misterioso"}, {"date": "2027-01-11", "theme": "Jugador misterioso"}, {"date": "2027-01-10", "theme": "Jugador misterioso"}, {"date": "2027-01-09", "theme": "Jugador misterioso"}, {"date": "2027-01-08", "theme": "Jugador misterioso"}, {"date": "2027-01-07", "theme": "Jugador misterioso"}, {"date": "2027-01-06", "theme": "Jugador misterioso"}, {"date": "2027-01-05", "theme": "Jugador misterioso"}, {"date": "2027-01-04", "theme": "Jugador misterioso"}, {"date": "2027-01-03", "theme": "Jugador misterioso"}, {"date": "2027-01-02", "theme": "Jugador misterioso"}, {"date": "2027-01-01", "theme": "Jugador misterioso"}, {"date": "2026-12-31", "theme": "Jugador misterioso"}, {"date": "2026-12-30", "theme": "Jugador misterioso"}, {"date": "2026-12-29", "theme": "Jugador misterioso"}, {"date": "2026-12-28", "theme": "Jugador misterioso"}, {"date": "2026-12-27", "theme": "Jugador misterioso"}, {"date": "2026-12-26", "theme": "Jugador misterioso"}, {"date": "2026-12-25", "theme": "Jugador misterioso"}, {"date": "2026-12-24", "theme": "Jugador misterioso"}, {"date": "2026-12-23", "theme": "Jugador misterioso"}, {"date": "2026-12-22", "theme": "Jugador misterioso"}, {"date": "2026-12-21", "theme": "Jugador misterioso"}, {"date": "2026-12-20", "theme": "Jugador misterioso"}, {"date": "2026-12-19", "theme": "Jugador misterioso"}, {"date": "2026-12-18", "theme": "Jugador misterioso"}, {"date": "2026-12-17", "theme": "Jugador misterioso"}, {"date": "2026-12-16", "theme": "Jugador misterioso"}, {"date": "2026-12-15", "theme": "Jugador misterioso"}, {"date": "2026-12-14", "theme": "Jugador misterioso"}, {"date": "2026-12-13", "theme": "Jugador misterioso"}, {"date": "2026-12-12", "theme": "Jugador misterioso"}, {"date": "2026-12-11", "theme": "Jugador misterioso"}, {"date": "2026-12-10", "theme": "Jugador misterioso"}, {"date": "2026-12-09", "theme": "Jugador misterioso"}, {"date": "2026-12-08", "theme": "Jugador misterioso"}, {"date": "2026-12-07", "theme": "Jugador misterioso"}, {"date": "2026-12-06", "theme": "Jugador misterioso"}, {"date": "2026-12-05", "theme": "Jugador misterioso"}, {"date": "2026-12-04", "theme": "Jugador misterioso"}, {"date": "2026-12-03", "theme": "Jugador misterioso"}, {"date": "2026-12-02", "theme": "Jugador misterioso"}, {"date": "2026-12-01", "theme": "Jugador misterioso"}, {"date": "2026-11-30", "theme": "Jugador misterioso"}, {"date": "2026-11-29", "theme": "Jugador misterioso"}, {"date": "2026-11-28", "theme": "Jugador misterioso"}, {"date": "2026-11-27", "theme": "Jugador misterioso"}, {"date": "2026-11-26", "theme": "Jugador misterioso"}];
+
+    const EMBEDDED_PUZZLES = {"2026-11-26": {"date": "2026-11-26", "id": "curry", "theme": "Jugador misterioso"}, "2026-11-27": {"date": "2026-11-27", "id": "alcaraz", "theme": "Jugador misterioso"}, "2026-11-28": {"date": "2026-11-28", "id": "brady", "theme": "Jugador misterioso"}, "2026-11-29": {"date": "2026-11-29", "id": "cr7", "theme": "Jugador misterioso"}, "2026-11-30": {"date": "2026-11-30", "id": "pujols", "theme": "Jugador misterioso"}, "2026-12-01": {"date": "2026-12-01", "id": "wemby", "theme": "Jugador misterioso"}, "2026-12-02": {"date": "2026-12-02", "id": "jefferson", "theme": "Jugador misterioso"}, "2026-12-03": {"date": "2026-12-03", "id": "miggy", "theme": "Jugador misterioso"}, "2026-12-04": {"date": "2026-12-04", "id": "moss", "theme": "Jugador misterioso"}, "2026-12-05": {"date": "2026-12-05", "id": "kareem", "theme": "Jugador misterioso"}, "2026-12-06": {"date": "2026-12-06", "id": "cruyff", "theme": "Jugador misterioso"}, "2026-12-07": {"date": "2026-12-07", "id": "dirk", "theme": "Jugador misterioso"}, "2026-12-08": {"date": "2026-12-08", "id": "clemente", "theme": "Jugador misterioso"}, "2026-12-09": {"date": "2026-12-09", "id": "henry", "theme": "Jugador misterioso"}, "2026-12-10": {"date": "2026-12-10", "id": "bird", "theme": "Jugador misterioso"}, "2026-12-11": {"date": "2026-12-11", "id": "montana", "theme": "Jugador misterioso"}, "2026-12-12": {"date": "2026-12-12", "id": "hamilton", "theme": "Jugador misterioso"}, "2026-12-13": {"date": "2026-12-13", "id": "pogba", "theme": "Jugador misterioso"}, "2026-12-14": {"date": "2026-12-14", "id": "lt", "theme": "Jugador misterioso"}, "2026-12-15": {"date": "2026-12-15", "id": "ronaldo9", "theme": "Jugador misterioso"}, "2026-12-16": {"date": "2026-12-16", "id": "sampras", "theme": "Jugador misterioso"}, "2026-12-17": {"date": "2026-12-17", "id": "neymar", "theme": "Jugador misterioso"}, "2026-12-18": {"date": "2026-12-18", "id": "sharapova", "theme": "Jugador misterioso"}, "2026-12-19": {"date": "2026-12-19", "id": "vandijk", "theme": "Jugador misterioso"}, "2026-12-20": {"date": "2026-12-20", "id": "doncic", "theme": "Jugador misterioso"}, "2026-12-21": {"date": "2026-12-21", "id": "ruth", "theme": "Jugador misterioso"}, "2026-12-22": {"date": "2026-12-22", "id": "bigben", "theme": "Jugador misterioso"}, "2026-12-23": {"date": "2026-12-23", "id": "lebron", "theme": "Jugador misterioso"}, "2026-12-24": {"date": "2026-12-24", "id": "debruyne", "theme": "Jugador misterioso"}, "2026-12-25": {"date": "2026-12-25", "id": "shaq", "theme": "Jugador misterioso"}, "2026-12-26": {"date": "2026-12-26", "id": "kroos", "theme": "Jugador misterioso"}, "2026-12-27": {"date": "2026-12-27", "id": "watt", "theme": "Jugador misterioso"}, "2026-12-28": {"date": "2026-12-28", "id": "murray", "theme": "Jugador misterioso"}, "2026-12-29": {"date": "2026-12-29", "id": "duncan", "theme": "Jugador misterioso"}, "2026-12-30": {"date": "2026-12-30", "id": "ohtani", "theme": "Jugador misterioso"}, "2026-12-31": {"date": "2026-12-31", "id": "kelce", "theme": "Jugador misterioso"}, "2027-01-01": {"date": "2027-01-01", "id": "son", "theme": "Jugador misterioso"}, "2027-01-02": {"date": "2027-01-02", "id": "kershaw", "theme": "Jugador misterioso"}, "2027-01-03": {"date": "2027-01-03", "id": "edson", "theme": "Jugador misterioso"}, "2027-01-04": {"date": "2027-01-04", "id": "harden", "theme": "Jugador misterioso"}, "2027-01-05": {"date": "2027-01-05", "id": "djokovic", "theme": "Jugador misterioso"}, "2027-01-06": {"date": "2027-01-06", "id": "rooney", "theme": "Jugador misterioso"}, "2027-01-07": {"date": "2027-01-07", "id": "burrow", "theme": "Jugador misterioso"}, "2027-01-08": {"date": "2027-01-08", "id": "iverson", "theme": "Jugador misterioso"}, "2027-01-09": {"date": "2027-01-09", "id": "ortiz", "theme": "Jugador misterioso"}, "2027-01-10": {"date": "2027-01-10", "id": "casillas", "theme": "Jugador misterioso"}, "2027-01-11": {"date": "2027-01-11", "id": "sga", "theme": "Jugador misterioso"}, "2027-01-12": {"date": "2027-01-12", "id": "federer", "theme": "Jugador misterioso"}, "2027-01-13": {"date": "2027-01-13", "id": "marquez", "theme": "Jugador misterioso"}, "2027-01-14": {"date": "2027-01-14", "id": "lauda", "theme": "Jugador misterioso"}, "2027-01-15": {"date": "2027-01-15", "id": "falcao", "theme": "Jugador misterioso"}, "2027-01-16": {"date": "2027-01-16", "id": "wade", "theme": "Jugador misterioso"}, "2027-01-17": {"date": "2027-01-17", "id": "donald", "theme": "Jugador misterioso"}, "2027-01-18": {"date": "2027-01-18", "id": "messi", "theme": "Jugador misterioso"}, "2027-01-19": {"date": "2027-01-19", "id": "serena", "theme": "Jugador misterioso"}, "2027-01-20": {"date": "2027-01-20", "id": "prost", "theme": "Jugador misterioso"}, "2027-01-21": {"date": "2027-01-21", "id": "kane", "theme": "Jugador misterioso"}, "2027-01-22": {"date": "2027-01-22", "id": "emmitt", "theme": "Jugador misterioso"}, "2027-01-23": {"date": "2027-01-23", "id": "pirlo", "theme": "Jugador misterioso"}, "2027-01-24": {"date": "2027-01-24", "id": "polamalu", "theme": "Jugador misterioso"}, "2027-01-25": {"date": "2027-01-25", "id": "benzema", "theme": "Jugador misterioso"}};
+
+    const MAX_Q = 20, MAX_MISS = 3, Q_COST = 40, MISS_COST = 100;
+    const FREE_MAX_Q = 30, FREE_MAX_GUESSES = 3, GUESS_AT = 0.85;
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    /*isac-lock-future*/
+    (function () {
+      try {
+        const idx = EMBEDDED_INDEX.filter(i => i.date <= todayStr);
+        if (!idx.length) return;                       // seguridad: nunca dejar el juego vacio
+        EMBEDDED_INDEX.splice(0, EMBEDDED_INDEX.length, ...idx);
+        Object.keys(EMBEDDED_PUZZLES).forEach(k => { if (k > todayStr) delete EMBEDDED_PUZZLES[k]; });
+      } catch (e) { console.warn('lock-future', e); }
+    })();
+
+    /* Recarga automatica a las 00:00:02 hora CDMX para estrenar el reto diario */
+    (function scheduleMidnightRefresh() {
+      try {
+        const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        const p = {};
+        fmt.formatToParts(new Date()).forEach(x => { p[x.type] = x.value; });
+        const secNow = (parseInt(p.hour, 10) % 24) * 3600 + parseInt(p.minute, 10) * 60 + parseInt(p.second, 10);
+        setTimeout(() => { location.reload(); }, (86400 - secNow + 2) * 1000);
+      } catch (e) {}
+    })();
+
+    function setBotMood(mood) {
+      const img = document.getElementById('isacbot-img');
+      if (!img) return;
+      const candidates = [`../assets/ISACLOGOS/${mood}.webp`, `assets/ISACLOGOS/${mood}.webp`];
+      let idx = 0;
+      img.onload = () => { img.hidden = false; img.classList.remove('bounce'); void img.offsetWidth; img.classList.add('bounce'); };
+      img.onerror = () => { idx++; if (idx < candidates.length) img.src = candidates[idx]; else img.hidden = true; };
+      img.src = candidates[0];
+    }
+
+    // ---------- utilidades ----------
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const norm = s => String(s).normalize('NFD').replace(/[^\x00-\x7f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const fmtTime = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    // hash de una sola via para el "sobre sellado" (no se puede volver al nombre)
+    function sealHash(str) {
+      let h1 = 0xdeadbeef ^ 7, h2 = 0x41c6ce57 ^ 7;
+      for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+    }
+    function getDeviceId() {
+      let id = localStorage.getItem('isac_device_id');
+      if (!id) {
+        id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID()
+          : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); });
+        localStorage.setItem('isac_device_id', id);
+      }
+      return id;
+    }
+    let toastTimer = null;
+    function showToast(msg, type = '') {
+      const bar = document.getElementById('toast-bar');
+      bar.innerHTML = `<div class="toast-msg ${type}">${msg}</div>`;
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { bar.innerHTML = ''; }, 3000);
+    }
+
+    // ---------- jugadores y preguntas ----------
+    const V = EMBEDDED_VOCAB;
+    const PLAYERS = EMBEDDED_PLAYERS;
+    const BY_ID = Object.fromEntries(PLAYERS.map(p => [p.id, p]));
+    const NAME_INDEX = {};
+    PLAYERS.forEach(p => [p.name, ...(p.aliases || [])].forEach(n => { NAME_INDEX[norm(n)] = p.id; }));
+    const findPlayer = text => BY_ID[NAME_INDEX[norm(text)]] || null;
+    const lastYear = p => (p.retired == null ? 2025 : p.retired);
+
+    function buildQuestions() {
+      const Q = [];
+      const add = (id, cat, text, test) => Q.push({ id, cat, text, test });
+      Object.entries(V.sports || {}).forEach(([s, name]) =>
+        add('sport_' + s, 'Deporte', s === 'f1' ? '¿Es piloto de Fórmula 1?' : `¿Juega o jugó ${name}?`, p => p.sport === s));
+      add('female', 'Origen', '¿Es mujer?', p => !!p.female);
+      add('latam', 'Origen', '¿Es latinoamericano?', p => (V.latam || []).includes(p.country));
+      Object.entries(V.continents || {}).forEach(([c, name]) =>
+        add('cont_' + c, 'Origen', `¿Es de ${name}?`, p => (V.countries[p.country] || [])[1] === c));
+      add('uk', 'Origen', '¿Es del Reino Unido?', p => (V.uk || []).includes(p.country));
+      const usedCountries = [...new Set(PLAYERS.map(p => p.country))];
+      usedCountries.sort((a, b) => V.countries[a][0].localeCompare(V.countries[b][0], 'es'))
+        .forEach(c => add('country_' + c, 'País', `¿Es de ${V.countries[c][0]}?`, p => p.country === c));
+      const minDec = Math.floor(Math.min(...PLAYERS.map(p => p.debut)) / 10) * 10;
+      for (let d = minDec; d <= 2020; d += 10) {
+        if (PLAYERS.some(p => p.debut <= d + 9 && lastYear(p) >= d))
+          add('dec_' + d, 'Época', `¿Estuvo en activo en la década de ${d}?`, p => p.debut <= d + 9 && lastYear(p) >= d);
+      }
+      add('debut_1990', 'Época', '¿Debutó como profesional antes de 1990?', p => p.debut < 1990);
+      add('debut_2000', 'Época', '¿Debutó como profesional antes del 2000?', p => p.debut < 2000);
+      add('debut_2015', 'Época', '¿Debutó en 2015 o después?', p => p.debut >= 2015);
+      add('ret_2000', 'Época', '¿Se retiró antes del 2000?', p => p.retired != null && p.retired < 2000);
+      add('ret_2020', 'Época', '¿Se retiró antes de 2020?', p => p.retired != null && p.retired < 2020);
+      Object.entries(V.positions || {}).forEach(([pos, [, text]]) => add('pos_' + pos, 'Posición', text, p => (p.pos || []).includes(pos)));
+      const teamCount = {}, teamSport = {};
+      PLAYERS.forEach(p => (p.teams || []).forEach(t => {
+        teamCount[t] = (teamCount[t] || 0) + 1;
+        teamSport[t] = teamSport[t] || {};
+        teamSport[t][p.sport] = (teamSport[t][p.sport] || 0) + 1;
+      }));
+      const sportCat = { fut: 'Equipos de fútbol', nfl: 'Equipos de la NFL', nba: 'Equipos de la NBA', mlb: 'Equipos de MLB', f1: 'Escuderías de F1' };
+      Object.keys(V.teams || {}).filter(t => teamCount[t] >= 2).forEach(t => {
+        const sp = Object.entries(teamSport[t]).sort((a, b) => b[1] - a[1])[0][0];
+        add('team_' + t, sportCat[sp] || 'Equipos', sp === 'f1' ? `¿Ha corrido para ${V.teams[t]}?` : `¿Ha jugado en ${V.teams[t]}?`, p => (p.teams || []).includes(t));
+      });
+      Object.entries(V.leagues || {}).forEach(([lg, name]) => add('league_' + lg, 'Ligas de fútbol', `¿Ha jugado en ${name}?`, p => (p.leagues || []).includes(lg)));
+      Object.entries(V.titles || {}).forEach(([t, text]) => add('title_' + t, 'Títulos', text, p => (p.titles || []).includes(t)));
+      return Q;
+    }
+    const QUESTIONS = buildQuestions();
+    const Q_BY_ID = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
+    const CATS = [...new Set(QUESTIONS.map(q => q.cat))];
+
+    // ---------- modo ----------
+    let mode = 'daily';
+    window.setMode = m => {
+      mode = m;
+      document.getElementById('tab-daily').classList.toggle('active', m === 'daily');
+      document.getElementById('tab-free').classList.toggle('active', m === 'free');
+      document.getElementById('hud-daily').classList.toggle('hidden', m !== 'daily');
+      document.getElementById('summary-card').classList.add('hidden');
+      if (m === 'daily') { loadDay(document.getElementById('date-select').value || todayStr); }
+      else { stopTimer(); document.getElementById('archive-banner').classList.add('hidden'); renderFree(); }
+    };
+
+    // =====================================================================
+    // MODO DIARIO: el ISACBOT piensa el jugador del dia y tu preguntas
+    // =====================================================================
+    let puzzle = null, secret = null, ds = null, timer = null, leaderboard = [];
+    const freshDaily = () => ({ asked: [], misses: [], elapsed: 0, done: false, won: false, scoreSubmitted: false });
+    const dKey = d => `isac_adivina_v1_${d}`;
+    const saveDaily = () => localStorage.setItem(dKey(puzzle.date), JSON.stringify(ds));
+    const dailyScore = () => (ds.won ? Math.max(100, 1000 - Q_COST * ds.asked.length - MISS_COST * ds.misses.length) : 0);
+    const liveScore = () => Math.max(100, 1000 - Q_COST * ds.asked.length - MISS_COST * ds.misses.length);
+    const startTimer = () => { if (!timer && !ds.done) timer = setInterval(() => { ds.elapsed++; document.getElementById('hud-time').textContent = fmtTime(ds.elapsed); if (ds.elapsed % 5 === 0) saveDaily(); }, 1000); };
+    const stopTimer = () => { if (timer) clearInterval(timer); timer = null; };
+
+    async function fetchLeaderboard(dateStr) {
+      leaderboard = [];
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/game_scores?select=nickname,score,attempts,time_seconds,device_id&game_id=eq.${GAME_ID}&puzzle_date=eq.${dateStr}&order=score.desc,time_seconds.asc&limit=10`;
+        const res = await fetch(url, { headers: SB_HEADERS, cache: 'no-store' });
+        if (res.ok) leaderboard = await res.json();
+      } catch (e) { console.warn('No se pudo cargar el ranking remoto:', e); }
+    }
+
+    async function init() {
+      setBotMood('saluda');
+      document.getElementById('player-list').innerHTML = PLAYERS.map(p => `<option value="${esc(p.name)}"></option>`).join('');
+      const sel = document.getElementById('date-select');
+      EMBEDDED_INDEX.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.date;
+        opt.textContent = `${item.date} ${item.date === todayStr ? '(Hoy)' : ''}`;
+        sel.appendChild(opt);
+      });
+      const hasToday = EMBEDDED_INDEX.some(i => i.date === todayStr);
+      const initial = hasToday ? todayStr : EMBEDDED_INDEX[0].date;
+      sel.value = initial;
+      sel.onchange = () => { if (mode !== 'daily') setMode('daily'); else loadDay(sel.value); };
+      await loadDay(initial);
+    }
+
+    window.goToday = async () => {
+      const hasToday = EMBEDDED_INDEX.some(i => i.date === todayStr);
+      if (mode !== 'daily') { document.getElementById('date-select').value = hasToday ? todayStr : EMBEDDED_INDEX[0].date; setMode('daily'); return; }
+      await loadDay(hasToday ? todayStr : EMBEDDED_INDEX[0].date);
+    };
+    window.refreshBoard = async () => { await fetchLeaderboard(puzzle.date); renderDailySummary(); };
+
+    async function loadDay(dateStr) {
+      stopTimer();
+      document.getElementById('date-select').value = dateStr;
+      puzzle = EMBEDDED_PUZZLES[dateStr];
+      secret = puzzle ? BY_ID[puzzle.id] : null;
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem(dKey(dateStr)) || 'null'); } catch (e) { saved = null; }
+      ds = saved && Array.isArray(saved.asked) ? { ...freshDaily(), ...saved } : freshDaily();
+      const banner = document.getElementById('archive-banner');
+      const btnToday = document.getElementById('btn-today');
+      if (dateStr !== todayStr) {
+        banner.innerHTML = `<span>Estás jugando en <strong>Modo Archivo (${dateStr})</strong>. Esta partida no suma al ranking diario.</span><button class="btn-today" onclick="goToday()">Volver a Hoy</button>`;
+        banner.classList.remove('hidden'); btnToday.classList.remove('hidden');
+      } else { banner.classList.add('hidden'); btnToday.classList.add('hidden'); }
+      await fetchLeaderboard(dateStr);
+      if (leaderboard.some(r => r.device_id === getDeviceId())) ds.scoreSubmitted = true;
+      setBotMood(ds.done ? (ds.won ? 'facepalm' : 'celebracion') : 'pensativo');
+      renderDaily();
+    }
+
+    function renderDailyHud() {
+      document.getElementById('hud-score').textContent = ds.done ? dailyScore() : liveScore();
+      document.getElementById('hud-q').textContent = `${ds.asked.length} / ${MAX_Q}`;
+      document.getElementById('hud-miss').textContent = `${ds.misses.length} / ${MAX_MISS}`;
+      document.getElementById('hud-time').textContent = fmtTime(ds.elapsed);
+    }
+
+    function renderDaily() {
+      renderDailyHud();
+      const stage = document.getElementById('stage');
+      if (!secret) { stage.innerHTML = '<div class="card"><p>No hay jugador para este día.</p></div>'; return; }
+      if (ds.done) { stage.innerHTML = ''; renderDailySummary(); return; }
+      document.getElementById('summary-card').classList.add('hidden');
+      const askedSet = new Set(ds.asked);
+      const full = ds.asked.length >= MAX_Q;
+      const log = [...ds.asked].reverse().map(id => {
+        const q = Q_BY_ID[id]; const yes = q.test(secret);
+        return `<li><span>${esc(q.text)}</span><span class="a ${yes ? 'a-si' : 'a-no'}">${yes ? 'Sí ✅' : 'No ❌'}</span></li>`;
+      }).join('');
+      const cats = CATS.map(cat => {
+        const qs = QUESTIONS.filter(q => q.cat === cat);
+        const chips = qs.map(q => {
+          if (askedSet.has(q.id)) { const yes = q.test(secret); return `<button class="chip ${yes ? 'yes' : 'no'}" disabled>${esc(q.text)} ${yes ? '✅' : '❌'}</button>`; }
+          return `<button class="chip${full ? ' off' : ''}" data-q="${q.id}" ${full ? 'disabled' : ''}>${esc(q.text)}</button>`;
+        }).join('');
+        const n = qs.filter(q => askedSet.has(q.id)).length;
+        return `<details class="cat"${cat === 'Deporte' ? ' open' : ''}><summary>${esc(cat)}${n ? ` · ${n} preguntada${n === 1 ? '' : 's'}` : ''}</summary><div class="chips">${chips}</div></details>`;
+      }).join('');
+      stage.innerHTML = `
+        <div class="card">
+          <span class="qnum">JUGADOR DEL DÍA</span>
+          <div class="bubble">🤖 Ya pensé en una figura del deporte. Pregúntame lo que quieras… pero cada pregunta te cuesta ${Q_COST} puntos.</div>
+          <div class="row">
+            <input id="guess-input" class="text-input" list="player-list" autocomplete="off" placeholder="¿Quién es? Escribe tu respuesta..." maxlength="60" />
+            <button class="btn-primary" id="btn-guess" onclick="dailyGuess()">Adivinar</button>
+          </div>
+          <p class="note">Cada intento fallido cuesta ${MISS_COST} puntos; con ${MAX_MISS} fallos pierdes. ${full ? '<strong>Ya usaste tus 20 preguntas: toca adivinar.</strong>' : ''}${ds.misses.length ? ` No es: ${ds.misses.map(id => esc(BY_ID[id].name)).join(', ')}.` : ''}</p>
+        </div>
+        <div class="card">
+          <h2>Haz una pregunta</h2>
+          <div class="cats">${cats}</div>
+          ${log ? `<h2 style="margin-top:1rem;">Lo que ya sabes</h2><ul class="log" id="daily-log">${log}</ul>` : ''}
+        </div>`;
+      stage.querySelectorAll('button.chip[data-q]').forEach(b => b.addEventListener('click', () => dailyAsk(b.dataset.q)));
+      const gi = document.getElementById('guess-input');
+      gi.addEventListener('keydown', e => { if (e.key === 'Enter') dailyGuess(); });
+    }
+
+    function dailyAsk(qid) {
+      if (ds.done || ds.asked.includes(qid) || ds.asked.length >= MAX_Q) return;
+      startTimer();
+      ds.asked.push(qid);
+      saveDaily();
+      const yes = Q_BY_ID[qid].test(secret);
+      setBotMood('pensativo');
+      showToast(`${Q_BY_ID[qid].text} → ${yes ? 'Sí' : 'No'}`, yes ? 'ok' : '');
+      const openCats = [...document.querySelectorAll('details.cat[open] summary')].map(s => s.textContent.split(' · ')[0]);
+      renderDaily();
+      document.querySelectorAll('details.cat').forEach(d => { if (openCats.includes(d.querySelector('summary').textContent.split(' · ')[0])) d.open = true; });
+    }
+
+    window.dailyGuess = () => {
+      if (ds.done) return;
+      const inp = document.getElementById('guess-input');
+      const raw = inp.value.trim();
+      if (!raw) return;
+      const p = findPlayer(raw);
+      if (!p) { showToast('Ese nombre no está en mi lista de jugadores. Elige uno de las sugerencias.', 'warn'); return; }
+      if (ds.misses.includes(p.id)) { showToast(`Ya intentaste con ${esc(p.name)}.`, 'warn'); return; }
+      startTimer();
+      if (p.id === secret.id) {
+        ds.done = true; ds.won = true; stopTimer(); saveDaily();
+        setBotMood('facepalm');
+        showToast(`¡Lo adivinaste! Era ${esc(secret.name)}.`, 'ok');
+        renderDaily();
+        return;
+      }
+      ds.misses.push(p.id);
+      if (ds.misses.length >= MAX_MISS) { ds.done = true; ds.won = false; stopTimer(); setBotMood('celebracion'); showToast(`¡Te gané! Era ${esc(secret.name)}.`, 'bad'); }
+      else { setBotMood('celebracion'); showToast(`No es ${esc(p.name)}. Te quedan ${MAX_MISS - ds.misses.length} ${MAX_MISS - ds.misses.length === 1 ? 'intento' : 'intentos'}.`, 'bad'); }
+      saveDaily();
+      renderDaily();
+    };
+
+    function playerFacts(p) {
+      const teams = (p.teams || []).map(t => V.teams[t]).join(', ');
+      return `${V.sports[p.sport]} · ${V.countries[p.country][0]} · ${p.debut}–${p.retired == null ? 'hoy' : p.retired}${teams ? ` · ${esc(teams)}` : ''}`;
+    }
+
+    function renderDailySummary() {
+      const card = document.getElementById('summary-card');
+      if (!ds || !ds.done || mode !== 'daily') { card.classList.add('hidden'); return; }
+      renderDailyHud();
+      const isArchive = puzzle.date !== todayStr;
+      const myId = getDeviceId();
+      const savedNick = localStorage.getItem('isac_player_nickname') || '';
+      card.classList.remove('hidden');
+      card.innerHTML = `
+        <h2>${ds.won ? '¡Adivinaste al jugador del día!' : 'El ISACBOT te ganó'}</h2>
+        <div class="player-card"><div><div class="big">${esc(secret.name)}</div><div class="note">${playerFacts(secret)}</div></div></div>
+        <p>${ds.won
+          ? `Lo sacaste con <strong>${ds.asked.length}</strong> ${ds.asked.length === 1 ? 'pregunta' : 'preguntas'} y <strong>${ds.misses.length}</strong> ${ds.misses.length === 1 ? 'fallo' : 'fallos'} en <strong>${fmtTime(ds.elapsed)}</strong>: <strong>${dailyScore()} pts</strong>.`
+          : `Llegaste a ${MAX_MISS} intentos fallidos. Esta partida no entra al ranking. ¡Mañana hay otro jugador!`}</p>
+        <div><button class="btn-share" onclick="shareResult()">Compartir resultado 📋</button></div>
+        ${ds.won && !isArchive && !ds.scoreSubmitted ? `
+          <div style="margin:1rem 0;">
+            <input id="nick-input" class="nick-input" value="${esc(savedNick)}" placeholder="Tu nickname..." maxlength="18" />
+            <button id="submit-btn" class="btn-primary" onclick="saveScore()">Guardar en Scoreboard</button>
+            <div id="submit-err" class="err-msg"></div>
+          </div>` : ''}
+        <div class="board-header">
+          <h3 style="margin:0;">Ranking Global (${puzzle.date}) — ISACBOT Adivina</h3>
+          <button class="btn-sec" onclick="refreshBoard()">Actualizar ranking</button>
+        </div>
+        ${leaderboard.length ? `
+          <table>
+            <thead><tr><th>#</th><th>Jugador</th><th>Preguntas</th><th>Tiempo</th><th>Puntos</th></tr></thead>
+            <tbody>${leaderboard.map((r, i) => `
+              <tr class="${r.device_id === myId ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.nickname)} ${r.device_id === myId ? '(Tú)' : ''}</td><td>${r.attempts}</td><td>${fmtTime(r.time_seconds)}</td><td><strong>${r.score}</strong></td></tr>`).join('')}
+            </tbody>
+          </table>` : '<p style="color:#475569;font-size:0.9rem;">Aún no hay ganadores registrados hoy. ¡Sé el primero!</p>'}`;
+    }
+
+    window.shareResult = () => {
+      const s = Math.max(0, Math.floor(ds.elapsed || 0));
+      const t = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      const marks = ds.asked.map(id => (Q_BY_ID[id].test(secret) ? '🟩' : '⬜')).join('') + ds.misses.map(() => '❌').join('') + (ds.won ? '🎯' : '');
+      const text = `🏟️ ISACBOT Adivina — Jugador del día ${puzzle.date}\n${marks}\n✅ ${ds.asked.length} preguntas · ⭐ ${dailyScore()} pts · ⏱ ${t}\n\nhttps://militomtzc-lang.github.io/simuladores-web/adivina/`;
+      const ok = () => showToast('¡Resultado copiado al portapapeles!', 'ok');
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, () => {});
+      return text;
+    };
+
+    window.saveScore = async () => {
+      /*isac-score-guard*/ const _hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }); if (puzzle.date !== _hoy) { console.warn('[guard] score no registrado: dia no vigente'); const _ge = document.getElementById('submit-err'); if (_ge) _ge.textContent = 'Este dia ya no esta vigente: tu puntaje no se registro.'; return; }
+      const nickInput = document.getElementById('nick-input');
+      const errEl = document.getElementById('submit-err');
+      const btn = document.getElementById('submit-btn');
+      const nick = nickInput.value.trim();
+      if (!ds.won) return;
+      if (nick.length < 2) { errEl.textContent = 'Escribe un nickname de al menos 2 caracteres.'; return; }
+      btn.disabled = true; btn.textContent = 'Guardando...'; errEl.textContent = '';
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/game_scores`, {
+          method: 'POST',
+          headers: { ...SB_HEADERS, Prefer: 'return=minimal' },
+          body: JSON.stringify({ game_id: GAME_ID, puzzle_date: puzzle.date, nickname: nick, device_id: getDeviceId(), score: dailyScore(), attempts: ds.asked.length, time_seconds: Math.max(1, ds.elapsed) })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          if (errData.code === '23505') throw new Error('Ya registraste tu resultado hoy desde este dispositivo.');
+          throw new Error(errData.message || 'Error al guardar puntaje.');
+        }
+        localStorage.setItem('isac_player_nickname', nick);
+        ds.scoreSubmitted = true; saveDaily();
+        await fetchLeaderboard(puzzle.date);
+        renderDailySummary();
+      } catch (e) { errEl.textContent = e.message; btn.disabled = false; btn.textContent = 'Guardar en Scoreboard'; }
+    };
+
+    // =====================================================================
+    // MODO LIBRE: tu piensas, el ISACBOT pregunta
+    // =====================================================================
+    const ANS = { si: 1, ps: 0.75, ns: 0.5, pn: 0.25, no: 0 };
+    const ANS_LABEL = { si: 'Sí', ps: 'Probablemente sí', ns: 'No sé', pn: 'Probablemente no', no: 'No' };
+    let fs = null;   // estado del modo libre (no se guarda: cada partida es nueva)
+
+    function freshFree() {
+      return { phase: 'seal', seal: null, w: Object.fromEntries(PLAYERS.map(p => [p.id, 1])), asked: [], current: null, guess: null, rejected: [], result: null };
+    }
+
+    // --- motor (no conoce el sobre) ---
+    const Engine = {
+      probs(w) {
+        const tot = Object.values(w).reduce((a, b) => a + b, 0) || 1;
+        return Object.fromEntries(Object.entries(w).map(([k, v]) => [k, v / tot]));
+      },
+      update(w, q, a) {
+        const x = ANS[a];
+        PLAYERS.forEach(p => { const t = q.test(p); w[p.id] *= t ? 0.03 + 0.94 * x : 0.03 + 0.94 * (1 - x); });
+      },
+      next(w, askedIds) {
+        const pr = Engine.probs(w);
+        const asked = new Set(askedIds);
+        let best = [], bestScore = Infinity;
+        QUESTIONS.forEach(q => {
+          if (asked.has(q.id)) return;
+          let y = 0;
+          PLAYERS.forEach(p => { if (q.test(p)) y += pr[p.id]; });
+          if (y < 0.005 || y > 0.995) return;
+          const s = Math.abs(y - 0.5);
+          if (s < bestScore - 0.02) { best = [q]; bestScore = s; } else if (s <= bestScore + 0.02) best.push(q);
+        });
+        best = best.filter(q => { let y = 0; PLAYERS.forEach(p => { if (q.test(p)) y += pr[p.id]; }); return Math.abs(y - 0.5) <= bestScore + 0.02; });
+        return best.length ? best[Math.floor(Math.random() * best.length)] : null;
+      },
+      top(w, rejected) {
+        const pr = Engine.probs(w);
+        return Object.entries(pr).filter(([k]) => !rejected.includes(k)).sort((a, b) => b[1] - a[1])[0];
+      }
+    };
+    window.ISAC_ENGINE = Engine;  // expuesto para pruebas
+
+    function renderFree() {
+      if (!fs) fs = freshFree();
+      const stage = document.getElementById('stage');
+      document.getElementById('summary-card').classList.add('hidden');
+      if (fs.phase === 'seal') {
+        setBotMood('saluda');
+        stage.innerHTML = `
+          <div class="card">
+            <h2>Piensa en una figura del deporte</h2>
+            <p>Fútbol, NFL, NBA, MLB, F1 o tenis. Yo te hago preguntas de Sí o No y trato de adivinar en menos de ${FREE_MAX_Q}.</p>
+            <p><strong>Sobre sellado (opcional):</strong> escribe tu jugador y séllalo. Se guarda solo una huella cifrada que yo no puedo leer; al final sirve para comprobar que nadie hizo trampa.</p>
+            <div class="row" style="margin-top:0.6rem;">
+              <input id="seal-input" class="text-input" list="player-list" autocomplete="off" placeholder="Tu jugador secreto..." maxlength="60" />
+              <button class="btn-primary" id="btn-seal" onclick="freeStart(true)">Sellar y empezar 🔒</button>
+              <button class="btn-sec" id="btn-noseal" onclick="freeStart(false)">Empezar sin sobre</button>
+            </div>
+          </div>`;
+        const si = document.getElementById('seal-input');
+        si.addEventListener('keydown', e => { if (e.key === 'Enter') freeStart(true); });
+        return;
+      }
+      const sealTag = fs.seal ? '<span class="seal">🔒 Sobre sellado</span>' : '';
+      const log = [...fs.asked].reverse().map(([id, a]) => `<li><span>${esc(Q_BY_ID[id].text)}</span><span class="a ${a === 'si' || a === 'ps' ? 'a-si' : a === 'no' || a === 'pn' ? 'a-no' : 'a-mid'}">${ANS_LABEL[a]}</span></li>`).join('');
+      if (fs.phase === 'ask') {
+        const q = Q_BY_ID[fs.current];
+        const conf = Math.round((Engine.top(fs.w, fs.rejected) || [0, 0])[1] * 100);
+        stage.innerHTML = `
+          <div class="card">
+            <div class="row" style="justify-content:space-between;"><span class="qnum">PREGUNTA ${fs.asked.length + 1}</span>${sealTag}</div>
+            <div class="bubble" id="free-question">🤖 ${esc(q.text)}</div>
+            <div class="answers">
+              ${Object.keys(ANS).map(a => `<button class="ans ans-${a}" data-a="${a}">${ANS_LABEL[a]}</button>`).join('')}
+            </div>
+            <p class="note" style="margin-top:0.8rem;">Qué tan seguro estoy: ${conf}%</p>
+            <div class="meter"><div style="width:${conf}%"></div></div>
+            <button class="btn-sec" onclick="freeReset()">Empezar de nuevo</button>
+          </div>
+          ${log ? `<div class="card"><h2>Tus respuestas</h2><ul class="log">${log}</ul></div>` : ''}`;
+        stage.querySelectorAll('button.ans').forEach(b => b.addEventListener('click', () => freeAnswer(b.dataset.a)));
+        return;
+      }
+      if (fs.phase === 'guess') {
+        const p = BY_ID[fs.guess];
+        stage.innerHTML = `
+          <div class="card">
+            <div class="row" style="justify-content:space-between;"><span class="qnum">INTENTO ${fs.rejected.length + 1} DE ${FREE_MAX_GUESSES}</span>${sealTag}</div>
+            <div class="bubble">🤖 Creo que estás pensando en…</div>
+            <div class="player-card"><div><div class="big" id="free-guess">${esc(p.name)}</div><div class="note">${playerFacts(p)}</div></div></div>
+            <div class="row">
+              <button class="btn-primary" id="btn-yes" onclick="freeVerdict(true)">¡Sí, es él/ella!</button>
+              <button class="btn-sec" id="btn-no" onclick="freeVerdict(false)">No</button>
+            </div>
+          </div>
+          ${log ? `<div class="card"><h2>Tus respuestas</h2><ul class="log">${log}</ul></div>` : ''}`;
+        return;
+      }
+      if (fs.phase === 'won') {
+        const p = BY_ID[fs.guess];
+        stage.innerHTML = `
+          <div class="card">
+            <h2>¡Lo adiviné! 🎉</h2>
+            <div class="player-card"><div><div class="big">${esc(p.name)}</div><div class="note">en ${fs.asked.length} preguntas y ${fs.rejected.length + 1} ${fs.rejected.length ? 'intentos' : 'intento'}</div></div></div>
+            ${fs.result ? `<p>${fs.result}</p>` : ''}
+            <button class="btn-primary" onclick="freeReset()">Jugar otra vez</button>
+          </div>`;
+        return;
+      }
+      if (fs.phase === 'reveal') {
+        stage.innerHTML = `
+          <div class="card">
+            <h2>Me ganaste 😵</h2>
+            <p>¿En quién estabas pensando? Así aprendo y lo agrego a mi banco.</p>
+            <div class="row">
+              <input id="reveal-input" class="text-input" list="player-list" autocomplete="off" placeholder="Tu jugador..." maxlength="60" />
+              <button class="btn-primary" id="btn-reveal" onclick="freeReveal()">Revelar</button>
+            </div>
+            <div id="reveal-out" style="margin-top:0.8rem;"></div>
+            <button class="btn-sec" style="margin-top:0.6rem;" onclick="freeReset()">Jugar otra vez</button>
+          </div>
+          ${log ? `<div class="card"><h2>Tus respuestas</h2><ul class="log">${log}</ul></div>` : ''}`;
+        document.getElementById('reveal-input').addEventListener('keydown', e => { if (e.key === 'Enter') freeReveal(); });
+      }
+    }
+
+    window.freeReset = () => { fs = freshFree(); renderFree(); };
+
+    window.freeStart = withSeal => {
+      fs = freshFree();
+      if (withSeal) {
+        const raw = document.getElementById('seal-input').value.trim();
+        if (norm(raw).length < 2) { showToast('Escribe el nombre de tu jugador para sellarlo, o empieza sin sobre.', 'warn'); return; }
+        fs.seal = sealHash(norm(raw));
+        document.getElementById('seal-input').value = '';
+      }
+      fs.phase = 'ask';
+      fs.current = Engine.next(fs.w, []).id;
+      setBotMood('pensativo');
+      renderFree();
+    };
+
+    // el sobre solo se consulta para verificar, nunca para elegir preguntas
+    const sealMatches = p => !!fs.seal && [p.name, ...(p.aliases || [])].some(n => sealHash(norm(n)) === fs.seal);
+
+    function freeAnswer(a) {
+      if (fs.phase !== 'ask') return;
+      const q = Q_BY_ID[fs.current];
+      fs.asked.push([q.id, a]);
+      Engine.update(fs.w, q, a);
+      const top = Engine.top(fs.w, fs.rejected);
+      const next = Engine.next(fs.w, fs.asked.map(x => x[0]));
+      if (!top) { fs.phase = 'reveal'; renderFree(); return; }
+      if (top[1] >= GUESS_AT || !next || fs.asked.length >= FREE_MAX_Q) {
+        fs.phase = 'guess'; fs.guess = top[0]; setBotMood('celebracion');
+      } else { fs.current = next.id; setBotMood('pensativo'); }
+      renderFree();
+    }
+
+    window.freeVerdict = yes => {
+      if (fs.phase !== 'guess') return;
+      const p = BY_ID[fs.guess];
+      if (yes) { fs.phase = 'won'; setBotMood('celebracion'); if (fs.seal) fs.result = sealMatches(p) ? '🔒 Tu sobre lo confirma.' : '🔒 Ojo: tu sobre no coincide con este nombre.'; renderFree(); return; }
+      if (sealMatches(p)) {
+        fs.phase = 'won'; fs.result = `🔒 Abrí tu sobre y dice <strong>${esc(p.name)}</strong>. ¡Te cachó el ISACBOT!`;
+        setBotMood('celebracion'); showToast('El sobre sellado dice que sí era él/ella.', 'ok'); renderFree(); return;
+      }
+      fs.rejected.push(p.id);
+      fs.w[p.id] = 0;
+      setBotMood('facepalm');
+      const next = Engine.next(fs.w, fs.asked.map(x => x[0]));
+      const top = Engine.top(fs.w, fs.rejected);
+      if (fs.rejected.length >= FREE_MAX_GUESSES || !top || top[1] === 0) { fs.phase = 'reveal'; renderFree(); return; }
+      if (next && fs.asked.length < FREE_MAX_Q) { fs.phase = 'ask'; fs.current = next.id; }
+      else { fs.guess = top[0]; }
+      renderFree();
+    };
+
+    window.freeReveal = async () => {
+      const raw = document.getElementById('reveal-input').value.trim();
+      if (norm(raw).length < 2) return;
+      const out = document.getElementById('reveal-out');
+      const p = findPlayer(raw);
+      let html = '';
+      if (fs.seal) html += [p ? p.name : raw].some(n => sealHash(norm(n)) === fs.seal) || (p && sealMatches(p)) ? '<p>🔒 Coincide con tu sobre sellado.</p>' : '<p>🔒 <strong>Ojo:</strong> no coincide con tu sobre sellado.</p>';
+      if (p) {
+        const diffs = fs.asked.filter(([id, a]) => (a === 'si' || a === 'ps' || a === 'no' || a === 'pn') && (Q_BY_ID[id].test(p) !== (a === 'si' || a === 'ps')));
+        html += `<p><strong>${esc(p.name)}</strong> sí está en mi banco. ${diffs.length ? 'Según mis datos, estas respuestas no le cuadran:' : 'Tus respuestas le cuadran; me faltó suerte.'}</p>`;
+        if (diffs.length) html += `<ul class="log">${diffs.map(([id, a]) => `<li><span>${esc(Q_BY_ID[id].text)}</span><span class="a">tú: ${ANS_LABEL[a]} · yo: ${Q_BY_ID[id].test(p) ? 'Sí' : 'No'}</span></li>`).join('')}</ul>`;
+      } else {
+        html += `<p>No conocía a <strong>${esc(raw)}</strong>. Lo anoto para agregarlo a mi banco.</p>`;
+      }
+      out.innerHTML = html;
+      document.getElementById('btn-reveal').disabled = true;
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/adivina_fallos`, {
+          method: 'POST', headers: { ...SB_HEADERS, Prefer: 'return=minimal' },
+          body: JSON.stringify({ player_name: raw.slice(0, 60), in_base: !!p, answers: fs.asked, guesses: fs.rejected })
+        });
+      } catch (e) { console.warn('No se pudo registrar el fallo:', e); }
+    };
+
+    init();
+  </script>
+</body>
+</html>
