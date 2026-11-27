@@ -1,0 +1,70 @@
+{
+ "generated": "2026-11-27T00:24:57+00:00",
+ "today": "2026-11-26",
+ "games": [
+  {
+   "id": "franchise-guesser",
+   "name": "Franchise Guesser",
+   "auto": true,
+   "days": 29,
+   "last": "2026-12-25",
+   "today_ok": true
+  },
+  {
+   "id": "isactrivia",
+   "name": "ISACtrivia",
+   "auto": true,
+   "days": 10,
+   "last": "2026-12-06",
+   "today_ok": true
+  },
+  {
+   "id": "strands",
+   "name": "StatStrands",
+   "auto": true,
+   "days": 30,
+   "last": "2026-12-26",
+   "today_ok": true
+  },
+  {
+   "id": "connections",
+   "name": "ISAC-Connections",
+   "auto": true,
+   "days": 14,
+   "last": "2026-12-10",
+   "today_ok": true
+  },
+  {
+   "id": "missing-xi",
+   "name": "Missing XI",
+   "auto": true,
+   "days": 16,
+   "last": "2026-12-12",
+   "today_ok": true
+  },
+  {
+   "id": "krillion",
+   "name": "ISAC-Krillion",
+   "auto": true,
+   "days": 30,
+   "last": "2026-12-26",
+   "today_ok": true
+  },
+  {
+   "id": "adivina",
+   "name": "ISACBOT Adivina",
+   "auto": true,
+   "days": 60,
+   "last": "2027-01-25",
+   "today_ok": true
+  },
+  {
+   "id": "grid",
+   "name": "ISAC-Grid",
+   "auto": true,
+   "days": 60,
+   "last": "2027-01-25",
+   "today_ok": true
+  }
+ ]
+}
