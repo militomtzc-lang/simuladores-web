@@ -317,7 +317,7 @@
     <div class="hint-text" id="hintText"></div>
     <div class="search-row">
       <div class="search-wrap">
-        <input type="text" class="search-input" id="answerInput" placeholder="Escribe el nombre del jugador…" autocomplete="off" />
+        <input type="text" class="search-input" id="answerInput" placeholder="Escribe el nombre o el apellido del jugador…" autocomplete="off" />
         <div class="autocomplete-list" id="autocompleteList"></div>
       </div>
       <button class="btn-submit" onclick="submitAnswer()">Confirmar</button>
@@ -745,17 +745,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function onSearchInput() {
-  const val = document.getElementById('answerInput').value.trim().toLowerCase();
-  const list = document.getElementById('autocompleteList');
-  if (!val || val.length < 2 || !selectedSlot) { list.classList.remove('open'); return; }
-
-  const pos = puzzle.positions.find(p => p.id === selectedSlot);
-  const matches = pos.answers.filter(a => a.toLowerCase().includes(val)).slice(0, 5);
-
-  if (!matches.length) { list.classList.remove('open'); return; }
-  list.innerHTML = matches.map(m => `<div class="autocomplete-item" onclick="pickAutocomplete('${m.replace(/'/g,"\\'")}')">👤 ${m}</div>`).join('');
-  list.classList.add('open');
+function onSearchInput() { /*isac-no-leak*/
+  document.getElementById('autocompleteList').classList.remove('open');
 }
 
 function pickAutocomplete(name) {
