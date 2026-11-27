@@ -15,6 +15,16 @@
   var store = window.localStorage;
   var rawGet = Storage.prototype.getItem, rawSet = Storage.prototype.setItem;
 
+  /* Arreglo (2026-11-26): Missing XI creaba ids "dev_xxxxxxxxx" y game_scores.device_id es uuid, así que esos
+     scores fallaban (400). Antes de que cargue el juego, un id que no sea UUID se cambia por uno nuevo. */
+  try {
+    var viejo = rawGet.call(store, 'isac_device_id');
+    if (viejo && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(viejo)) {
+      store.removeItem('isac_device_id');
+      deviceId();
+    }
+  } catch (e) {}
+
   function hoy() { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }); }
   function leer() { try { return JSON.parse(rawGet.call(store, KEY) || '{}') || {}; } catch (e) { return {}; } }
   function escribir(p) {
