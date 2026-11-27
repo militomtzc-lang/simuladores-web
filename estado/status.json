@@ -1,25 +1,25 @@
 {
- "generated": "2026-11-27T05:34:23+00:00",
- "today": "2026-11-26",
+ "generated": "2026-11-27T06:01:06+00:00",
+ "today": "2026-11-27",
  "games": [
   {
    "id": "franchise-guesser",
    "name": "Franchise Guesser",
    "auto": true,
    "sports": {
-    "2026-11-26": "multi",
     "2026-11-27": "multi",
     "2026-11-28": "multi",
     "2026-11-29": "multi",
     "2026-11-30": "multi",
     "2026-12-01": "multi",
     "2026-12-02": "multi",
-    "2026-12-03": "multi"
+    "2026-12-03": "multi",
+    "2026-12-04": "multi"
    },
    "sport": "multi",
    "sport_name": "Multideporte",
    "days": 29,
-   "last": "2026-12-25",
+   "last": "2026-12-26",
    "today_ok": true
   },
   {
@@ -27,19 +27,19 @@
    "name": "ISACtrivia",
    "auto": true,
    "sports": {
-    "2026-11-26": "multi",
     "2026-11-27": "multi",
     "2026-11-28": "multi",
     "2026-11-29": "multi",
     "2026-11-30": "multi",
     "2026-12-01": "multi",
     "2026-12-02": "multi",
-    "2026-12-03": "multi"
+    "2026-12-03": "multi",
+    "2026-12-04": "multi"
    },
    "sport": "multi",
    "sport_name": "Multideporte",
    "days": 10,
-   "last": "2026-12-06",
+   "last": "2026-12-07",
    "today_ok": true
   },
   {
@@ -47,19 +47,19 @@
    "name": "StatStrands",
    "auto": true,
    "sports": {
-    "2026-11-26": "multi",
     "2026-11-27": "multi",
     "2026-11-28": "multi",
     "2026-11-29": "multi",
     "2026-11-30": "multi",
     "2026-12-01": "multi",
     "2026-12-02": "multi",
-    "2026-12-03": "multi"
+    "2026-12-03": "multi",
+    "2026-12-04": "multi"
    },
    "sport": "multi",
    "sport_name": "Multideporte",
    "days": 30,
-   "last": "2026-12-26",
+   "last": "2026-12-27",
    "today_ok": true
   },
   {
@@ -67,19 +67,19 @@
    "name": "ISAC-Connections",
    "auto": true,
    "sports": {
-    "2026-11-26": "nfl",
     "2026-11-27": "multi",
-    "2026-11-28": "multi",
+    "2026-11-28": "nfl",
     "2026-11-29": "multi",
-    "2026-11-30": "nfl",
-    "2026-12-01": "mlb",
-    "2026-12-02": "nba",
-    "2026-12-03": "fut"
+    "2026-11-30": "mlb",
+    "2026-12-01": "multi",
+    "2026-12-02": "nfl",
+    "2026-12-03": "nba",
+    "2026-12-04": "mlb"
    },
-   "sport": "nfl",
-   "sport_name": "NFL",
-   "days": 14,
-   "last": "2026-12-10",
+   "sport": "multi",
+   "sport_name": "Multideporte",
+   "days": 26,
+   "last": "2026-12-23",
    "today_ok": true
   },
   {
@@ -87,19 +87,19 @@
    "name": "Missing XI",
    "auto": true,
    "sports": {
-    "2026-11-26": "nfl",
     "2026-11-27": "fut",
     "2026-11-28": "nba",
-    "2026-11-29": "fut",
-    "2026-11-30": "nfl",
-    "2026-12-01": "fut",
-    "2026-12-02": "nba",
-    "2026-12-03": "fut"
+    "2026-11-29": "mlb",
+    "2026-11-30": "fut",
+    "2026-12-01": "nfl",
+    "2026-12-02": "fut",
+    "2026-12-03": "nfl",
+    "2026-12-04": "nba"
    },
-   "sport": "nfl",
-   "sport_name": "NFL",
-   "days": 16,
-   "last": "2026-12-12",
+   "sport": "fut",
+   "sport_name": "Fútbol",
+   "days": 26,
+   "last": "2026-12-23",
    "today_ok": true
   },
   {
@@ -107,19 +107,19 @@
    "name": "ISAC-Krillion",
    "auto": true,
    "sports": {
-    "2026-11-26": "nfl",
     "2026-11-27": "nba",
-    "2026-11-28": "fut",
+    "2026-11-28": "mlb",
     "2026-11-29": "nfl",
-    "2026-11-30": "mlb",
-    "2026-12-01": "multi",
-    "2026-12-02": "fut",
-    "2026-12-03": "nba"
+    "2026-11-30": "nfl",
+    "2026-12-01": "mlb",
+    "2026-12-02": "mlb",
+    "2026-12-03": "mlb",
+    "2026-12-04": "nfl"
    },
-   "sport": "nfl",
-   "sport_name": "NFL",
-   "days": 30,
-   "last": "2026-12-26",
+   "sport": "nba",
+   "sport_name": "NBA",
+   "days": 26,
+   "last": "2026-12-23",
    "today_ok": true
   },
   {
@@ -127,19 +127,19 @@
    "name": "ISACBOT Adivina",
    "auto": true,
    "sports": {
-    "2026-11-26": "nba",
     "2026-11-27": "multi",
-    "2026-11-28": "nfl",
-    "2026-11-29": "fut",
-    "2026-11-30": "mlb",
-    "2026-12-01": "nba",
-    "2026-12-02": "nfl",
-    "2026-12-03": "mlb"
+    "2026-11-28": "mlb",
+    "2026-11-29": "nfl",
+    "2026-11-30": "multi",
+    "2026-12-01": "fut",
+    "2026-12-02": "nba",
+    "2026-12-03": "nfl",
+    "2026-12-04": "mlb"
    },
-   "sport": "nba",
-   "sport_name": "NBA",
+   "sport": "multi",
+   "sport_name": "Multideporte",
    "days": 60,
-   "last": "2027-01-25",
+   "last": "2027-01-26",
    "today_ok": true
   },
   {
@@ -147,19 +147,19 @@
    "name": "ISAC-Grid",
    "auto": true,
    "sports": {
-    "2026-11-26": "mlb",
     "2026-11-27": "mlb",
-    "2026-11-28": "mlb",
-    "2026-11-29": "nfl",
-    "2026-11-30": "nfl",
-    "2026-12-01": "mlb",
+    "2026-11-28": "nfl",
+    "2026-11-29": "mlb",
+    "2026-11-30": "mlb",
+    "2026-12-01": "nfl",
     "2026-12-02": "mlb",
-    "2026-12-03": "nfl"
+    "2026-12-03": "mlb",
+    "2026-12-04": "nfl"
    },
    "sport": "mlb",
    "sport_name": "MLB",
    "days": 60,
-   "last": "2027-01-25",
+   "last": "2027-01-26",
    "today_ok": true
   }
  ]
