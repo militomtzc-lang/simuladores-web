@@ -132,6 +132,7 @@
 
   footer { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; color: var(--text-muted); font-size: .78rem; padding: 8px 16px 28px; }
   footer img { height: 84px; width: auto; }
+  footer .legal { max-width: 640px; margin: 8px 0 0; font-size: .7rem; line-height: 1.5; color: #64748b; }
 
   @media (min-width: 700px) {
     h1 { font-size: 2.25rem; }
@@ -209,6 +210,9 @@
 <footer>
   <img data-st="vibecodeando" alt="" hidden>
   <span>Ranking diario en cada juego · ISAC, ITAM Sports Analytics Conference</span>
+  <p class="legal">Proyecto académico y sin fines de lucro del laboratorio ISAC (ITAM). No vendemos ni comercializamos datos.
+    Datos públicos de: MLB Stats API (© MLB Advanced Media, uso no comercial), Lahman Baseball Database (Sean Lahman, CC BY-SA),
+    nflverse y otras fuentes abiertas. Las marcas, equipos y ligas pertenecen a sus dueños; ISAC no está afiliado a ellos.</p>
 </footer>
 
 <script>
@@ -250,8 +254,8 @@ const GAMES = [
 const SECCIONES = [
   { id: "mlb", nombre: "MLB", emoji: "⚾", sub: "Béisbol de Grandes Ligas" },
   { id: "nfl", nombre: "NFL", emoji: "🏈", sub: "Futbol americano" },
-  { id: "fut", nombre: "Fútbol", emoji: "⚽", sub: "Retos de fútbol", pronto: true },
-  { id: "nba", nombre: "NBA", emoji: "🏀", sub: "Básquetbol", pronto: true },
+  { id: "fut", nombre: "Fútbol", emoji: "⚽", sub: "Retos de fútbol (versión de prueba)", pronto: true },
+  { id: "nba", nombre: "NBA", emoji: "🏀", sub: "Básquetbol (versión de prueba)", pronto: true },
   { id: "multi", nombre: "Multideporte", emoji: "🌐", sub: "Un poco de todo" }
 ];
 /* Copia de JuegosISAC/calendario.py (solo respaldo si estado/status.json no carga) */
