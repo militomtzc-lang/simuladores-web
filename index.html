@@ -225,7 +225,7 @@ const ASSET_DIR = 'assets/ISACLOGOS/';
 const LOGO_FILES = ['assets/ISACLOGOS/ISACLOGO.jpg', 'assets/logo.png'];
 
 /* Para agregar un juego: agrega un objeto a este arreglo.
-   estado: "activo" (con enlace) o "pronto" (tarjeta gris, sin enlace).
+   estado: "activo" (con enlace) o "pronto" (tarjeta gris, sin enlace). seccion: fija la sección (si no, la del deporte de hoy).
    El deporte de HOY de cada juego sale de estado/status.json (lo escribe JuegosISAC/status_report.py con
    calendario.py); si no carga, se usa la copia del calendario de abajo. */
 const GAMES = [
@@ -249,7 +249,7 @@ const GAMES = [
     url: "krillion/", estado: "activo" },
   { id: "adivina", nombre: "ISACBOT Adivina", emoji: "🤖",
     desc: "Adivina al jugador del día con preguntas de Sí o No, o piensa en uno y deja que el ISACBOT lo adivine.",
-    url: "adivina/", estado: "activo" },
+    url: "adivina/", estado: "activo", seccion: "multi" },   // siempre en Multideporte: su deporte sería pista del jugador del día
   { id: "grid", nombre: "ISAC-Grid", emoji: "🔢",
     desc: "Cuadrícula 3x3: encuentra jugadores que crucen equipos y logros. Entre más raro, más puntos.",
     url: "grid/", estado: "activo" }
@@ -314,7 +314,7 @@ function render(deporteDe) {
   const nombres = {};
   SECCIONES.forEach(s => { nombres[s.id] = s.nombre; });
   SECCIONES.forEach(sec => {
-    const juegos = GAMES.filter(g => (nombres[deporteDe(g.id)] ? deporteDe(g.id) : 'multi') === sec.id);
+    const juegos = GAMES.filter(g => (g.seccion || (nombres[deporteDe(g.id)] ? deporteDe(g.id) : 'multi')) === sec.id);
     const box = el('section', 'sport-sec');
     box.setAttribute('aria-label', sec.nombre);
     box.appendChild(el('h2', 'sec-title', sec.emoji + ' ' + sec.nombre));
