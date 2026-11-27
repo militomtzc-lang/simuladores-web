@@ -152,5 +152,41 @@
     }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
   }
 
+  /* 4) sticker del ISACBOT del deporte del reto (Missing XI, ISAC-Grid y Connections; Krillion lo trae su skin;
+        Adivina no, porque el deporte sería una pista). Se actualiza si el jugador cambia de día en el archivo. */
+  var STICKER = { nfl: 'americano1', mlb: 'beis', nba: 'basket', fut: 'fut1', 'fútbol': 'fut1', futbol: 'fut1' };
+  function deporteDelReto() {
+    try {
+      if (typeof puzzle === 'undefined' || !puzzle) return null;
+      var path = location.pathname;
+      if (/missing-?xi/.test(path)) return String(puzzle.sport || '').toLowerCase();
+      if (/grid/.test(path)) return puzzle.league || null;
+      if (/connections/.test(path)) {
+        var t = puzzle.theme || '';
+        return /\bMLB\b/.test(t) ? 'mlb' : /\bNFL\b/.test(t) ? 'nfl' : /\bNBA\b/.test(t) ? 'nba' : /f[uú]tbol/i.test(t) ? 'fut' : null;
+      }
+    } catch (e) {}
+    return null;
+  }
+  function stickerDeporte() {
+    try {
+      var h1 = document.querySelector('h1');
+      if (!h1) return;
+      var file = STICKER[deporteDelReto()], img = document.getElementById('isac-sport-sticker');
+      if (!file) { if (img) img.remove(); return; }
+      if (!img) {
+        img = document.createElement('img');
+        img.id = 'isac-sport-sticker'; img.alt = ''; img.hidden = true;
+        img.style.cssText = 'height:52px;width:auto;vertical-align:middle;margin-left:10px;';
+        img.onload = function () { img.hidden = false; };
+        img.onerror = function () { img.hidden = true; };
+        h1.appendChild(img);
+      }
+      var src = '../assets/ISACLOGOS/' + file + '.webp';
+      if (img.getAttribute('src') !== src) img.src = src;
+    } catch (e) {}
+  }
+  setInterval(stickerDeporte, 1500);
+
   window.ISAC_PROGRESO = { hoy: hoy, jugadoHoy: jugadoHoy, rachaLocal: rachaLocal, ranking: ranking, revisar: revisar };
 })();
