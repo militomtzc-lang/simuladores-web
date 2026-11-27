@@ -215,7 +215,8 @@
   <span>Ranking diario en cada juego · ISAC, ITAM Sports Analytics Conference</span>
   <p class="legal">Proyecto académico y sin fines de lucro del laboratorio ISAC (ITAM). No vendemos ni comercializamos datos.
     Datos públicos de: MLB Stats API (© MLB Advanced Media, uso no comercial), Lahman Baseball Database (Sean Lahman, CC BY-SA),
-    nflverse y otras fuentes abiertas. Las marcas, equipos y ligas pertenecen a sus dueños; ISAC no está afiliado a ellos.</p>
+    nflverse, Wikidata (CC0), FiveThirtyEight (CC BY 4.0), StatsBomb Open Data (alineaciones de fútbol; datos de StatsBomb)
+    y otras fuentes abiertas. Las marcas, equipos y ligas pertenecen a sus dueños; ISAC no está afiliado a ellos.</p>
 </footer>
 
 <script>
@@ -257,18 +258,20 @@ const GAMES = [
 const SECCIONES = [
   { id: "mlb", nombre: "MLB", emoji: "⚾", sub: "Béisbol de Grandes Ligas" },
   { id: "nfl", nombre: "NFL", emoji: "🏈", sub: "Futbol americano" },
-  { id: "fut", nombre: "Fútbol", emoji: "⚽", sub: "Retos de fútbol (versión de prueba)", pronto: true },
-  { id: "nba", nombre: "NBA", emoji: "🏀", sub: "Básquetbol (versión de prueba)", pronto: true },
+  { id: "fut", nombre: "Fútbol", emoji: "⚽", sub: "Clubes, selecciones y Mundiales" },
+  { id: "nba", nombre: "NBA", emoji: "🏀", sub: "Básquetbol de la NBA" },
   { id: "multi", nombre: "Multideporte", emoji: "🌐", sub: "Un poco de todo" }
 ];
 /* Copia de JuegosISAC/calendario.py (solo respaldo si estado/status.json no carga) */
 const CAL_INICIO = Date.UTC(2026, 10, 26);
-const CAL_MLB = [["grid","krillion"],["connections","missing-xi"],["grid","connections"],["krillion","missing-xi"],["grid","missing-xi"],["krillion","connections"]];
-const CAL_ADIVINA = ["multi","multi","mlb","multi","multi","nfl"];
+// ciclo de 6 días: deporte de [grid, krillion, connections, missing-xi] (fase 2: MLB, NFL, fútbol y NBA)
+const CAL_CICLO = [["nba","fut","mlb","nfl"],["mlb","nba","nfl","fut"],["fut","mlb","nba","nfl"],["nba","nfl","fut","mlb"],["nfl","nba","mlb","fut"],["fut","nfl","nba","mlb"]];
+const CAL_ADIVINA = ["fut","multi","nba","mlb","fut","nfl"];
 function deporteCalendario(id, fecha) {
   const i = ((Math.round((Date.parse(fecha + 'T00:00:00Z') - CAL_INICIO) / 86400000) % 6) + 6) % 6;
   if (id === 'adivina') return CAL_ADIVINA[i];
-  if (['grid','krillion','connections','missing-xi'].includes(id)) return CAL_MLB[i].includes(id) ? 'mlb' : 'nfl';
+  const j = ['grid','krillion','connections','missing-xi'].indexOf(id);
+  if (j >= 0) return CAL_CICLO[i][j];
   return 'multi';
 }
 
