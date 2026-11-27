@@ -42,7 +42,9 @@
     max-width: 1040px; margin: 0 auto;
     display: flex; align-items: center; gap: 10px;
   }
-  .brand-logo { height: 40px; width: auto; display: none; }
+  /* ISACLOGO.jpg trae un bloque gris a la izquierda: se recorta mostrando solo la parte derecha (la palabra ISAC) */
+  .brand-logo { height: 40px; width: 106px; object-fit: cover; object-position: right center; display: none; }
+  .brand-games { font-weight: 800; letter-spacing: .04em; color: var(--green); font-size: 1rem; margin-left: 6px; display: none; }
   .brand-text { font-weight: 800; letter-spacing: .04em; color: var(--green); font-size: 1rem; }
   .brand-sub { color: var(--text-muted); font-size: .72rem; margin-left: auto; text-align: right; line-height: 1.25; }
   main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 24px; }
@@ -155,6 +157,7 @@
     <!-- El logo se carga por JS (ver LOGO_FILES); mientras no exista se ve el texto -->
     <img class="brand-logo" id="brandLogo" alt="ISAC, ITAM Sports Analytics Conference">
     <span class="brand-text" id="brandText">ISAC GAMES</span>
+    <span class="brand-games" id="brandGames">GAMES</span>
     <span class="brand-sub">ITAM Sports Analytics Conference</span>
   </div>
 </header>
@@ -219,7 +222,7 @@
 /* Carpeta de stickers (respeta mayúsculas y minúsculas). Cada <img data-st="nombre"> carga nombre.webp */
 const ASSET_DIR = 'assets/ISACLOGOS/';
 /* Logo de la barra superior: se usa el primero que exista; si ninguno, se queda el texto */
-const LOGO_FILES = ['assets/logo.png', 'assets/logo.svg'];
+const LOGO_FILES = ['assets/ISACLOGOS/ISACLOGO.jpg', 'assets/logo.png'];
 
 /* Para agregar un juego: agrega un objeto a este arreglo.
    estado: "activo" (con enlace) o "pronto" (tarjeta gris, sin enlace).
@@ -389,7 +392,7 @@ document.querySelectorAll('img[data-st]').forEach(img => {
 (function () {
   const logo = document.getElementById('brandLogo');
   let i = 0;
-  logo.onload = () => { logo.style.display = 'block'; document.getElementById('brandText').style.display = 'none'; };
+  logo.onload = () => { logo.style.display = 'block'; document.getElementById('brandText').style.display = 'none'; document.getElementById('brandGames').style.display = 'inline'; };
   logo.onerror = () => {
     i += 1;
     if (i < LOGO_FILES.length) { logo.src = LOGO_FILES[i]; } else { logo.remove(); }
