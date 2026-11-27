@@ -225,7 +225,7 @@
   <div class="game-header">
     <div class="title-row">
       <div class="isacbot-wrap">
-        <img id="isacbot" class="isacbot-img" src="assets/ISACLOGOS/saluda.webp" alt="ISACBOT" />
+        <img id="isacbot" class="isacbot-img" src="../assets/ISACLOGOS/saluda.webp" alt="ISACBOT" />
       </div>
       <div>
         <span class="badge">ISAC LABS · DIARIO</span>
@@ -952,7 +952,7 @@ function showToast(msg, type) {
 
 function botMood(mood) {
   const img = document.getElementById('isacbot');
-  img.src = `assets/ISACLOGOS/${mood}.webp`;
+  img.src = `../assets/ISACLOGOS/${mood}.webp`;
   img.classList.remove('bounce');
   void img.offsetWidth;
   img.classList.add('bounce');
