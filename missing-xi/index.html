@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
+<script src="../isac-progreso.js"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ISAC Labs · Missing XI</title>
@@ -555,6 +556,18 @@ function renderSvgField() {
       <rect x="870" y="195" width="60" height="110" rx="2" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
       <circle cx="30" cy="250" r="50" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2" clip-path="inset(0 0 0 50%)"/>
       <circle cx="930" cy="250" r="50" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2" clip-path="inset(0 50% 0 0)"/>
+    `;
+  } else if (sport === 'MLB') { /*isac-mlb-field*/
+    svg.innerHTML = `
+      <rect width="960" height="500" fill="#2f7d3a"/>
+      ${[0,1,2,3,4,5].map(i=>`<rect x="0" y="${i*84}" width="960" height="42" fill="#2a7134" opacity="0.6"/>`).join('')}
+      <path d="M480 470 L130 120 A495 495 0 0 1 830 120 Z" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+      <path d="M480 470 L330 320 L480 170 L630 320 Z" fill="#b5793f" stroke="rgba(255,255,255,0.85)" stroke-width="2.5"/>
+      <path d="M480 430 L370 320 L480 210 L590 320 Z" fill="#2f7d3a"/>
+      <circle cx="480" cy="320" r="22" fill="#b5793f"/>
+      <rect x="473" y="313" width="14" height="5" fill="#fff"/>
+      ${[[630,320],[480,170],[330,320]].map(b=>`<rect x="${b[0]-7}" y="${b[1]-7}" width="14" height="14" fill="#fff" transform="rotate(45 ${b[0]} ${b[1]})"/>`).join('')}
+      <path d="M472 462 L488 462 L488 470 L480 478 L472 470 Z" fill="#fff"/>
     `;
   } else if (sport === 'NFL') {
     svg.innerHTML = `
