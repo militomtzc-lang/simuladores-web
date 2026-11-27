@@ -92,6 +92,32 @@
   .card.pronto h2 { color: var(--text-muted); }
   .soon { text-align: center; font-weight: 600; font-size: .85rem; color: #64748b; padding: 12px; background: #f1f5f9; border-radius: 12px; }
 
+  /* Secciones por deporte */
+  .sports { display: flex; flex-direction: column; gap: 28px; }
+  .sport-sec h2.sec-title { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 1.2rem; font-weight: 800; color: var(--green); }
+  .sport-sec .sec-sub { margin: 0 0 12px; color: var(--text-muted); font-size: .82rem; }
+  .sec-empty { border: 1px dashed #cbd5e1; border-radius: var(--radius); padding: 14px 16px; color: #64748b; font-size: .85rem; font-weight: 600; text-align: center; }
+  .card.jugado { background: #f1f5f9; border-color: #e2e8f0; box-shadow: none; }
+  .card.jugado .icon { filter: grayscale(1); opacity: .7; }
+  .card.jugado h2, .card.jugado p { color: #64748b; }
+  .card.jugado .btn { background: #94a3b8; }
+  .card.jugado .btn:hover { background: #64748b; }
+  .done-badge { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; font-size: .8rem; font-weight: 700; color: #475569; background: #e2e8f0; border-radius: 999px; padding: 4px 10px; }
+  .tag-sport { display: inline-block; margin-left: 6px; font-size: .68rem; font-weight: 700; color: var(--green); background: var(--green-soft); border-radius: 999px; padding: 1px 8px; }
+
+  /* Racha */
+  .streak { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 24px; display: grid; gap: 10px; }
+  .streak-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .streak-num { font-size: 1.6rem; font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; }
+  .streak-txt { color: var(--text-muted); font-size: .85rem; flex: 1; min-width: 180px; }
+  .streak details summary { cursor: pointer; font-weight: 700; font-size: .85rem; color: var(--green); }
+  .streak ol { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+  .streak li { display: flex; gap: 10px; align-items: center; font-size: .85rem; padding: 6px 10px; border-radius: 10px; background: var(--bg-page); }
+  .streak li.yo { background: var(--green-soft); font-weight: 700; }
+  .streak li .p { width: 2.2em; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .streak li .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .streak li .r { font-weight: 800; font-variant-numeric: tabular-nums; }
+
   /* Notas con stickers repartidos por la página */
   .notes { display: grid; gap: 14px; grid-template-columns: 1fr; margin-top: 28px; }
   .note {
@@ -120,6 +146,7 @@
   @media (min-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
   @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 </style>
+<script src="isac-progreso.js"></script>
 </head>
 <body>
 <header class="topbar">
@@ -141,7 +168,18 @@
     <img class="mascot" data-st="saluda" alt="" hidden>
   </section>
 
-  <section class="grid" id="games" aria-label="Juegos disponibles"></section>
+  <section class="streak" id="streak" aria-label="Tu racha">
+    <div class="streak-top">
+      <span class="streak-num" id="streakNum">🔥 0</span>
+      <span class="streak-txt" id="streakTxt">Completa al menos un reto de hoy para empezar tu racha.</span>
+    </div>
+    <details id="streakRank">
+      <summary>Ranking de rachas</summary>
+      <ol id="streakList"><li><span class="n">Cargando…</span></li></ol>
+    </details>
+  </section>
+
+  <section class="sports" id="games" aria-label="Juegos por deporte"></section>
 
   <section class="notes" aria-label="Cómo funciona">
     <div class="note">
@@ -155,7 +193,7 @@
       <img data-st="celebracion" alt="" hidden>
       <div>
         <h3>Compite en el ranking</h3>
-        <p>Cada juego tiene su marcador del día. Los días anteriores son de práctica y no suman.</p>
+        <p>Cada juego tiene su marcador del día y su deporte rota a diario. Los días anteriores son de práctica y no suman.</p>
       </div>
     </div>
     <div class="note">
@@ -180,61 +218,161 @@ const ASSET_DIR = 'assets/ISACLOGOS/';
 const LOGO_FILES = ['assets/logo.png', 'assets/logo.svg'];
 
 /* Para agregar un juego: agrega un objeto a este arreglo.
-   estado: "activo" (con enlace) o "pronto" (tarjeta gris, sin enlace). */
+   estado: "activo" (con enlace) o "pronto" (tarjeta gris, sin enlace).
+   El deporte de HOY de cada juego sale de estado/status.json (lo escribe JuegosISAC/status_report.py con
+   calendario.py); si no carga, se usa la copia del calendario de abajo. */
 const GAMES = [
   { id: "franchise-guesser", nombre: "Franchise Guesser", emoji: "🏆",
     desc: "Adivina la franquicia del día con pistas en cada intento.",
-    url: "franchise-guesser/", tag: "Diario", estado: "activo" },
+    url: "franchise-guesser/", estado: "activo" },
   { id: "isactrivia", nombre: "ISACtrivia", emoji: "🎯",
     desc: "Trivia deportiva estilo Jeopardy: elige categoría y suma puntos.",
-    url: "isactrivia/", tag: "Diario", estado: "activo" },
+    url: "isactrivia/", estado: "activo" },
   { id: "strands", nombre: "StatStrands", emoji: "🔤",
     desc: "Encuentra las palabras ocultas del día en la cuadrícula.",
-    url: "strands/", tag: "Diario", estado: "activo" },
+    url: "strands/", estado: "activo" },
   { id: "connections", nombre: "ISAC-Connections", emoji: "🧩",
     desc: "Agrupa los elementos que comparten una conexión.",
-    url: "connections/", tag: "Diario", estado: "activo" },
+    url: "connections/", estado: "activo" },
   { id: "missing-xi", nombre: "Missing XI", emoji: "🏟️",
-    desc: "Completa el lineup del día: fútbol, NBA, NFL y más deportes.",
-    url: "missing-xi/", tag: "Diario", estado: "activo" },
+    desc: "Completa la alineación titular del día, un jugador a la vez.",
+    url: "missing-xi/", estado: "activo" },
   { id: "krillion", nombre: "ISAC-Krillion", emoji: "🏈",
     desc: "Responde lo más nicho posible: entre más rara tu respuesta, más profundo baja tu drive.",
-    url: "krillion/", tag: "Diario", estado: "activo" },
+    url: "krillion/", estado: "activo" },
   { id: "adivina", nombre: "ISACBOT Adivina", emoji: "🤖",
     desc: "Adivina al jugador del día con preguntas de Sí o No, o piensa en uno y deja que el ISACBOT lo adivine.",
-    url: "adivina/", tag: "Diario", estado: "activo" },
+    url: "adivina/", estado: "activo" },
   { id: "grid", nombre: "ISAC-Grid", emoji: "🔢",
-    desc: "Cuadrícula 3x3 de MLB y NFL: encuentra jugadores que crucen equipos y logros. Entre más raro, más puntos.",
-    url: "grid/", tag: "Diario", estado: "activo" }
+    desc: "Cuadrícula 3x3: encuentra jugadores que crucen equipos y logros. Entre más raro, más puntos.",
+    url: "grid/", estado: "activo" }
 ];
+const SECCIONES = [
+  { id: "mlb", nombre: "MLB", emoji: "⚾", sub: "Béisbol de Grandes Ligas" },
+  { id: "nfl", nombre: "NFL", emoji: "🏈", sub: "Futbol americano" },
+  { id: "fut", nombre: "Fútbol", emoji: "⚽", sub: "Retos de fútbol", pronto: true },
+  { id: "nba", nombre: "NBA", emoji: "🏀", sub: "Básquetbol", pronto: true },
+  { id: "multi", nombre: "Multideporte", emoji: "🌐", sub: "Un poco de todo" }
+];
+/* Copia de JuegosISAC/calendario.py (solo respaldo si estado/status.json no carga) */
+const CAL_INICIO = Date.UTC(2026, 10, 26);
+const CAL_MLB = [["grid","krillion"],["connections","missing-xi"],["grid","connections"],["krillion","missing-xi"],["grid","missing-xi"],["krillion","connections"]];
+const CAL_ADIVINA = ["multi","multi","mlb","multi","multi","nfl"];
+function deporteCalendario(id, fecha) {
+  const i = ((Math.round((Date.parse(fecha + 'T00:00:00Z') - CAL_INICIO) / 86400000) % 6) + 6) % 6;
+  if (id === 'adivina') return CAL_ADIVINA[i];
+  if (['grid','krillion','connections','missing-xi'].includes(id)) return CAL_MLB[i].includes(id) ? 'mlb' : 'nfl';
+  return 'multi';
+}
 
 const grid = document.getElementById('games');
+const P = window.ISAC_PROGRESO || null;
+const HOY = P ? P.hoy() : new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
 function el(tag, cls, text) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
   if (text !== undefined) n.textContent = text;
   return n;
 }
-GAMES.forEach(g => {
-  const card = el('article', 'card ' + g.estado);
+function card(g, jugados, nombreDeporte) {
+  const pts = jugados[g.id];
+  const jugado = g.estado === 'activo' && pts !== undefined;
+  const c = el('article', 'card ' + g.estado + (jugado ? ' jugado' : ''));
+  c.dataset.game = g.id;
   const head = el('div', 'card-head');
-  head.appendChild(el('div', 'icon', g.emoji));
+  head.appendChild(el('div', 'icon', jugado ? '🔒' : g.emoji));
   const titles = el('div');
   titles.appendChild(el('h2', '', g.nombre));
-  titles.appendChild(el('span', 'tag', g.tag));
+  const tag = el('span', 'tag', 'Diario');
+  if (nombreDeporte) tag.appendChild(el('span', 'tag-sport', nombreDeporte));
+  titles.appendChild(tag);
   head.appendChild(titles);
-  card.appendChild(head);
-  card.appendChild(el('p', '', g.desc));
+  c.appendChild(head);
+  c.appendChild(el('p', '', g.desc));
+  if (jugado) c.appendChild(el('span', 'done-badge', '🔒 Jugado hoy · ' + pts + ' pts'));
   if (g.estado === 'activo') {
-    const a = el('a', 'btn', 'Jugar →');
+    const a = el('a', 'btn', jugado ? 'Ver mi resultado →' : 'Jugar →');
     a.href = g.url;
-    a.setAttribute('aria-label', 'Jugar ' + g.nombre);
-    card.appendChild(a);
+    a.setAttribute('aria-label', (jugado ? 'Ver resultado de ' : 'Jugar ') + g.nombre);
+    c.appendChild(a);
   } else {
-    card.appendChild(el('div', 'soon', 'Próximamente'));
+    c.appendChild(el('div', 'soon', 'Próximamente'));
   }
-  grid.appendChild(card);
-});
+  return c;
+}
+function render(deporteDe) {
+  let jugados = {};
+  try { jugados = P ? P.jugadoHoy() : {}; } catch (e) { jugados = {}; }
+  grid.innerHTML = '';
+  const nombres = {};
+  SECCIONES.forEach(s => { nombres[s.id] = s.nombre; });
+  SECCIONES.forEach(sec => {
+    const juegos = GAMES.filter(g => (nombres[deporteDe(g.id)] ? deporteDe(g.id) : 'multi') === sec.id);
+    const box = el('section', 'sport-sec');
+    box.setAttribute('aria-label', sec.nombre);
+    box.appendChild(el('h2', 'sec-title', sec.emoji + ' ' + sec.nombre));
+    box.appendChild(el('p', 'sec-sub', juegos.length ? sec.sub + ' · retos de hoy' : sec.sub));
+    if (juegos.length) {
+      const g = el('div', 'grid');
+      juegos.forEach(j => g.appendChild(card(j, jugados, null)));
+      box.appendChild(g);
+    } else {
+      box.appendChild(el('div', 'sec-empty', sec.pronto ? 'Próximamente: estamos preparando retos de ' + sec.nombre + '.' : 'Hoy no hay retos de ' + sec.nombre + '. Vuelve mañana: los juegos rotan de deporte cada día.'));
+    }
+    grid.appendChild(box);
+  });
+}
+let deporteHoy = id => deporteCalendario(id, HOY);
+render(deporteHoy);
+fetch('estado/status.json', { cache: 'no-store' })
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(st => {
+    const m = {};
+    (st.games || []).forEach(g => {
+      const s = (g.sports && g.sports[HOY]) || (st.today === HOY ? g.sport : null);
+      if (s) m[g.id] = s;
+    });
+    deporteHoy = id => m[id] || deporteCalendario(id, HOY);
+    render(deporteHoy);
+  })
+  .catch(() => { /* se queda el calendario de respaldo */ });
+/* al volver de un juego (bfcache o pestaña), refresca los "jugado hoy" */
+window.addEventListener('pageshow', () => render(deporteHoy));
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { render(deporteHoy); pintarRacha(); } });
+
+/* Racha global: días seguidos con al menos un reto de hoy completado (ranking en Supabase) */
+function pintarRacha() {
+  if (!P) { document.getElementById('streak').hidden = true; return; }
+  const local = P.rachaLocal();
+  const pintar = (n, hoyHecho) => {
+    document.getElementById('streakNum').textContent = '🔥 ' + n;
+    document.getElementById('streakTxt').textContent = n === 0
+      ? 'Completa al menos un reto de hoy para empezar tu racha.'
+      : (n === 1 ? '1 día seguido jugando.' : n + ' días seguidos jugando.') + (hoyHecho ? ' ¡Hoy ya cuenta!' : ' Juega un reto hoy para no perderla.');
+  };
+  const hoyHecho = Object.keys(P.jugadoHoy()).length > 0;
+  pintar(local, hoyHecho);
+  P.ranking(10).then(rows => {
+    const list = document.getElementById('streakList');
+    list.innerHTML = '';
+    const yo = rows.find(r => r.es_yo);
+    if (yo && yo.racha > local) pintar(yo.racha, hoyHecho);
+    const top = rows.filter(r => r.racha > 0 || r.es_yo);
+    if (!top.length) { list.appendChild(el('li', '', 'Nadie tiene racha todavía. ¡Sé el primero!')); return; }
+    top.forEach(r => {
+      const li = el('li', r.es_yo ? 'yo' : '');
+      li.appendChild(el('span', 'p', r.racha > 0 ? '#' + r.pos : '—'));
+      li.appendChild(el('span', 'n', r.nickname + (r.es_yo ? ' (tú)' : '')));
+      li.appendChild(el('span', 'r', '🔥 ' + r.racha));
+      list.appendChild(li);
+    });
+  }).catch(() => {
+    const list = document.getElementById('streakList');
+    list.innerHTML = '';
+    list.appendChild(el('li', '', 'No se pudo cargar el ranking. Intenta más tarde.'));
+  });
+}
+pintarRacha();
 
 /* Stickers: si un archivo no existe, el <img> se quita sin dejar huecos */
 document.querySelectorAll('img[data-st]').forEach(img => {
