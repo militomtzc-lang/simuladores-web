@@ -205,6 +205,16 @@
       .slot-name { font-size: 0.58rem; }
     }
   </style>
+<style>/*isac-mx-board*/
+  .mx-board-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+  .mx-board-header h3 { margin: 0; font-size: 0.95rem; color: var(--text-main); }
+  .mx-btn-board { background: var(--bg-page); color: var(--green-main); border: 1.5px solid var(--green-main); border-radius: 999px; padding: 0.4rem 0.9rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.78rem; cursor: pointer; }
+  .mx-board table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.85rem; }
+  .mx-board th, .mx-board td { padding: 0.45rem 0.4rem; border-bottom: 1px solid var(--border-subtle); text-align: left; }
+  .mx-board th { color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .mx-board tr.me td { background: var(--green-light); font-weight: 700; }
+  .mx-board-empty { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.75rem; }
+</style>
 </head>
 <body>
 <div class="wrapper">
@@ -336,6 +346,8 @@
     <div class="summary-answer-list" id="summaryAnswerList"></div>
     <button class="btn-share" onclick="shareResult()">Compartir resultado 📋</button>
     <p id="leaderboardMsg" style="font-size:0.8rem;color:var(--text-muted);margin-top:0.75rem;"></p>
+    <div class="mx-board-header"><h3 id="mxBoardTitle">Ranking Global</h3><button class="mx-btn-board" onclick="refreshBoard()">Actualizar ranking</button></div>
+    <div class="mx-board" id="mxBoard"><p class="mx-board-empty">Cargando ranking…</p></div>
   </div>
 
 </div>
@@ -899,6 +911,31 @@ async function submitScore() {
     else document.getElementById('leaderboardMsg').textContent = '⚠️ No se pudo guardar el puntaje.';
   } catch { document.getElementById('leaderboardMsg').textContent = '⚠️ Sin conexión para guardar el puntaje.'; }
 }
+
+/* ---- RANKING ---- */ /*isac-mx-board*/
+function mxEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function refreshBoard() {
+  const box = document.getElementById('mxBoard');
+  if (!box || !currentDate) return;
+  document.getElementById('mxBoardTitle').textContent = `Ranking Global (${currentDate}) — Missing XI`;
+  let rows = null;
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/game_scores?select=nickname,score,attempts,time_seconds,device_id&game_id=eq.missing_xi&puzzle_date=eq.${currentDate}&order=score.desc,time_seconds.asc&limit=10`;
+    const r = await fetch(url, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }, cache: 'no-store' });
+    if (r.ok) rows = await r.json();
+  } catch (e) { console.warn('No se pudo cargar el ranking remoto:', e); }
+  if (!rows) { box.innerHTML = '<p class="mx-board-empty">No se pudo cargar el ranking. Intenta de nuevo.</p>'; return; }
+  if (!rows.length) { box.innerHTML = '<p class="mx-board-empty">Aún no hay puntajes registrados este día. ¡Sé el primero!</p>'; return; }
+  const me = getDeviceId();
+  box.innerHTML = `<table><thead><tr><th>#</th><th>Jugador</th><th>Intentos</th><th>Tiempo</th><th>Puntos</th></tr></thead><tbody>${
+    rows.map((x, i) => `<tr class="${x.device_id === me ? 'me' : ''}"><td>${i + 1}</td><td>${mxEsc(x.nickname)}${x.device_id === me ? ' (Tú)' : ''}</td><td>${mxEsc(x.attempts)}</td><td>${formatTime(x.time_seconds || 0)}</td><td><strong>${mxEsc(x.score)}</strong></td></tr>`).join('')
+  }</tbody></table>`;
+}
+(() => {
+  const _show = showSummary, _submit = submitScore;
+  showSummary = function (data) { const r = _show.apply(this, arguments); refreshBoard(); return r; };
+  submitScore = async function () { const r = await _submit.apply(this, arguments); refreshBoard(); return r; };
+})();
 
 /* ---- SHARE ---- */
 function shareResult() {
